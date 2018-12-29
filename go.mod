@@ -1,6 +1,8 @@
 module libs.altipla.consulting
 
 require (
+	cloud.google.com/go v0.33.1
+	contrib.go.opencensus.io/exporter/stackdriver v0.8.0
 	github.com/altipla-consulting/apps v0.0.0-20181228150025-fcf11643b598
 	github.com/altipla-consulting/content v2.1.2+incompatible
 	github.com/altipla-consulting/database v0.0.0-20181123134628-28971473eb70
@@ -19,6 +21,8 @@ require (
 	github.com/julienschmidt/httprouter v1.2.0
 	github.com/sirupsen/logrus v1.2.0
 	github.com/stretchr/testify v1.2.2
+	go.opencensus.io v0.18.0
+	golang.org/x/net v0.0.0-20181220203305-927f97764cc3
 	golang.org/x/oauth2 v0.0.0-20181203162652-d668ce993890
 	google.golang.org/grpc v1.17.0
 	upper.io/db.v3 v3.5.5+incompatible
