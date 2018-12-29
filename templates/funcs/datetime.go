@@ -9,8 +9,8 @@ import (
 
 	"libs.altipla.consulting/dateformatter"
 	"libs.altipla.consulting/datetime"
-	pbdatetime "libs.altipla.consulting/protos/datetime"
 	"libs.altipla.consulting/langs"
+	pbdatetime "libs.altipla.consulting/protos/datetime"
 )
 
 var EuropeMadrid *time.Location
