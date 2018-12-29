@@ -1,0 +1,21 @@
+
+syntax = "proto3";
+
+package libs.datetime;
+
+option go_package = "libs.altipla.consulting/protos/datetime";
+
+message Date {
+  int32 day = 1;
+  int32 month = 2;
+  int32 year = 3;
+}
+
+message DateRange {
+  Date start = 1;
+  Date end = 2;
+}
+
+message DateRanges {
+  repeated DateRange ranges = 1;
+}

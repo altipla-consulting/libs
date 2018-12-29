@@ -9,7 +9,7 @@ import (
 
 	"libs.altipla.consulting/dateformatter"
 	"libs.altipla.consulting/datetime"
-	pbdatetime "libs.altipla.consulting/datetime/altipla/datetime"
+	pbdatetime "libs.altipla.consulting/protos/datetime"
 	"libs.altipla.consulting/langs"
 )
 
