@@ -1,5 +1,5 @@
 
-# Templates
+# templates
 
 [![GoDoc](https://godoc.org/libs.altipla.consulting/templates?status.svg)](https://godoc.org/libs.altipla.consulting/templates)
 
