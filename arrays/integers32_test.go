@@ -23,7 +23,7 @@ func initIntegers32DB(t *testing.T) {
 	cnf := &mysql.ConnectionURL{
 		User:     "dev-user",
 		Password: "dev-password",
-		Host:     "localhost:3306",
+		Host:     "database:3306",
 		Database: "default",
 		Options: map[string]string{
 			"charset":   "utf8mb4",

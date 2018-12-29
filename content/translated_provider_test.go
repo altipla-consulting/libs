@@ -24,7 +24,7 @@ func initTranslatedProviderDB(t *testing.T) {
 	cnf := &mysql.ConnectionURL{
 		User:     "dev-user",
 		Password: "dev-password",
-		Host:     "localhost",
+		Host:     "database",
 		Database: "default",
 		Options: map[string]string{
 			"charset":   "utf8mb4",

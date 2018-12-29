@@ -16,8 +16,8 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"libs.altipla.consulting/datetime"
-	"libs.altipla.consulting/sentry"
 	pb "libs.altipla.consulting/delay/queues"
+	"libs.altipla.consulting/sentry"
 )
 
 var (

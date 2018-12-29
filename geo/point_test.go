@@ -15,7 +15,7 @@ var (
 
 func initPointDB(t *testing.T) {
 	var err error
-	pointSess, err = sql.Open("mysql", "dev-user:dev-password@tcp(localhost:3306)/default?parseTime=true&charset=utf8mb4&collation=utf8mb4_bin")
+	pointSess, err = sql.Open("mysql", "dev-user:dev-password@tcp(database:3306)/default?parseTime=true&charset=utf8mb4&collation=utf8mb4_bin")
 	require.Nil(t, err)
 
 	_, err = pointSess.Exec(`DROP TABLE IF EXISTS points`)
