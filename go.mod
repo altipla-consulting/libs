@@ -14,6 +14,8 @@ require (
 	github.com/go-redis/redis v6.15.0+incompatible
 	github.com/golang/protobuf v1.2.0
 	github.com/sirupsen/logrus v1.2.0
+	github.com/stretchr/testify v1.2.2
 	golang.org/x/oauth2 v0.0.0-20181203162652-d668ce993890
 	google.golang.org/grpc v1.17.0
+	upper.io/db.v3 v3.5.5+incompatible
 )
