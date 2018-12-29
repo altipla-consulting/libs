@@ -3,13 +3,14 @@ package funcs
 import (
 	"time"
 
-	"github.com/altipla-consulting/dateformatter"
-	"github.com/altipla-consulting/datetime"
-	pbdatetime "github.com/altipla-consulting/datetime/altipla/datetime"
 	"github.com/altipla-consulting/errors"
-	"github.com/altipla-consulting/langs"
 	pbtimestamp "github.com/golang/protobuf/ptypes/timestamp"
 	log "github.com/sirupsen/logrus"
+
+	"libs.altipla.consulting/dateformatter"
+	"libs.altipla.consulting/datetime"
+	pbdatetime "libs.altipla.consulting/datetime/altipla/datetime"
+	"libs.altipla.consulting/langs"
 )
 
 var EuropeMadrid *time.Location

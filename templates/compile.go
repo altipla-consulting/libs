@@ -5,9 +5,9 @@ import (
 	"text/template/parse"
 
 	"github.com/altipla-consulting/errors"
-	"github.com/altipla-consulting/langs"
 
-	"github.com/altipla-consulting/apps/pkg/templates/funcs"
+	"libs.altipla.consulting/langs"
+	"libs.altipla.consulting/templates/funcs"
 )
 
 var (

@@ -6,8 +6,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/altipla-consulting/content"
-	"github.com/altipla-consulting/messageformat"
+	"libs.altipla.consulting/content"
+	"libs.altipla.consulting/messageformat"
 )
 
 var messages = map[string]map[string]string{}
