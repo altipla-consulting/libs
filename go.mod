@@ -12,9 +12,11 @@ require (
 	github.com/altipla-consulting/money v0.1.0
 	github.com/altipla-consulting/services/v2 v2.8.1
 	github.com/ernestoalejo/aeimagesflags v0.0.0-20150830225655-eed2909a7c2b
+	github.com/getsentry/raven-go v0.2.0
 	github.com/go-redis/redis v6.15.0+incompatible
 	github.com/go-sql-driver/mysql v1.4.1
 	github.com/golang/protobuf v1.2.0
+	github.com/julienschmidt/httprouter v1.2.0
 	github.com/sirupsen/logrus v1.2.0
 	github.com/stretchr/testify v1.2.2
 	golang.org/x/oauth2 v0.0.0-20181203162652-d668ce993890
