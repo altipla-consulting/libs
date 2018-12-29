@@ -14,7 +14,7 @@ Basic usage with the `HasChanged()` getter:
 package main
 
 import (
-  "github.com/altipla-consulting/tokensource"
+  "libs.altipla.consulting/tokensource"
   "golang.org/x/oauth2"
   "golang.org/x/oauth2/slack"
 )
@@ -67,7 +67,7 @@ Notification callback when the token updates:
 package main
 
 import (
-  "github.com/altipla-consulting/tokensource"
+  "libs.altipla.consulting/tokensource"
   "golang.org/x/oauth2"
   "golang.org/x/oauth2/slack"
 )
