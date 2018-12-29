@@ -23,6 +23,7 @@ github.com/altipla-consulting/collections v0.3.1/go.mod h1:S99sEM8fnsZ31SvyTadhj
 github.com/altipla-consulting/content v2.1.2+incompatible h1:tCwD8IPr8/n/T+KsMXOLhlNjtfIV7jOM2E0mUMBtZK8=
 github.com/altipla-consulting/content v2.1.2+incompatible/go.mod h1:ehQmXIcX6knRkOnuGCpM1OlVIJirFS+HTHZJAtg5BoM=
 github.com/altipla-consulting/cron v1.1.0/go.mod h1:fj7QW9qwVp4YLZUzS3ICtPxwBgWGdBTTjRksyptCXac=
+github.com/altipla-consulting/database v0.0.0-20181123134628-28971473eb70 h1:HHUMjimWeVJCtJXvcnuTrUXWFX2Uh4w+lq9VEx+7/qo=
 github.com/altipla-consulting/database v0.0.0-20181123134628-28971473eb70/go.mod h1:coCwkV/HIGu38msjWZRalezztcdrm0qyPSdYrjq7Lxw=
 github.com/altipla-consulting/dateformatter v0.0.0-20170106120034-1fde9a9a696f h1:8w8furBgHNgTzIe2av1BpLPbIc5ensH2TAQiBq75+iY=
 github.com/altipla-consulting/dateformatter v0.0.0-20170106120034-1fde9a9a696f/go.mod h1:jboKF6Zu4UVXwRT3dh8ljKtbcXPLSSXAWXa6dABaLLQ=
