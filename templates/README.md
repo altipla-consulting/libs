@@ -6,7 +6,7 @@
 Helper functions for html/template to assist with common actions, i18n or assets versioning.
 
 
-### Usage
+### Basic usage
 
 ```go
 import (
