@@ -4,14 +4,14 @@
 //
 // Additions and modifications under the MIT License.
 
-package dateformatter
+package datetime
 
 import (
 	"errors"
 	"fmt"
 	"time"
 
-	"libs.altipla.consulting/dateformatter/symbols"
+	"libs.altipla.consulting/datetime/symbols"
 )
 
 const (

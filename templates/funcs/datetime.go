@@ -7,7 +7,6 @@ import (
 	pbtimestamp "github.com/golang/protobuf/ptypes/timestamp"
 	log "github.com/sirupsen/logrus"
 
-	"libs.altipla.consulting/dateformatter"
 	"libs.altipla.consulting/datetime"
 	"libs.altipla.consulting/langs"
 	pbdatetime "libs.altipla.consulting/protos/datetime"
@@ -34,19 +33,19 @@ func commonLayouts(layout string) string {
 }
 
 func DateFormat(t time.Time, lang, layout string) string {
-	return dateformatter.Format(t, lang, layout)
+	return datetime.Format(t, lang, layout)
 }
 
 func ProtoDateFormat(lang, layout string, t *pbdatetime.Date) string {
-	return dateformatter.Format(datetime.ParseDate(t), lang, layout)
+	return datetime.Format(datetime.ParseDate(t), lang, layout)
 }
 
 func TimestampFormat(layout string, timestamp *pbtimestamp.Timestamp) string {
-	return dateformatter.Format(datetime.ParseTimestamp(timestamp), langs.ES, commonLayouts(layout))
+	return datetime.Format(datetime.ParseTimestamp(timestamp), langs.ES, commonLayouts(layout))
 }
 
 func TimeFormat(layout string, t time.Time) string {
-	return dateformatter.Format(t, langs.ES, commonLayouts(layout))
+	return datetime.Format(t, langs.ES, commonLayouts(layout))
 }
 
 func Now() time.Time {

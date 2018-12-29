@@ -10,7 +10,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/juju/errors"
 	"golang.org/x/text/unicode/cldr"
 )
 
@@ -30,7 +29,7 @@ func main() {
 	flag.Parse()
 
 	if err := run(); err != nil {
-		log.Fatal(errors.ErrorStack(err))
+		log.Fatal(err)
 	}
 }
 
@@ -39,7 +38,7 @@ func run() error {
 
 	coreFile, err := os.Open("/tmp/core.zip")
 	if err != nil {
-		return errors.Trace(err)
+		return err
 	}
 
 	decoder := cldr.Decoder{}
@@ -47,7 +46,7 @@ func run() error {
 	decoder.SetSectionFilter("dates")
 	data, err := decoder.DecodeZip(coreFile)
 	if err != nil {
-		return errors.Trace(err)
+		return err
 	}
 
 	for _, locale := range strings.Split(*locales, ",") {
@@ -55,11 +54,11 @@ func run() error {
 
 		ldml, err := data.LDML(locale)
 		if err != nil {
-			return errors.Trace(err)
+			return err
 		}
 
 		if err := extractLDML(locale, ldml); err != nil {
-			return errors.Trace(err)
+			return err
 		}
 	}
 
@@ -69,9 +68,9 @@ func run() error {
 }
 
 func extractLDML(locale string, ldml *cldr.LDML) error {
-	dest, err := os.Create(fmt.Sprintf("symbols/%s.go", locale))
+	dest, err := os.Create(fmt.Sprintf("datetime/symbols/%s.go", locale))
 	if err != nil {
-		return errors.Trace(err)
+		return err
 	}
 	defer dest.Close()
 
@@ -102,7 +101,7 @@ func extractLDML(locale string, ldml *cldr.LDML) error {
 				for _, month := range width.Month {
 					n, err := strconv.ParseInt(month.Type, 10, 64)
 					if err != nil {
-						return errors.Trace(err)
+						return err
 					}
 
 					months[n] = month.Data()
