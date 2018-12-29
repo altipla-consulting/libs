@@ -6,12 +6,13 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/altipla-consulting/services/v2"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/clientcredentials"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/keepalive"
+	
+	"libs.altipla.consulting/services"
 )
 
 const beauthTokenEndpoint = "https://beauth.io/token"
