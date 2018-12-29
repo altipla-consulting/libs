@@ -19,3 +19,8 @@ update-deps:
 protos:
 	actools protoc --go_out=paths=source_relative:. ./protos/datetime/datetime.proto
 	actools protoc --go_out=paths=source_relative:. ./protos/pagination/pagination.proto
+
+data:
+	actools rm database redis
+	actools start database redis
+	bash -c "until actools mysql -h database -u dev-user -pdev-password -e ';' 2> /dev/null ; do sleep 1; done"

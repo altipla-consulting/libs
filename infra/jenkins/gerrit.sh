@@ -4,7 +4,7 @@ set -eu
 
 . /opt/ci-toolset/functions.sh
 
-run "actools start redis database"
+run "make data"
 run "actools go test ./..."
 
 # run "actools revive -formatter friendly"
