@@ -72,6 +72,3 @@ type ravenException struct {
 func (e *ravenException) Class() string {
 	return "exception"
 }
-
-type ravenRPC struct {
-}

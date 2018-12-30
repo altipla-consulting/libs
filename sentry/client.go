@@ -72,7 +72,7 @@ func (client *Client) report(ctx context.Context, appErr error, r *http.Request)
 
 		client, err := raven.New(client.dsn)
 		if err != nil {
-			log.WithField("error", err).Error("Cannot create client")
+			log.WithField("error", err.Error()).Error("Cannot create Sentry client")
 			return
 		}
 		client.SetRelease(os.Getenv("VERSION"))
