@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"time"
 	"unicode"
 )
 
@@ -174,12 +175,14 @@ func isZero(value interface{}) bool {
 	switch v := value.(type) {
 	case string:
 		return len(v) == 0
-
 	case int32:
 		return v == 0
-
 	case int64:
 		return v == 0
+	case bool:
+		return !v
+	case time.Time:
+		return v.IsZero()
 	}
 
 	return false
