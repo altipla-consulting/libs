@@ -20,6 +20,11 @@ func Open(hostname, applicationName string) *Database {
 	}
 }
 
+// Close the connection to the remote database.
+func (db *Database) Close() error {
+	return db.sess.Close()
+}
+
 func (db *Database) StringsSet(key string) *StringsSet {
 	return &StringsSet{
 		db:  db,
