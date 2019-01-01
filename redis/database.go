@@ -131,3 +131,17 @@ func (db *Database) PubSub(name string) *PubSub {
 		name: fmt.Sprintf("%s:%s", db.app, name),
 	}
 }
+
+// Hash returns a hash instance that stores full models as individual hash keys.
+func (db *Database) Hash(name string, model Model) *Hash {
+	props, err := extractModelProps(model)
+	if err != nil {
+		panic(err)
+	}
+
+	return &Hash{
+		db:    db,
+		name:  fmt.Sprintf("%s:%s", db.app, name),
+		props: props,
+	}
+}
