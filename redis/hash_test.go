@@ -61,7 +61,7 @@ func TestGet(t *testing.T) {
 	require.Equal(t, item.FreeField, "free str field")
 }
 
-func TestSet(t *testing.T) {
+func TestPut(t *testing.T) {
 	initDB(t)
 	defer closeDB(t)
 	hash := db.Hash("foo-hash", new(hashItem))
@@ -83,7 +83,7 @@ func TestSet(t *testing.T) {
 	require.Equal(t, fields[3].(string), "free str field")
 }
 
-func TestSetGet(t *testing.T) {
+func TestPutGet(t *testing.T) {
 	initDB(t)
 	defer closeDB(t)
 	hash := db.Hash("foo-hash", new(hashItem))
@@ -105,7 +105,7 @@ func TestSetGet(t *testing.T) {
 	require.Equal(t, item.FreeField, "free str field")
 }
 
-func TestSetMask(t *testing.T) {
+func TestPutMask(t *testing.T) {
 	initDB(t)
 	defer closeDB(t)
 	hash := db.Hash("foo-hash", new(hashItem))
