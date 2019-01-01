@@ -44,7 +44,12 @@ func Queue(conn Conn, name string) QueueSpec {
 	return QueueSpec{conn, name}
 }
 
-// SendTasks sends a list of tasks in batch to a queue.
+// SendTasks sends a list of tasks in batch to the queue.
 func (queue QueueSpec) SendTasks(ctx context.Context, tasks []*pb.SendTask) error {
 	return queue.conn.SendTasks(ctx, queue.name, tasks)
+}
+
+// SendTask sends a tasks to the queue.
+func (queue QueueSpec) SendTask(ctx context.Context, task *pb.SendTask) error {
+	return queue.SendTasks(ctx, []*pb.SendTask{task})
 }
