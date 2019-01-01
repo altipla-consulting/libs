@@ -5,17 +5,14 @@ import (
 	"context"
 	"encoding/gob"
 	"fmt"
-	"io"
 	"reflect"
 	"runtime"
 	"time"
 
 	altiplaerrors "github.com/altipla-consulting/errors"
-	"github.com/golang/protobuf/proto"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
 
-	"libs.altipla.consulting/datetime"
 	pb "libs.altipla.consulting/delay/queues"
 	"libs.altipla.consulting/sentry"
 )
@@ -196,7 +193,7 @@ func (lis *Listener) Handle(queue QueueSpec) {
 			if err := lis.listenQueue(queue); err != nil {
 				log.WithFields(log.Fields{
 					"error":   err.Error(),
-					"project": queue.conn.project,
+					"project": queue.conn.Project(),
 					"queue":   queue.name,
 				}).Error("Error listening to queue, retrying in 15 seconds")
 			}
@@ -208,40 +205,30 @@ func (lis *Listener) Handle(queue QueueSpec) {
 func (lis *Listener) listenQueue(queue QueueSpec) error {
 	group, ctx := errgroup.WithContext(context.Background())
 
-	if queue.conn.redisClient != nil {
-		group.Go(func() error {
-			pubsub := queue.conn.redisClient.Subscribe(queue.name)
+	stream, err := queue.conn.Listen(ctx, queue.name)
+	if err != nil {
+		return err
+	}
 
-			var i int64
-			for msg := range pubsub.Channel() {
-				buf := proto.NewBuffer([]byte(msg.Payload))
-				for {
-					sendTask := new(pb.SendTask)
-					if err := buf.DecodeMessage(sendTask); err != nil {
-						if err == io.EOF {
-							break
-						}
+	group.Go(func() error {
+		for {
+			tasks, err := stream.Next()
+			if err != nil {
+				return err
+			}
 
-						return fmt.Errorf("delay: cannot decode incoming task: %v", err)
-					}
-
-					i++
-					task := &pb.Task{
-						Code:    fmt.Sprintf("sim-%d", i),
-						Payload: sendTask.Payload,
-						Created: datetime.SerializeTimestamp(time.Now()),
-						Retry:   0,
-						Project: queue.conn.project,
-						MinEta:  sendTask.MinEta,
-					}
-
+			for _, task := range tasks {
+				group.Go(func() error {
 					log.WithFields(log.Fields{
 						"project": task.Project,
 						"queue":   task.QueueName,
 						"task":    task.Code,
 					}).Debug("Task received")
 
+					var failed bool
 					if err := handleTask(ctx, task); err != nil {
+						failed = true
+
 						log.WithFields(log.Fields{
 							"error":   err.Error(),
 							"details": altiplaerrors.Details(err),
@@ -249,78 +236,17 @@ func (lis *Listener) listenQueue(queue QueueSpec) error {
 							"queue":   task.QueueName,
 							"task":    task.Code,
 						}).Error("Task handler failed")
-					}
-				}
-			}
-
-			return nil
-		})
-	} else {
-		stream, err := queue.conn.queuesClient.Listen(ctx)
-		if err != nil {
-			return fmt.Errorf("delay: cannot listen to the queue: %v", err)
-		}
-
-		initial := &pb.ListenRequest{
-			Request: &pb.ListenRequest_Initial{
-				Initial: &pb.ListenInitial{
-					Project:   queue.conn.project,
-					QueueName: queue.name,
-				},
-			},
-		}
-		if err := stream.Send(initial); err != nil {
-			return fmt.Errorf("delay: cannot send initial connection info: %v", err)
-		}
-
-		group.Go(func() error {
-			for {
-				reply, err := stream.Recv()
-				if err != nil {
-					return fmt.Errorf("delay: cannot receive tasks: %v", err)
-				}
-
-				group.Go(func() error {
-					log.WithFields(log.Fields{
-						"project": reply.Task.Project,
-						"queue":   reply.Task.QueueName,
-						"task":    reply.Task.Code,
-					}).Debug("Task received")
-
-					var failed bool
-					if err := handleTask(ctx, reply.Task); err != nil {
-						failed = true
-
-						log.WithFields(log.Fields{
-							"error":   err.Error(),
-							"details": altiplaerrors.Details(err),
-							"project": reply.Task.Project,
-							"queue":   reply.Task.QueueName,
-							"task":    reply.Task.Code,
-						}).Error("Task handler failed")
 
 						if lis.sentryClient != nil {
 							lis.sentryClient.ReportInternal(ctx, err)
 						}
 					}
 
-					req := &pb.ListenRequest{
-						Request: &pb.ListenRequest_Ack{
-							Ack: &pb.Ack{
-								Code:    reply.Task.Code,
-								Success: !failed,
-							},
-						},
-					}
-					if err := stream.Send(req); err != nil {
-						return fmt.Errorf("delay: cannot ack task: %v", err)
-					}
-
-					return nil
+					return stream.ACK(task, !failed)
 				})
 			}
-		})
-	}
+		}
+	})
 
 	if err := group.Wait(); err != nil {
 		return fmt.Errorf("delay: error closing the background queue goroutines: %v", err)
