@@ -116,9 +116,18 @@ func (hash *Hash) Put(key string, instance Model, masks ...MaskOpt) error {
 	return nil
 }
 
+// Delete inmediately removes the key from the hash.
 func (hash *Hash) Delete(key string) error {
 	if err := hash.db.sess.Del(hash.name + ":" + key).Err(); err != nil {
-		return fmt.Errorf("redis: cannot delete hash: %s", err)
+		return fmt.Errorf("redis: cannot delete hash %s: %s", key, err)
+	}
+	return nil
+}
+
+// ExpireAt sets the expiration of a key of this hash.
+func (hash *Hash) ExpireAt(key string, t time.Time) error {
+	if err := hash.db.sess.ExpireAt(hash.name+":"+key, t).Err(); err != nil {
+		return fmt.Errorf("redis: cannot expire hash %s: %s", key, err)
 	}
 	return nil
 }
