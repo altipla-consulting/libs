@@ -246,7 +246,7 @@ func (c *Collection) Limit(limit int64) *Collection {
 }
 
 // Order the collection of items. You can pass "column" for ascendent order or "-column"
-// for descendent order. If you want to order by mutliple columns call Order multiple
+// for descendent order. If you want to order by multiple columns call Order multiple
 // times for each column, the will be joined.
 func (c *Collection) Order(column string) *Collection {
 	if strings.Contains(column, ",") {
