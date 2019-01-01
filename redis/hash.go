@@ -115,3 +115,10 @@ func (hash *Hash) Put(key string, instance Model, masks ...MaskOpt) error {
 
 	return nil
 }
+
+func (hash *Hash) Delete(key string) error {
+	if err := hash.db.sess.Del(hash.name + ":" + key).Err(); err != nil {
+		return fmt.Errorf("redis: cannot delete hash: %s", err)
+	}
+	return nil
+}

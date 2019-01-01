@@ -147,3 +147,21 @@ func TestGetMask(t *testing.T) {
 	require.Zero(t, item.TimeField)
 	require.Equal(t, item.FreeField, "free str field")
 }
+
+func TestDelete(t *testing.T) {
+	initDB(t)
+	defer closeDB(t)
+	hash := db.Hash("foo-hash", new(hashItem))
+
+	item := &hashItem{
+		StrField:  "foo str field",
+		IntField:  32,
+		TimeField: time.Date(2006, time.January, 2, 15, 4, 5, 0, time.UTC),
+		FreeField: "free str field",
+	}
+	require.NoError(t, hash.Put("foo", item))
+
+	require.NoError(t, hash.Delete("foo"))
+
+	require.EqualError(t, hash.Get("foo", item), ErrNoSuchEntity.Error())
+}
