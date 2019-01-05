@@ -183,11 +183,7 @@ func (s *Server) decorate(lang string, handler Handler) httprouter.Handle {
 				case http.StatusNotFound, http.StatusUnauthorized, http.StatusBadRequest:
 					s.emitError(w, r, httperr.StatusCode)
 					return
-				default:
-					err = Internal("unknown routing error: %s", err)
 				}
-			} else {
-				err = Internal("internal error: %s", err)
 			}
 
 			if s.logging {
