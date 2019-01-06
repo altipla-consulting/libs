@@ -6,6 +6,7 @@ import (
 
 	"github.com/altipla-consulting/errors"
 
+	"libs.altipla.consulting/collections"
 	"libs.altipla.consulting/langs"
 	"libs.altipla.consulting/templates/funcs"
 )
@@ -49,12 +50,13 @@ var (
 		"add":        funcs.Add,
 		"percentage": funcs.Percentage,
 
-		"genrange": funcs.GenRange,
-		"shuffle":  funcs.Shuffle,
-		"limit":    funcs.Limit,
-		"slice":    funcs.Slice,
-		"randitem": funcs.RandItem,
-		"last":     funcs.Last,
+		"genrange":  funcs.GenRange,
+		"shuffle":   funcs.Shuffle,
+		"limit":     funcs.Limit,
+		"slice":     funcs.Slice,
+		"randitem":  funcs.RandItem,
+		"last":      funcs.Last,
+		"hasstring": collections.HasString,
 
 		"price": funcs.Price,
 
