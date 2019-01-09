@@ -10,19 +10,17 @@ require (
 	github.com/getsentry/raven-go v0.2.0
 	github.com/go-redis/redis v6.15.0+incompatible
 	github.com/go-sql-driver/mysql v1.4.1
+	github.com/gobuffalo/envy v1.6.11 // indirect
 	github.com/golang/mock v1.2.0 // indirect
 	github.com/golang/protobuf v1.2.0
 	github.com/google/pprof v0.0.0-20181206194817-3ea8567a2e57 // indirect
 	github.com/googleapis/gax-go v2.0.2+incompatible // indirect
 	github.com/julienschmidt/httprouter v1.2.0
-	github.com/onsi/ginkgo v1.7.0 // indirect
-	github.com/onsi/gomega v1.4.3 // indirect
-	github.com/pkg/errors v0.8.0 // indirect
+	github.com/mailgun/mailgun-go v2.0.0+incompatible
 	github.com/sirupsen/logrus v1.2.0
 	github.com/stretchr/testify v1.2.2
 	go.opencensus.io v0.18.0
 	golang.org/x/build v0.0.0-20181221181159-b67de002b30e // indirect
-	golang.org/x/crypto v0.0.0-20181203042331-505ab145d0a9 // indirect
 	golang.org/x/net v0.0.0-20181220203305-927f97764cc3
 	golang.org/x/oauth2 v0.0.0-20181203162652-d668ce993890
 	golang.org/x/sync v0.0.0-20181221193216-37e7f081c4d4
@@ -32,7 +30,6 @@ require (
 	google.golang.org/appengine v1.4.0 // indirect
 	google.golang.org/genproto v0.0.0-20181221175505-bd9b4fb69e2f
 	google.golang.org/grpc v1.17.0
-	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
-	gopkg.in/yaml.v2 v2.2.2 // indirect
+	gopkg.in/mailgun/mailgun-go.v1 v1.1.1
 	upper.io/db.v3 v3.5.7+incompatible
 )
