@@ -17,6 +17,7 @@ import (
 
 	"cloud.google.com/go/profiler"
 	"contrib.go.opencensus.io/exporter/stackdriver"
+	altiplaerrors "github.com/altipla-consulting/errors"
 	log "github.com/sirupsen/logrus"
 	"go.opencensus.io/plugin/ocgrpc"
 	"go.opencensus.io/trace"
@@ -50,6 +51,8 @@ type Service struct {
 	grpcServerCalled bool
 
 	debugHTTPServer *http.Server
+
+	atexits []AtExitFn
 }
 
 // Init the configuration of a new service for the current application with
@@ -229,6 +232,12 @@ func (service *Service) Run() {
 	}
 }
 
+type AtExitFn func() error
+
+func (service *Service) AtExit(fn AtExitFn) {
+	service.atexits = append(service.atexits, fn)
+}
+
 func (service *Service) stopListener() {
 	var gracefulStop = make(chan os.Signal)
 	signal.Notify(gracefulStop, syscall.SIGTERM)
@@ -283,6 +292,20 @@ func (service *Service) stopListener() {
 				log.WithField("error", err).Error("Cannot shutdown debug HTTP server")
 			}
 		}()
+
+		for _, atexit := range service.atexits {
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+
+				if err := atexit(); err != nil {
+					log.WithFields(log.Fields{
+						"error":   err.Error(),
+						"details": altiplaerrors.Details(err),
+					}).Error("Cannot shutdown app")
+				}
+			}()
+		}
 
 		wg.Wait()
 		os.Exit(0)
