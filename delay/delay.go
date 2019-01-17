@@ -189,25 +189,37 @@ func NewListener(sentryDSN string) *Listener {
 // in the background.
 func (lis *Listener) Handle(queue QueueSpec) {
 	go func() {
+		var lastError bool
 		for {
-			if err := lis.listenQueue(queue); err != nil {
+			wasLastError := lastError
+			lastError = false
+
+			if err := lis.listenQueue(queue, wasLastError); err != nil {
 				log.WithFields(log.Fields{
 					"error":   err.Error(),
 					"project": queue.conn.Project(),
 					"queue":   queue.name,
 				}).Error("Error listening to queue, retrying in 15 seconds")
+				lastError = true
 			}
 			time.Sleep(15 * time.Second)
 		}
 	}()
 }
 
-func (lis *Listener) listenQueue(queue QueueSpec) error {
+func (lis *Listener) listenQueue(queue QueueSpec, lastError bool) error {
 	group, ctx := errgroup.WithContext(context.Background())
 
 	stream, err := queue.conn.Listen(ctx, queue.name)
 	if err != nil {
 		return err
+	}
+
+	if lastError {
+		log.WithFields(log.Fields{
+			"project": queue.conn.Project(),
+			"queue":   queue.name,
+		}).Info("Agent reconnected to the queue and listening again")
 	}
 
 	group.Go(func() error {
@@ -247,12 +259,7 @@ func (lis *Listener) listenQueue(queue QueueSpec) error {
 			}
 		}
 	})
-
-	if err := group.Wait(); err != nil {
-		return fmt.Errorf("delay: error closing the background queue goroutines: %v", err)
-	}
-
-	return nil
+	return group.Wait()
 }
 
 func handleTask(ctx context.Context, task *pb.Task) error {
