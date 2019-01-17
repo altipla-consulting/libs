@@ -3,7 +3,6 @@ package delay
 import (
 	"context"
 	"fmt"
-	"io"
 	"time"
 
 	"github.com/go-redis/redis"
@@ -27,6 +26,9 @@ func newLocalConn(project string) (Conn, error) {
 
 func (conn *localConn) SendTasks(ctx context.Context, name string, tasks []*pb.SendTask) error {
 	var buf proto.Buffer
+	if err := buf.EncodeVarint(uint64(len(tasks))); err != nil {
+	  return fmt.Errorf("delay: cannot encode tasks length: %v", err)
+	}
 	for _, task := range tasks {
 		if err := buf.EncodeMessage(task); err != nil {
 			return fmt.Errorf("delay: cannot encode task: %v", err)
@@ -46,6 +48,7 @@ func (conn *localConn) Listen(ctx context.Context, name string) (ConnListener, e
 		pubsub:  pubsub,
 		ch:      pubsub.Channel(),
 		project: conn.project,
+		queue: name,
 	}, nil
 }
 
@@ -58,6 +61,7 @@ type localListener struct {
 	ch      <-chan *redis.Message
 	i       int
 	project string
+	queue string
 }
 
 func (lis *localListener) Next() ([]*pb.Task, error) {
@@ -65,13 +69,13 @@ func (lis *localListener) Next() ([]*pb.Task, error) {
 
 	var tasks []*pb.Task
 	buf := proto.NewBuffer([]byte(msg.Payload))
-	for {
+	size, err := buf.DecodeVarint()
+	if err != nil {
+		return nil, fmt.Errorf("delay: cannot decode incoming tasks length: %v", err)
+	}
+	for i := uint64(0); i < size; i++ {
 		sendTask := new(pb.SendTask)
 		if err := buf.DecodeMessage(sendTask); err != nil {
-			if err == io.EOF {
-				break
-			}
-
 			return nil, fmt.Errorf("delay: cannot decode incoming task: %v", err)
 		}
 
@@ -83,6 +87,7 @@ func (lis *localListener) Next() ([]*pb.Task, error) {
 			Retry:   0,
 			Project: lis.project,
 			MinEta:  sendTask.MinEta,
+			QueueName: lis.queue,
 		})
 	}
 
