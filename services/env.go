@@ -15,3 +15,12 @@ func IsLocal() bool {
 func Version() string {
 	return os.Getenv("VERSION")
 }
+
+// ProtoConfigFilename returns the standard location for Altipla config files for
+// the named app.
+func ProtoConfigFilename(app, filename string) string {
+	if IsLocal() {
+		return "/etc/" + app + "/" + filename + ".dev.pbtext"
+	}
+	return "/etc/" + app + "/" + filename + ".pbtext"
+}
