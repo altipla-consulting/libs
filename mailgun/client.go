@@ -100,7 +100,7 @@ func (client *Client) Send(ctx context.Context, domain string, email *Email) err
 		}
 		if mgerr, ok := err.(*mailgun.UnexpectedResponseError); ok {
 			errdata := new(sendError)
-			if err := json.Unmarshal(mgerr.Data, errdata); err != nil {
+			if err := json.Unmarshal(mgerr.Data, errdata); err == nil {
 				switch errdata.Message {
 				case "'to' parameter is not a valid address. please check documentation":
 					return InvalidToEmailError{email.To.String()}
