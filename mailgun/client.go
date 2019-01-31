@@ -3,6 +3,7 @@ package mailgun
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net"
@@ -14,7 +15,17 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-var ErrTimeout = fmt.Errorf("mailgun: timeout")
+var (
+	ErrTimeout = fmt.Errorf("mailgun: timeout")
+)
+
+type InvalidToEmailError struct {
+	Email string
+}
+
+func (err InvalidToEmailError) Error() string {
+	return "mailgun: invalid to email: " + err.Email
+}
 
 type Sender interface {
 	Send(ctx context.Context, domain string, email *Email) error
@@ -55,6 +66,10 @@ func (err SendRejectedError) Error() string {
 	return "mailgun: send rejected: " + err.Reason
 }
 
+type sendError struct {
+	Message string `json:"message"`
+}
+
 func (client *Client) Send(ctx context.Context, domain string, email *Email) error {
 	mgclient := mailgun.NewMailgun(domain, client.apiKey)
 
@@ -82,6 +97,15 @@ func (client *Client) Send(ctx context.Context, domain string, email *Email) err
 	if err != nil {
 		if neterr, ok := err.(net.Error); ok && neterr.Timeout() {
 			return ErrTimeout
+		}
+		if mgerr, ok := err.(*mailgun.UnexpectedResponseError); ok {
+			errdata := new(sendError)
+			if err := json.Unmarshal(mgerr.Data, errdata); err != nil {
+				switch errdata.Message {
+				case "'to' parameter is not a valid address. please check documentation":
+					return InvalidToEmailError{email.To.String()}
+				}
+			}
 		}
 
 		return fmt.Errorf("mailgun: send failed: %s", err)
