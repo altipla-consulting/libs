@@ -2,7 +2,6 @@ package routing
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"text/template"
 
@@ -10,6 +9,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 	log "github.com/sirupsen/logrus"
 
+	"libs.altipla.consulting/errors"
 	"libs.altipla.consulting/langs"
 	"libs.altipla.consulting/sentry"
 )
@@ -88,10 +88,10 @@ func (s *Server) generic404Handler(w http.ResponseWriter, r *http.Request) error
 
 	tmpl, err := template.New("error").Parse(errorTemplate)
 	if err != nil {
-		return fmt.Errorf("routing: cannot parse default 404 error template: %v", err)
+		return errors.Wrapf(err, "cannot parse default 404 error template")
 	}
 	if err := tmpl.Execute(w, http.StatusNotFound); err != nil {
-		return fmt.Errorf("routing: cannot execute default 404 error template: %v", err)
+		return errors.Wrapf(err, "cannot execute default 404 error template")
 	}
 
 	return nil

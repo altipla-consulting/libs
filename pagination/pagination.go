@@ -10,6 +10,7 @@ import (
 	"github.com/golang/protobuf/proto"
 
 	"libs.altipla.consulting/database"
+	"libs.altipla.consulting/errors"
 	pb "libs.altipla.consulting/protos/pagination"
 )
 
@@ -63,21 +64,21 @@ func (pager *Pager) Fetch(models interface{}) error {
 	if pager.pageToken != "" {
 		decoded, err := base64.StdEncoding.DecodeString(pager.pageToken)
 		if err != nil {
-			return fmt.Errorf("pagination: cannot decode token: %v", err)
+			return errors.Wrapf(err, "cannot decode token")
 		}
 		status := new(pb.Status)
 		if err := proto.Unmarshal(decoded, status); err != nil {
-			return fmt.Errorf("pagination: cannot unmarshal token: %v", err)
+			return errors.Wrapf(err, "cannot unmarshal token")
 		}
 
 		if paramsChecksum != status.ParamsChecksum {
-			return fmt.Errorf("pagination: wrong pager status")
+			return errors.Errorf("wrong pager status")
 		}
 
 		if status.Cursor != "" {
 			start, err = strconv.ParseInt(status.Cursor, 10, 64)
 			if err != nil {
-				return fmt.Errorf("pagination: cannot decode cursor: %v", err)
+				return errors.Wrapf(err, "cannot decode cursor")
 			}
 		}
 	}
@@ -90,7 +91,7 @@ func (pager *Pager) Fetch(models interface{}) error {
 
 	n, err := pager.c.Count()
 	if err != nil {
-		return fmt.Errorf("pagination: cannot count records: %v", err)
+		return errors.Wrapf(err, "cannot count records")
 	}
 	pager.TotalSize = int32(n)
 
@@ -101,7 +102,7 @@ func (pager *Pager) Fetch(models interface{}) error {
 			Cursor:         fmt.Sprintf("%d", end),
 		})
 		if err != nil {
-			return fmt.Errorf("pagination: cannot marshal token: %v", err)
+			return errors.Wrapf(err, "cannot marshal token")
 		}
 		pager.NextPageToken = base64.StdEncoding.EncodeToString(token)
 	}

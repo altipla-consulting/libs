@@ -581,7 +581,7 @@ func TestGetMultiError(t *testing.T) {
 
 	var models []*testingAutoModel
 	err := testingsAuto.GetMulti([]int64{2, 1}, &models)
-	require.EqualError(t, err, "database: no such entity; <nil>")
+	require.EqualError(t, err, "no such entity; <nil>")
 
 	merr, ok := err.(MultiError)
 	require.True(t, ok)

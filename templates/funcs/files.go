@@ -1,9 +1,10 @@
 package funcs
 
 import (
-	"fmt"
 	"io/ioutil"
 	"sync"
+
+	"libs.altipla.consulting/errors"
 )
 
 var (
@@ -22,7 +23,7 @@ func Include(path string) (string, error) {
 
 	content, err := ioutil.ReadFile(path)
 	if err != nil {
-		return "", fmt.Errorf("templates: cannot include file: %v", path)
+		return "", errors.Errorf("cannot include file: %v", path)
 	}
 
 	includeLock.Lock()

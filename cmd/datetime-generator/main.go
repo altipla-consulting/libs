@@ -11,6 +11,8 @@ import (
 	"strings"
 
 	"golang.org/x/text/unicode/cldr"
+
+	"libs.altipla.consulting/errors"
 )
 
 var locales = flag.String("locales", "", "Locales to extract from CLDR")
@@ -38,7 +40,7 @@ func run() error {
 
 	coreFile, err := os.Open("/tmp/core.zip")
 	if err != nil {
-		return err
+		return errors.Trace(err)
 	}
 
 	decoder := cldr.Decoder{}
@@ -46,7 +48,7 @@ func run() error {
 	decoder.SetSectionFilter("dates")
 	data, err := decoder.DecodeZip(coreFile)
 	if err != nil {
-		return err
+		return errors.Trace(err)
 	}
 
 	for _, locale := range strings.Split(*locales, ",") {
@@ -54,11 +56,11 @@ func run() error {
 
 		ldml, err := data.LDML(locale)
 		if err != nil {
-			return err
+			return errors.Trace(err)
 		}
 
 		if err := extractLDML(locale, ldml); err != nil {
-			return err
+			return errors.Trace(err)
 		}
 	}
 
@@ -70,7 +72,7 @@ func run() error {
 func extractLDML(locale string, ldml *cldr.LDML) error {
 	dest, err := os.Create(fmt.Sprintf("datetime/symbols/%s.go", locale))
 	if err != nil {
-		return err
+		return errors.Trace(err)
 	}
 	defer dest.Close()
 
@@ -101,7 +103,7 @@ func extractLDML(locale string, ldml *cldr.LDML) error {
 				for _, month := range width.Month {
 					n, err := strconv.ParseInt(month.Type, 10, 64)
 					if err != nil {
-						return err
+						return errors.Trace(err)
 					}
 
 					months[n] = month.Data()

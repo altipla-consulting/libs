@@ -7,11 +7,11 @@
 package datetime
 
 import (
-	"errors"
 	"fmt"
 	"time"
 
 	"libs.altipla.consulting/datetime/symbols"
+	"libs.altipla.consulting/errors"
 )
 
 const (

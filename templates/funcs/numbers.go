@@ -1,6 +1,6 @@
 package funcs
 
-import "fmt"
+import "libs.altipla.consulting/errors"
 
 func Even(n int) bool {
 	return n%2 == 0
@@ -34,7 +34,7 @@ func Add(a, b interface{}) (int64, error) {
 	} else if n, ok := a.(int); ok {
 		ai = int64(n)
 	} else {
-		return 0, fmt.Errorf("invalid add first argument: %+v", a)
+		return 0, errors.Errorf("invalid add first argument: %+v", a)
 	}
 
 	if n, ok := b.(int64); ok {
@@ -42,7 +42,7 @@ func Add(a, b interface{}) (int64, error) {
 	} else if n, ok := b.(int); ok {
 		bi = int64(n)
 	} else {
-		return 0, fmt.Errorf("invalid add second argument: %+v", b)
+		return 0, errors.Errorf("invalid add second argument: %+v", b)
 	}
 
 	return ai + bi, nil

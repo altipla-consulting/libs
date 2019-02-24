@@ -8,18 +8,20 @@ import (
 
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/golang/protobuf/proto"
+
+	"libs.altipla.consulting/errors"
 )
 
 func Dict(values ...interface{}) (map[string]interface{}, error) {
 	if len(values)%2 != 0 {
-		return nil, fmt.Errorf("templates: dict arguments should be pairs of key,value items")
+		return nil, errors.Errorf("dict arguments should be pairs of key,value items")
 	}
 
 	dict := make(map[string]interface{}, len(values)/2)
 	for i := 0; i < len(values); i += 2 {
 		key, ok := values[i].(string)
 		if !ok {
-			return nil, fmt.Errorf("templates: dict keys should be strings")
+			return nil, errors.Errorf("dict keys should be strings")
 		}
 
 		dict[key] = values[i+1]
@@ -44,7 +46,7 @@ func JSON(obj interface{}) (string, error) {
 
 	b, err := json.Marshal(obj)
 	if err != nil {
-		return "", fmt.Errorf("templates: cannot marshal json")
+		return "", errors.Errorf("cannot marshal json")
 	}
 
 	return string(b), nil
@@ -53,7 +55,7 @@ func JSON(obj interface{}) (string, error) {
 func Vue(obj interface{}) (template.JS, error) {
 	str, err := JSON(obj)
 	if err != nil {
-		return template.JS(""), fmt.Errorf("templates: cannot marshal vue: %s", err)
+		return template.JS(""), errors.Wrapf(err, "cannot marshal vue")
 	}
 
 	return SafeJavascript(str)

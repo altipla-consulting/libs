@@ -1,11 +1,12 @@
 package funcs
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 
 	"github.com/ernestoalejo/aeimagesflags"
+
+	"libs.altipla.consulting/errors"
 )
 
 func Thumbnail(servingURL string, strFlags string) (string, error) {
@@ -19,21 +20,21 @@ func Thumbnail(servingURL string, strFlags string) (string, error) {
 	for _, part := range strings.Split(strFlags, ";") {
 		strFlag := strings.Split(part, "=")
 		if len(strFlag) != 2 {
-			return "", fmt.Errorf("templates: all flags should be in the form key=value")
+			return "", errors.Errorf("all flags should be in the form key=value")
 		}
 
 		switch strings.TrimSpace(strFlag[0]) {
 		case "width":
 			n, err := strconv.ParseUint(strFlag[1], 10, 64)
 			if err != nil {
-				return "", fmt.Errorf("templates: cannot parse flag: %s", err)
+				return "", errors.Wrapf(err, "cannot parse width flag")
 			}
 			flags.Width = n
 
 		case "height":
 			n, err := strconv.ParseUint(strFlag[1], 10, 64)
 			if err != nil {
-				return "", fmt.Errorf("templates: cannot parse flag: %s", err)
+				return "", errors.Wrapf(err, "cannot parse height flag")
 			}
 			flags.Height = n
 
@@ -49,12 +50,12 @@ func Thumbnail(servingURL string, strFlags string) (string, error) {
 		case "size":
 			n, err := strconv.ParseUint(strFlag[1], 10, 64)
 			if err != nil {
-				return "", fmt.Errorf("templates: cannot parse flag: %s", err)
+				return "", errors.Wrapf(err, "cannot parse size flag")
 			}
 			flags.Size = n
 
 		default:
-			return "", fmt.Errorf("templates: unknown image flag: %s", strFlag[0])
+			return "", errors.Errorf("unknown image flag: %s", strFlag[0])
 		}
 	}
 

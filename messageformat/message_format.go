@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+
+	"libs.altipla.consulting/errors"
 )
 
 // MessageFormat instance containing a message that can be formatted.
@@ -17,7 +19,7 @@ func New(message string) (*MessageFormat, error) {
 		input: []rune(message),
 	}
 	if err := p.parse(); err != nil {
-		return nil, fmt.Errorf("messageformat: cannot parse message: %s", err)
+		return nil, errors.Wrapf(err, "cannot parse message")
 	}
 
 	return &MessageFormat{p.blocks}, nil
@@ -29,7 +31,7 @@ func (msg *MessageFormat) Format(lang string, params []interface{}) (string, err
 	for i, block := range msg.blocks {
 		res, err := block.format(lang, params)
 		if err != nil {
-			return "", fmt.Errorf("messageformat: cannot format message: %s", err)
+			return "", errors.Wrapf(err, "cannot format message")
 		}
 
 		parts[i] = res
@@ -56,7 +58,7 @@ type replaceBlock struct {
 
 func (block *replaceBlock) format(lang string, params []interface{}) (string, error) {
 	if int64(len(params)) <= block.number {
-		return "", fmt.Errorf("parameter not specified: %d", block.number)
+		return "", errors.Errorf("parameter not specified: %d", block.number)
 	}
 
 	return fmt.Sprintf("%v", params[block.number]), nil
@@ -95,7 +97,7 @@ type pluralBlock struct {
 
 func (block *pluralBlock) format(lang string, params []interface{}) (string, error) {
 	if int64(len(params)) <= block.number {
-		return "", fmt.Errorf("parameter not specified: %d", block.number)
+		return "", errors.Errorf("parameter not specified: %d", block.number)
 	}
 
 	var number int64
@@ -248,7 +250,7 @@ func lexVariable(p *parser) (stateFn, error) {
 		if p.rune() == '}' {
 			number, err := strconv.ParseInt(p.emit(), 10, 64)
 			if err != nil {
-				return nil, fmt.Errorf("cannot parse variable number: %s", err)
+				return nil, errors.Wrapf(err, "cannot parse variable number")
 			}
 
 			p.blocks = append(p.blocks, &replaceBlock{
@@ -266,19 +268,19 @@ func lexVariable(p *parser) (stateFn, error) {
 		}
 
 		if p.rune() < '0' || p.rune() > '9' {
-			return nil, fmt.Errorf("invalid variable number: %c", p.rune())
+			return nil, errors.Errorf("invalid variable number: %c", p.rune())
 		}
 
 		p.next()
 	}
 
-	return nil, fmt.Errorf("incomplete variable: %s", p.emit())
+	return nil, errors.Errorf("incomplete variable: %s", p.emit())
 }
 
 func lexPlural(p *parser) (stateFn, error) {
 	number, err := strconv.ParseInt(p.emit(), 10, 64)
 	if err != nil {
-		return nil, fmt.Errorf("cannot parse plural variable number: %s", err)
+		return nil, errors.Wrapf(err, "cannot parse plural variable number")
 	}
 
 	plural := &pluralBlock{
@@ -320,18 +322,18 @@ func lexPlural(p *parser) (stateFn, error) {
 			c.caseType = pluralCaseExact
 			n, err := strconv.ParseInt(pcase[1:], 10, 64)
 			if err != nil {
-				return nil, fmt.Errorf("cannot parse exact plural case: %s: %s", pcase[1:], err)
+				return nil, errors.Wrapf(err, "cannot parse exact plural case: %s", pcase[1:])
 			}
 			c.exactValue = n
 
 		default:
-			return nil, fmt.Errorf("unknown plural case: %s", pcase)
+			return nil, errors.Errorf("unknown plural case: %s", pcase)
 		}
 
 		p.eatSpaces()
 
 		if p.rune() != '{' {
-			return nil, fmt.Errorf("plural case content expected: %c", p.rune())
+			return nil, errors.Errorf("plural case content expected: %c", p.rune())
 		}
 		p.next()
 		p.emit()
@@ -359,7 +361,7 @@ func lexPlural(p *parser) (stateFn, error) {
 		}
 	}
 
-	return nil, fmt.Errorf("incomplete plural: %s", p.emit())
+	return nil, errors.Errorf("incomplete plural: %s", p.emit())
 }
 
 type stateFn func(*parser) (stateFn, error)

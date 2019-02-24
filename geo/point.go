@@ -5,6 +5,8 @@ import (
 	"database/sql/driver"
 	"encoding/binary"
 	"fmt"
+
+	"libs.altipla.consulting/errors"
 )
 
 // Point maps against MySQL geographical point.
@@ -23,7 +25,7 @@ func (p Point) String() string {
 func (p *Point) Scan(val interface{}) error {
 	b, ok := val.([]byte)
 	if !ok {
-		return fmt.Errorf("geo: cannot scan type into bytes: %T", b)
+		return errors.Errorf("cannot scan type into bytes: %T", b)
 	}
 
 	// MySQL bug, it returns the internal representation with 4 zero bytes before
@@ -34,7 +36,7 @@ func (p *Point) Scan(val interface{}) error {
 
 	var wkbByteOrder uint8
 	if err := binary.Read(r, binary.LittleEndian, &wkbByteOrder); err != nil {
-		return err
+		return errors.Trace(err)
 	}
 
 	var byteOrder binary.ByteOrder
@@ -44,20 +46,20 @@ func (p *Point) Scan(val interface{}) error {
 	case 1:
 		byteOrder = binary.LittleEndian
 	default:
-		return fmt.Errorf("geo: invalid byte order %v", wkbByteOrder)
+		return errors.Errorf("invalid byte order %v", wkbByteOrder)
 	}
 
 	var wkbGeometryType uint32
 	if err := binary.Read(r, byteOrder, &wkbGeometryType); err != nil {
-		return err
+		return errors.Trace(err)
 	}
 
 	if wkbGeometryType != 1 {
-		return fmt.Errorf("geo: unexpected geometry type: wanted 1 (point), got %d", wkbGeometryType)
+		return errors.Errorf("unexpected geometry type: wanted 1 (point), got %d", wkbGeometryType)
 	}
 
 	if err := binary.Read(r, byteOrder, p); err != nil {
-		return err
+		return errors.Trace(err)
 	}
 
 	return nil

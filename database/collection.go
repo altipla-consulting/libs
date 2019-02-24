@@ -6,6 +6,8 @@ import (
 	"log"
 	"reflect"
 	"strings"
+
+	"libs.altipla.consulting/errors"
 )
 
 // Collection represents a table. You can apply further filters and operations
@@ -106,7 +108,7 @@ func (c *Collection) Put(instance Model) error {
 	modelt := reflect.TypeOf(c.model)
 	instancet := reflect.TypeOf(instance)
 	if modelt != instancet {
-		return fmt.Errorf("database: expected instance of %s and got a instance of %s", modelt, instancet)
+		return errors.Errorf("expected instance of %s and got a instance of %s", modelt, instancet)
 	}
 
 	if h, ok := instance.(OnBeforePutHooker); ok {
@@ -169,7 +171,7 @@ func (c *Collection) Put(instance Model) error {
 	if pks == 1 && !instance.Tracking().IsInserted() {
 		id, err := result.LastInsertId()
 		if err != nil {
-			return fmt.Errorf("database: cannot get last inserted id: %s", err)
+			return errors.Wrapf(err, "cannot get last inserted id")
 		}
 
 		for _, prop := range modelProps {
@@ -183,7 +185,7 @@ func (c *Collection) Put(instance Model) error {
 
 	rows, err := result.RowsAffected()
 	if err != nil {
-		return fmt.Errorf("database: cannot get rows affected: %s", err)
+		return errors.Wrapf(err, "cannot get rows affected")
 	}
 	if rows == 0 {
 		return ErrConcurrentTransaction
@@ -343,17 +345,17 @@ func (c *Collection) GetAll(models interface{}) error {
 	t := reflect.TypeOf(models)
 
 	if v.Kind() != reflect.Ptr {
-		return fmt.Errorf("database: pass a pointer to a slice to GetAll")
+		return errors.Errorf("pass a pointer to a slice to GetAll")
 	}
 	v = v.Elem()
 	t = t.Elem()
 	if v.Kind() != reflect.Slice {
-		return fmt.Errorf("database: pass a slice to GetAll")
+		return errors.Errorf("pass a slice to GetAll")
 	}
 
 	modelt := reflect.TypeOf(c.model)
 	if t.Elem() != modelt {
-		return fmt.Errorf("database: expected a slice of %s and got a slice of %s", modelt, t.Elem())
+		return errors.Errorf("expected a slice of %s and got a slice of %s", modelt, t.Elem())
 	}
 
 	dest := reflect.MakeSlice(t, 0, 0)
@@ -454,20 +456,20 @@ func (c *Collection) GetMulti(keys interface{}, models interface{}) error {
 	keysv := reflect.ValueOf(keys)
 
 	if v.Kind() != reflect.Ptr {
-		return fmt.Errorf("database: pass a pointer to a slice of models to GetMulti")
+		return errors.Errorf("pass a pointer to a slice of models to GetMulti")
 	}
 	v = v.Elem()
 	t = t.Elem()
 	if v.Kind() != reflect.Slice {
-		return fmt.Errorf("database: pass a slice of models to GetMulti")
+		return errors.Errorf("pass a slice of models to GetMulti")
 	}
 
 	if keyst.Kind() != reflect.Slice {
-		return fmt.Errorf("database: pass a slice of keys to GetMulti")
+		return errors.Errorf("pass a slice of keys to GetMulti")
 	}
 	keyst = keyst.Elem()
 	if keyst.Kind() != reflect.Int64 && keyst.Kind() != reflect.String {
-		return fmt.Errorf("database: pass a slice of string/int64 keys to GetMulti")
+		return errors.Errorf("pass a slice of string/int64 keys to GetMulti")
 	}
 	if keysv.Len() == 0 {
 		return nil
@@ -477,7 +479,7 @@ func (c *Collection) GetMulti(keys interface{}, models interface{}) error {
 	for _, prop := range c.props {
 		if prop.PrimaryKey {
 			if pk != nil {
-				return fmt.Errorf("database: cannot use GetMulti with multiple primary keys")
+				return errors.Errorf("cannot use GetMulti with multiple primary keys")
 			}
 
 			pk = prop

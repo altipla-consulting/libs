@@ -1,12 +1,13 @@
 package redis
 
 import (
-	"fmt"
 	"reflect"
 
 	"github.com/go-redis/redis"
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/golang/protobuf/proto"
+
+	"libs.altipla.consulting/errors"
 )
 
 type ProtoHash struct {
@@ -32,7 +33,7 @@ func (hash *ProtoHash) GetMulti(keys []string, result interface{}) error {
 	rv := reflect.ValueOf(result)
 	msg := reflect.TypeOf((*proto.Message)(nil)).Elem()
 	if rt.Kind() != reflect.Ptr || rt.Elem().Kind() != reflect.Slice || !rt.Elem().Elem().Implements(msg) {
-		return fmt.Errorf("redis: expected a pointer to a slice for the result, received %T", result)
+		return errors.Errorf("expected a pointer to a slice for the result, received %T", result)
 	}
 
 	dest := reflect.MakeSlice(rt.Elem(), 0, 0)
@@ -41,7 +42,7 @@ func (hash *ProtoHash) GetMulti(keys []string, result interface{}) error {
 
 	redisResult, err := hash.db.sess.HMGet(hash.key, keys...).Result()
 	if err != nil {
-		return err
+		return errors.Trace(err)
 	}
 	for _, item := range redisResult {
 		var model reflect.Value
@@ -51,7 +52,7 @@ func (hash *ProtoHash) GetMulti(keys []string, result interface{}) error {
 		} else {
 			model = reflect.New(rt.Elem().Elem().Elem())
 			if err := unmarshalProto(item.(string), model.Interface().(proto.Message)); err != nil {
-				return err
+				return errors.Trace(err)
 			}
 			merr = append(merr, nil)
 		}
@@ -74,7 +75,7 @@ func (hash *ProtoHash) Get(key string, model proto.Message) error {
 			return ErrNoSuchEntity
 		}
 
-		return err
+		return errors.Trace(err)
 	}
 
 	return unmarshalProto(redisResult, model)
@@ -93,7 +94,7 @@ func (insert *ProtoHashInsert) Set(key string, value proto.Message) error {
 	m := new(jsonpb.Marshaler)
 	encoded, err := m.MarshalToString(value)
 	if err != nil {
-		return err
+		return errors.Trace(err)
 	}
 
 	insert.fields[key] = encoded

@@ -6,6 +6,8 @@ import (
 	"strings"
 	"time"
 	"unicode"
+
+	"libs.altipla.consulting/errors"
 )
 
 var modelTrackingType = reflect.TypeOf(ModelTracking{})
@@ -136,7 +138,7 @@ func extractModelProps(model Model) ([]*Property, error) {
 		if tag != "" {
 			parts := strings.Split(tag, ",")
 			if len(parts) > 2 {
-				return nil, fmt.Errorf("database: unknown struct tag: %s", parts[1])
+				return nil, errors.Errorf("unknown struct tag: %s", parts[1])
 			}
 
 			if parts[0] != "" {
@@ -153,7 +155,7 @@ func extractModelProps(model Model) ([]*Property, error) {
 					prop.OmitEmpty = true
 
 				default:
-					return nil, fmt.Errorf("database: unknown struct tag: %s", parts[1])
+					return nil, errors.Errorf("unknown struct tag: %s", parts[1])
 				}
 			}
 		}

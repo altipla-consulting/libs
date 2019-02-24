@@ -44,7 +44,7 @@ App file:
 func run() error {
   offers := []*pbmodels.Offer{}
   if err := models.Repo.Offers(in.Hotel).GetMulti(codes, &offers); err != nil {
-    return err
+    return errors.Trace(err)
   }
 }
 ```

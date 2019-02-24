@@ -2,7 +2,6 @@ package grpctest
 
 import (
 	"context"
-	"fmt"
 	"net"
 	"path/filepath"
 	"reflect"
@@ -10,6 +9,8 @@ import (
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/test/bufconn"
+
+	"libs.altipla.consulting/errors"
 )
 
 // ClientMock contains all the info needed to mock client calls.
@@ -51,7 +52,7 @@ func (mock *ClientMock) Conn() *grpc.ClientConn {
 		name := filepath.Base(method)
 		fv, ok := mock.methods[name]
 		if !ok {
-			return fmt.Errorf("MOCK method not found: %s", method)
+			return errors.Errorf("MOCK method not found: %s", method)
 		}
 
 		rets := fv.Call([]reflect.Value{reflect.ValueOf(req)})

@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"math/big"
 	"strings"
+
+	"libs.altipla.consulting/errors"
 )
 
 // Money represents a monetary value
@@ -36,7 +38,7 @@ func Parse(s string) (*Money, error) {
 
 	rat := new(big.Rat)
 	if _, err := fmt.Sscan(s, rat); err != nil {
-		return nil, fmt.Errorf("money: cannot scan value: %s: %s", s, err)
+		return nil, errors.Wrapf(err, "cannot scan value: %s", s)
 	}
 
 	return &Money{rat}, nil

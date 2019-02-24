@@ -9,7 +9,7 @@ gofmt:
 
 test: gofmt
 	revive -formatter friendly
-	go test ./...
+	actools go test ./...
 
 update-deps:
 	go get -u

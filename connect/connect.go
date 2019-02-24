@@ -3,7 +3,6 @@ package connect
 import (
 	"context"
 	"crypto/tls"
-	"fmt"
 	"time"
 
 	"golang.org/x/oauth2"
@@ -12,6 +11,7 @@ import (
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/keepalive"
 
+	"libs.altipla.consulting/errors"
 	"libs.altipla.consulting/services"
 )
 
@@ -24,7 +24,7 @@ type oauthAccess struct {
 func (oa oauthAccess) GetRequestMetadata(ctx context.Context, uri ...string) (map[string]string, error) {
 	token, err := oa.tokenSource.Token()
 	if err != nil {
-		return nil, fmt.Errorf("connect: cannot update token: %v", err)
+		return nil, errors.Wrapf(err, "cannot update token")
 	}
 
 	return map[string]string{
@@ -39,10 +39,10 @@ func (oa oauthAccess) RequireTransportSecurity() bool {
 // OAuthToken opens a connection using OAuth2 tokens obtained from BeAuth.io users or clients.
 func OAuthToken(address, clientID, clientSecret string, opts ...grpc.DialOption) (*grpc.ClientConn, error) {
 	if address == "" {
-		return nil, fmt.Errorf("connect: remote address required")
+		return nil, errors.Errorf("remote address required")
 	}
 	if clientID == "" || clientSecret == "" {
-		return nil, fmt.Errorf("connect: client credentials required to connect with oauth to a remote address")
+		return nil, errors.Errorf("client credentials required to connect with oauth to a remote address")
 	}
 
 	config := &clientcredentials.Config{
@@ -59,7 +59,7 @@ func OAuthToken(address, clientID, clientSecret string, opts ...grpc.DialOption)
 	opts = append(opts, grpc.WithTransportCredentials(creds), grpc.WithKeepaliveParams(keepalive.ClientParameters{Time: 7 * time.Minute}), rpcCreds)
 	conn, err := grpc.Dial(address+":443", opts...)
 	if err != nil {
-		return nil, fmt.Errorf("connect: cannot connect to remote address %s: %v", address, err)
+		return nil, errors.Wrapf(err, "cannot connect to remote address %s", address)
 	}
 	return conn, nil
 }
@@ -68,13 +68,13 @@ func OAuthToken(address, clientID, clientSecret string, opts ...grpc.DialOption)
 // for production because everything would have to be in the same Kubernetes cluster.
 func Insecure(address string, opts ...grpc.DialOption) (*grpc.ClientConn, error) {
 	if address == "" {
-		return nil, fmt.Errorf("connect: remote address required")
+		return nil, errors.Errorf("remote address required")
 	}
 
 	opts = append(opts, grpc.WithInsecure())
 	conn, err := grpc.Dial(address, opts...)
 	if err != nil {
-		return nil, fmt.Errorf("connect: cannot connect to remote address %s: %v", address, err)
+		return nil, errors.Wrapf(err, "cannot connect to remote address %s", address)
 	}
 	return conn, nil
 }

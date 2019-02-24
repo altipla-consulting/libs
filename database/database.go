@@ -2,8 +2,9 @@ package database
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
+
+	"libs.altipla.consulting/errors"
 
 	// Imports and registers the MySQL driver.
 	_ "github.com/go-sql-driver/mysql"
@@ -29,14 +30,14 @@ func Open(credentials Credentials, options ...Option) (*Database, error) {
 	var err error
 	db.sess, err = sql.Open("mysql", credentials.String())
 	if err != nil {
-		return nil, fmt.Errorf("database: cannot connect to mysql: %s", err)
+		return nil, errors.Wrapf(err, "cannot connect to mysql")
 	}
 
 	db.sess.SetMaxOpenConns(3)
 	db.sess.SetMaxIdleConns(0)
 
 	if err := db.sess.Ping(); err != nil {
-		return nil, fmt.Errorf("database: cannot ping mysql: %s", err)
+		return nil, errors.Wrapf(err, "cannot ping mysql")
 	}
 
 	return db, nil

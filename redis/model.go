@@ -1,10 +1,11 @@
 package redis
 
 import (
-	"fmt"
 	"reflect"
 	"time"
 	"unicode"
+
+	"libs.altipla.consulting/errors"
 )
 
 // Model should be implemented by any model that want to be serializable to redis keys.
@@ -30,7 +31,7 @@ type property struct {
 
 func extractModelProps(model Model) ([]*property, error) {
 	if !model.IsRedisModel() {
-		return nil, fmt.Errorf("redis: IsRedisModel should always return true for models")
+		return nil, errors.Errorf("IsRedisModel should always return true for models")
 	}
 
 	v := reflect.ValueOf(model).Elem()

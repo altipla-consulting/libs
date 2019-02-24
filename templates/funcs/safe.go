@@ -1,8 +1,9 @@
 package funcs
 
 import (
-	"fmt"
 	"html/template"
+
+	"libs.altipla.consulting/errors"
 )
 
 func SafeHTML(s ...string) (template.HTML, error) {
@@ -11,7 +12,7 @@ func SafeHTML(s ...string) (template.HTML, error) {
 	}
 
 	if len(s) > 1 {
-		return template.HTML(""), fmt.Errorf("templates: can only sanitize one content at a time")
+		return template.HTML(""), errors.Errorf("can only sanitize one content at a time")
 	}
 
 	return template.HTML(s[0]), nil
@@ -23,7 +24,7 @@ func SafeJavascript(s ...string) (template.JS, error) {
 	}
 
 	if len(s) > 1 {
-		return template.JS(""), fmt.Errorf("templates: can only sanitize one content at a time")
+		return template.JS(""), errors.Errorf("can only sanitize one content at a time")
 	}
 
 	return template.JS(s[0]), nil
@@ -35,7 +36,7 @@ func SafeURL(s ...string) (template.URL, error) {
 	}
 
 	if len(s) > 1 {
-		return template.URL(""), fmt.Errorf("templates: can only sanitize one content at a time")
+		return template.URL(""), errors.Errorf("can only sanitize one content at a time")
 	}
 
 	return template.URL(s[0]), nil
@@ -47,7 +48,7 @@ func SafeCSS(s ...string) (template.CSS, error) {
 	}
 
 	if len(s) > 1 {
-		return template.CSS(""), fmt.Errorf("templates: can only sanitize one content at a time")
+		return template.CSS(""), errors.Errorf("can only sanitize one content at a time")
 	}
 
 	return template.CSS(s[0]), nil

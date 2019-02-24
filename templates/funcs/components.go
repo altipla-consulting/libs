@@ -9,6 +9,8 @@ import (
 
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/golang/protobuf/proto"
+
+	"libs.altipla.consulting/errors"
 )
 
 type ComponentInstance struct {
@@ -35,7 +37,7 @@ func EndComponent(c *ComponentInstance) (template.HTML, error) {
 			m := jsonpb.Marshaler{EmitDefaults: true}
 			b, err := m.MarshalToString(v)
 			if err != nil {
-				return template.HTML(""), fmt.Errorf("templates: cannot marshal component param %s: %s", c.name, err)
+				return template.HTML(""), errors.Wrapf(err, "cannot marshal component param %s", c.name)
 			}
 			param.name = fmt.Sprintf("$%v", param.name)
 			param.value = html.EscapeString(b)

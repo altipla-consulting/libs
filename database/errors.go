@@ -1,14 +1,15 @@
 package database
 
 import (
-	"errors"
 	"strings"
+
+	"libs.altipla.consulting/errors"
 )
 
 var (
 	// ErrNoSuchEntity is returned from a Get operation when there is not a model
 	// that matches the query
-	ErrNoSuchEntity = errors.New("database: no such entity")
+	ErrNoSuchEntity = errors.New("no such entity")
 
 	// ErrDone is returned from the Next() method of an iterator when all results
 	// have been read.
@@ -17,7 +18,7 @@ var (
 	// ErrConcurrentTransaction is returned when trying to update a model that has been
 	// updated in the background by other process. This errors will prevent you from
 	// potentially overwriting those changes.
-	ErrConcurrentTransaction = errors.New("database: concurrent transaction")
+	ErrConcurrentTransaction = errors.New("concurrent transaction")
 )
 
 // MultiError stores a list of error when retrieving multiple models and only

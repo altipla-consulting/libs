@@ -2,11 +2,11 @@ package funcs
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 	"strings"
 
 	"libs.altipla.consulting/content"
+	"libs.altipla.consulting/errors"
 	"libs.altipla.consulting/messageformat"
 )
 
@@ -33,12 +33,12 @@ func MsgFormat(lang, format string, params ...interface{}) (string, error) {
 
 	message, err := messageformat.New(format)
 	if err != nil {
-		return "", fmt.Errorf("templates: cannot parse messageformat: %s", format)
+		return "", errors.Wrapf(err, "cannot parse messageformat: %s", format)
 	}
 
 	res, err := message.Format(lang, params)
 	if err != nil {
-		return "", fmt.Errorf("templates: cannot run messageformat: %s", format)
+		return "", errors.Wrapf(err, "cannot run messageformat: %s", format)
 	}
 
 	return res, nil

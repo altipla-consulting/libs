@@ -3,7 +3,8 @@ package content
 import (
 	"database/sql/driver"
 	"encoding/json"
-	"fmt"
+
+	"libs.altipla.consulting/errors"
 )
 
 type TranslatedProvider map[string]Translated
@@ -106,7 +107,7 @@ func (content TranslatedProvider) Value() (driver.Value, error) {
 
 	serialized, err := json.Marshal(content)
 	if err != nil {
-		return nil, fmt.Errorf("content/translated-provider: cannot serialize value: %s", err)
+		return nil, errors.Wrapf(err, "cannot serialize value")
 	}
 
 	return serialized, nil
@@ -115,11 +116,11 @@ func (content TranslatedProvider) Value() (driver.Value, error) {
 func (content *TranslatedProvider) Scan(value interface{}) error {
 	b, ok := value.([]byte)
 	if !ok {
-		return fmt.Errorf("content/translated-provider: cannot scan type into bytes: %T", value)
+		return errors.Errorf("cannot scan type into bytes: %T", value)
 	}
 
 	if err := json.Unmarshal(b, content); err != nil {
-		return fmt.Errorf("content/translated-provider: cannot scan value: %s", err)
+		return errors.Wrapf(err, "cannot scan value")
 	}
 
 	if *content == nil {

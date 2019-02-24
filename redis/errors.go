@@ -1,16 +1,17 @@
 package redis
 
 import (
-	"fmt"
 	"strings"
+
+	"libs.altipla.consulting/errors"
 )
 
 var (
 	// ErrNoSuchEntity is returned from a Get operation when there is not a model
 	// that matches the query
-	ErrNoSuchEntity = fmt.Errorf("redis: no such entity")
+	ErrNoSuchEntity = errors.New("no such entity")
 
-	Done = fmt.Errorf("redis: done")
+	ErrDone = errors.New("done")
 )
 
 // MultiError is returned from batch operations with the error of each operation.

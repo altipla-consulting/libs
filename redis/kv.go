@@ -7,6 +7,8 @@ import (
 	"github.com/go-redis/redis"
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/golang/protobuf/proto"
+
+	"libs.altipla.consulting/errors"
 )
 
 type StringKV struct {
@@ -142,7 +144,7 @@ func (kv *ProtoKV) SetTTL(value proto.Message, ttl time.Duration) error {
 	m := new(jsonpb.Marshaler)
 	encoded, err := m.MarshalToString(value)
 	if err != nil {
-		return err
+		return errors.Trace(err)
 	}
 
 	return kv.db.sess.Set(kv.key, encoded, ttl).Err()
@@ -156,7 +158,7 @@ func (kv *ProtoKV) Get(value proto.Message) error {
 			return ErrNoSuchEntity
 		}
 
-		return err
+		return errors.Trace(err)
 	}
 
 	return unmarshalProto(result, value)
@@ -224,7 +226,7 @@ type TimeKV struct {
 func (kv *TimeKV) Set(value time.Time) error {
 	rawValue, err := value.MarshalText()
 	if err != nil {
-		return err
+		return errors.Trace(err)
 	}
 
 	return kv.db.sess.Set(kv.key, string(rawValue), 0).Err()
@@ -233,7 +235,7 @@ func (kv *TimeKV) Set(value time.Time) error {
 func (kv *TimeKV) SetTTL(value time.Time, ttl time.Duration) error {
 	rawValue, err := value.MarshalText()
 	if err != nil {
-		return err
+		return errors.Trace(err)
 	}
 
 	return kv.db.sess.Set(kv.key, string(rawValue), ttl).Err()

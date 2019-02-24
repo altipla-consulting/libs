@@ -4,6 +4,8 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"fmt"
+
+	"libs.altipla.consulting/errors"
 )
 
 type Integers64 []int64
@@ -15,7 +17,7 @@ func (slice Integers64) Value() (driver.Value, error) {
 
 	serialized, err := json.Marshal(slice)
 	if err != nil {
-		return nil, fmt.Errorf("arrays/integers64: cannot serialize value: %s", err)
+		return nil, errors.Wrapf(err, "cannot serialize value")
 	}
 
 	return serialized, nil
@@ -28,11 +30,11 @@ func (slice *Integers64) Scan(value interface{}) error {
 
 	b, ok := value.([]byte)
 	if !ok {
-		return fmt.Errorf("arrays/integers64: cannot scan type into bytes: %T", value)
+		return errors.Errorf("cannot scan type into bytes: %T", value)
 	}
 
 	if err := json.Unmarshal(b, slice); err != nil {
-		return fmt.Errorf("arrays/integers64: cannot scan value: %s", err)
+		return errors.Wrapf(err, "cannot scan value")
 	}
 
 	return nil

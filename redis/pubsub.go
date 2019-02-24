@@ -1,10 +1,10 @@
 package redis
 
 import (
-	"fmt"
-
 	"github.com/go-redis/redis"
 	"github.com/golang/protobuf/proto"
+
+	"libs.altipla.consulting/errors"
 )
 
 // PubSub represents a connection to a redis PubSub. It can be used to publish
@@ -29,10 +29,10 @@ func (pubsub *PubSub) Subscribe() *PubSubSubscription {
 func (pubsub *PubSub) Publish(msg proto.Message) error {
 	serialized, err := proto.Marshal(msg)
 	if err != nil {
-		return fmt.Errorf("redis: cannot serialize pubsub message: %v", err)
+		return errors.Wrapf(err, "cannot serialize pubsub message")
 	}
 	if err := pubsub.db.sess.Publish(pubsub.name, string(serialized)).Err(); err != nil {
-		return fmt.Errorf("redis: cannot publish pubsub message: %v", err)
+		return errors.Wrapf(err, "cannot publish pubsub message")
 	}
 	return nil
 }
@@ -52,11 +52,11 @@ func (sub *PubSubSubscription) Close() {
 func (sub *PubSubSubscription) Next(dest proto.Message) error {
 	msg := <-sub.ch
 	if msg == nil {
-		return Done
+		return ErrDone
 	}
 
 	if err := proto.Unmarshal([]byte(msg.Payload), dest); err != nil {
-		return fmt.Errorf("redis: cannot parse pubsub message: %v", err)
+		return errors.Wrapf(err, "cannot parse pubsub message")
 	}
 
 	return nil

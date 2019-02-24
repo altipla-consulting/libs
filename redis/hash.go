@@ -1,12 +1,12 @@
 package redis
 
 import (
-	"fmt"
 	"reflect"
 	"strconv"
 	"time"
 
 	"libs.altipla.consulting/collections"
+	"libs.altipla.consulting/errors"
 )
 
 type Hash struct {
@@ -42,7 +42,7 @@ func (hash *Hash) Get(key string, instance Model, masks ...MaskOpt) error {
 
 	fields, err := hash.db.sess.HMGet(hash.name+":"+key, names...).Result()
 	if err != nil {
-		return fmt.Errorf("redis: cannot get fields of hash: %s", err)
+		return errors.Wrapf(err, "cannot get fields of hash")
 	}
 	var nilFields int
 	for i, field := range fields {
@@ -56,7 +56,7 @@ func (hash *Hash) Get(key string, instance Model, masks ...MaskOpt) error {
 		case int64:
 			n, err := strconv.ParseInt(field.(string), 10, 64)
 			if err != nil {
-				return fmt.Errorf("redis: cannot parse int64 field (%s = %s): %s", prop.Name, field, err)
+				return errors.Wrapf(err, "cannot parse int64 field (%s = %s)", prop.Name, field)
 			}
 			prop.ReflectValue.Set(reflect.ValueOf(n))
 
@@ -66,7 +66,7 @@ func (hash *Hash) Get(key string, instance Model, masks ...MaskOpt) error {
 		case time.Time:
 			var t time.Time
 			if err := t.UnmarshalText([]byte(field.(string))); err != nil {
-				return fmt.Errorf("redis: cannot unmarshal time field (%s = %s): %s", prop.Name, field, err)
+				return errors.Wrapf(err, "cannot unmarshal time field (%s = %s)", prop.Name, field)
 			}
 			prop.ReflectValue.Set(reflect.ValueOf(t))
 		}
@@ -101,7 +101,7 @@ func (hash *Hash) Put(key string, instance Model, masks ...MaskOpt) error {
 		case time.Time:
 			t, err := v.MarshalText()
 			if err != nil {
-				return fmt.Errorf("redis: cannot marshal time (%s = %s): %s", prop.Name, prop.Value, err)
+				return errors.Wrapf(err, "cannot marshal time (%s = %s)", prop.Name, prop.Value)
 			}
 			store = string(t)
 		}
@@ -110,7 +110,7 @@ func (hash *Hash) Put(key string, instance Model, masks ...MaskOpt) error {
 	}
 
 	if err := hash.db.sess.HMSet(hash.name+":"+key, fields).Err(); err != nil {
-		return fmt.Errorf("redis: cannot set fields of hash: %s", err)
+		return errors.Wrapf(err, "cannot set fields of hash")
 	}
 
 	return nil
@@ -119,7 +119,7 @@ func (hash *Hash) Put(key string, instance Model, masks ...MaskOpt) error {
 // Delete inmediately removes the key from the hash.
 func (hash *Hash) Delete(key string) error {
 	if err := hash.db.sess.Del(hash.name + ":" + key).Err(); err != nil {
-		return fmt.Errorf("redis: cannot delete hash %s: %s", key, err)
+		return errors.Wrapf(err, "cannot delete hash %s", key)
 	}
 	return nil
 }
@@ -127,7 +127,7 @@ func (hash *Hash) Delete(key string) error {
 // ExpireAt sets the expiration of a key of this hash.
 func (hash *Hash) ExpireAt(key string, t time.Time) error {
 	if err := hash.db.sess.ExpireAt(hash.name+":"+key, t).Err(); err != nil {
-		return fmt.Errorf("redis: cannot expire hash %s: %s", key, err)
+		return errors.Wrapf(err, "cannot expire hash %s", key)
 	}
 	return nil
 }
