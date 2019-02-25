@@ -4,11 +4,11 @@ import (
 	"context"
 	"net/http"
 	"os"
-	"strconv"
-	"strings"
 
 	"github.com/getsentry/raven-go"
 	log "github.com/sirupsen/logrus"
+
+	"libs.altipla.consulting/errors"
 )
 
 // Client wraps a Sentry connection.
@@ -33,41 +33,29 @@ func (client *Client) ReportRequest(appErr error, r *http.Request) {
 	client.report(r.Context(), appErr, r)
 }
 
-type jujuStacktracer interface {
-	StackTrace() []string
-}
-
 func (client *Client) report(ctx context.Context, appErr error, r *http.Request) {
 	go func() {
 		stacktrace := new(raven.Stacktrace)
 
-		jujuErr, ok := appErr.(jujuStacktracer)
-		if ok {
-			for _, entry := range jujuErr.StackTrace() {
-				parts := strings.Split(entry, ":")
-				if len(parts) > 2 {
-					n, err := strconv.ParseInt(parts[1], 10, 64)
-					if err == nil {
-						stacktrace.Frames = append(stacktrace.Frames, &raven.StacktraceFrame{
-							Filename:    parts[0],
-							Lineno:      int(n),
-							ContextLine: entry,
-						})
-						continue
-					}
-				}
-
-				// Fallback to avoid erroring out here if no location is found
+		for i, stack := range errors.Frames(appErr) {
+			if i > 0 {
 				stacktrace.Frames = append(stacktrace.Frames, &raven.StacktraceFrame{
-					Filename:    entry,
-					ContextLine: entry,
+					Filename: "------",
 				})
 			}
 
-			// Invert frames to show them in the correct order in the Sentry UI
-			for i, j := 0, len(stacktrace.Frames)-1; i < j; i, j = i+1, j-1 {
-				stacktrace.Frames[i], stacktrace.Frames[j] = stacktrace.Frames[j], stacktrace.Frames[i]
+			for _, frame := range stack {
+				stacktrace.Frames = append(stacktrace.Frames, &raven.StacktraceFrame{
+					Filename:    frame.File,
+					Function:    frame.Function,
+					Lineno:      frame.Line,
+					ContextLine: frame.Reason,
+				})
 			}
+		}
+		// Invert frames to show them in the correct order in the Sentry UI
+		for i, j := 0, len(stacktrace.Frames)-1; i < j; i, j = i+1, j-1 {
+			stacktrace.Frames[i], stacktrace.Frames[j] = stacktrace.Frames[j], stacktrace.Frames[i]
 		}
 
 		client, err := raven.New(client.dsn)

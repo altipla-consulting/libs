@@ -164,7 +164,11 @@ func Details(err error) string {
 	result := []string{
 		"{" + e.cause.Error() + "}",
 	}
-	for _, stack := range Frames(e) {
+	for i, stack := range Frames(e) {
+		if i > 0 {
+			result = append(result, "{-----}")
+		}
+
 		for _, frame := range stack {
 			if frame.Reason != "" {
 				result = append(result, fmt.Sprintf("%s:%d: %s: %s", frame.File, frame.Line, frame.Function, frame.Reason))
