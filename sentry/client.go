@@ -63,6 +63,8 @@ func (client *Client) report(ctx context.Context, appErr error, r *http.Request)
 			log.WithField("error", err.Error()).Error("Cannot create Sentry client")
 			return
 		}
+		defer client.Close()
+		
 		client.SetRelease(os.Getenv("VERSION"))
 
 		interfaces := []raven.Interface{
