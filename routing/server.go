@@ -186,10 +186,7 @@ func (s *Server) decorate(lang string, handler Handler) httprouter.Handle {
 			}
 
 			if s.logging {
-				log.WithFields(log.Fields{
-					"error":   err.Error(),
-					"details": errors.Details(err),
-				}).Errorf("Handler failed")
+				log.WithFields(errors.LogFields(err)).Errorf("Handler failed")
 			}
 
 			if s.sentryClient != nil {

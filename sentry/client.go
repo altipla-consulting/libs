@@ -64,7 +64,7 @@ func (client *Client) report(ctx context.Context, appErr error, r *http.Request)
 			return
 		}
 		defer client.Close()
-		
+
 		client.SetRelease(os.Getenv("VERSION"))
 
 		interfaces := []raven.Interface{

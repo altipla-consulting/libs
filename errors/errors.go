@@ -7,6 +7,8 @@ import (
 	"io"
 	"runtime"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // stack is a comparable []uintptr slice.
@@ -337,4 +339,11 @@ func Recover(p interface{}) error {
 		return wrapf(err, "recovered panic")
 	}
 	return wrapf(fmt.Errorf("recovered panic: %v", p), "")
+}
+
+func LogFields(err error) log.Fields {
+	return log.Fields{
+		"error":   Cause(err).Error(),
+		"details": Details(err),
+	}
 }

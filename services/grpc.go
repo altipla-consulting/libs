@@ -100,10 +100,7 @@ func logError(ctx context.Context, client *sentry.Client, err error) {
 			return
 		}
 	} else {
-		log.WithFields(log.Fields{
-			"error":   err.Error(),
-			"details": errors.Details(err),
-		}).Error("Unknown error in GRPC call")
+		log.WithFields(errors.LogFields(err)).Error("Unknown error in GRPC call")
 	}
 
 	if client != nil {

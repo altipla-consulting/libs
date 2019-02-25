@@ -299,10 +299,7 @@ func (service *Service) stopListener() {
 				defer wg.Done()
 
 				if err := atexit(); err != nil {
-					log.WithFields(log.Fields{
-						"error":   err.Error(),
-						"details": errors.Details(err),
-					}).Error("Cannot shutdown app")
+					log.WithFields(errors.LogFields(err)).Error("Cannot shutdown app")
 				}
 			}()
 		}
