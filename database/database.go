@@ -59,7 +59,7 @@ func (db *Database) Close() {
 // recommended to use Collections instead.
 func (db *Database) Exec(query string, params ...interface{}) error {
 	_, err := db.sess.Exec(query, params...)
-	return err
+	return errors.Trace(err)
 }
 
 // QueryRow runs a raw SQL query in the database and returns the raw row from

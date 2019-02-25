@@ -207,7 +207,7 @@ func (p *parser) parse() error {
 		var err error
 		state, err = state(p)
 		if err != nil {
-			return err
+			return errors.Trace(err)
 		}
 	}
 

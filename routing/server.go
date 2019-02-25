@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"text/template"
 
-	altiplaerrors "github.com/altipla-consulting/errors"
 	"github.com/julienschmidt/httprouter"
 	log "github.com/sirupsen/logrus"
 
@@ -189,7 +188,7 @@ func (s *Server) decorate(lang string, handler Handler) httprouter.Handle {
 			if s.logging {
 				log.WithFields(log.Fields{
 					"error":   err.Error(),
-					"details": altiplaerrors.Details(err),
+					"details": errors.Details(err),
 				}).Errorf("Handler failed")
 			}
 

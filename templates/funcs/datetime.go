@@ -3,11 +3,11 @@ package funcs
 import (
 	"time"
 
-	"github.com/altipla-consulting/errors"
 	pbtimestamp "github.com/golang/protobuf/ptypes/timestamp"
 	log "github.com/sirupsen/logrus"
 
 	"libs.altipla.consulting/datetime"
+	"libs.altipla.consulting/errors"
 	"libs.altipla.consulting/langs"
 	pbdatetime "libs.altipla.consulting/protos/datetime"
 )

@@ -86,7 +86,7 @@ func (pager *Pager) Fetch(models interface{}) error {
 	c := pager.c.Clone().Offset(start).Limit(int64(pager.pageSize))
 
 	if err := c.GetAll(models); err != nil {
-		return err
+		return errors.Trace(err)
 	}
 
 	n, err := pager.c.Count()

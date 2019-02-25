@@ -94,7 +94,7 @@ func (c *Collection) Get(instance Model) error {
 			return ErrNoSuchEntity
 		}
 
-		return err
+		return errors.Trace(err)
 	}
 
 	modelProps = updatedProps(c.props, instance)
@@ -113,7 +113,7 @@ func (c *Collection) Put(instance Model) error {
 
 	if h, ok := instance.(OnBeforePutHooker); ok {
 		if err := h.OnBeforePutHook(); err != nil {
-			return err
+			return errors.Trace(err)
 		}
 	}
 
@@ -159,7 +159,7 @@ func (c *Collection) Put(instance Model) error {
 
 	result, err := c.sess.Exec(q, values...)
 	if err != nil {
-		return err
+		return errors.Trace(err)
 	}
 
 	var pks int
@@ -192,12 +192,12 @@ func (c *Collection) Put(instance Model) error {
 	}
 
 	if err := instance.Tracking().AfterPut(modelProps); err != nil {
-		return err
+		return errors.Trace(err)
 	}
 
 	if h, ok := instance.(OnAfterPutHooker); ok {
 		if err := h.OnAfterPutHook(); err != nil {
-			return err
+			return errors.Trace(err)
 		}
 	}
 
@@ -305,7 +305,7 @@ func (c *Collection) Delete(instance Model) error {
 	}
 
 	if _, err := c.sess.Exec(statement, values...); err != nil {
-		return err
+		return errors.Trace(err)
 	}
 
 	return instance.Tracking().AfterDelete(modelProps)
@@ -362,7 +362,7 @@ func (c *Collection) GetAll(models interface{}) error {
 
 	it, err := c.Iterator()
 	if err != nil {
-		return err
+		return errors.Trace(err)
 	}
 	defer it.Close()
 
@@ -373,7 +373,7 @@ func (c *Collection) GetAll(models interface{}) error {
 				break
 			}
 
-			return err
+			return errors.Trace(err)
 		}
 
 		dest = reflect.Append(dest, model)
@@ -414,7 +414,7 @@ func (c *Collection) First(instance Model) error {
 			return ErrNoSuchEntity
 		}
 
-		return err
+		return errors.Trace(err)
 	}
 
 	modelProps = updatedProps(c.props, instance)
@@ -491,7 +491,7 @@ func (c *Collection) GetMulti(keys interface{}, models interface{}) error {
 	fetch := reflect.New(t)
 	fetch.Elem().Set(reflect.MakeSlice(t, 0, 0))
 	if err := c.GetAll(fetch.Interface()); err != nil {
-		return err
+		return errors.Trace(err)
 	}
 
 	stringKeys := map[string]reflect.Value{}
@@ -564,7 +564,7 @@ func (c *Collection) Truncate() error {
 	}
 
 	if _, err := c.sess.Exec(statement); err != nil {
-		return err
+		return errors.Trace(err)
 	}
 
 	statement = b.ResetAutoIncrementSQL()
@@ -573,7 +573,7 @@ func (c *Collection) Truncate() error {
 	}
 
 	if _, err := c.sess.Exec(statement); err != nil {
-		return err
+		return errors.Trace(err)
 	}
 
 	return nil

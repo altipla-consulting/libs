@@ -3,7 +3,6 @@ package services
 import (
 	"context"
 
-	altiplaerrors "github.com/altipla-consulting/errors"
 	log "github.com/sirupsen/logrus"
 	"go.opencensus.io/plugin/ocgrpc"
 	"go.opencensus.io/trace"
@@ -11,6 +10,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"libs.altipla.consulting/errors"
 	"libs.altipla.consulting/sentry"
 )
 
@@ -81,7 +81,7 @@ func grpcStreamErrorLogger(serviceName, dsn string) grpc.StreamServerInterceptor
 			logError(wrapped.Context(), client, err)
 		}
 
-		return err
+		return errors.Trace(err)
 	}
 }
 
@@ -102,7 +102,7 @@ func logError(ctx context.Context, client *sentry.Client, err error) {
 	} else {
 		log.WithFields(log.Fields{
 			"error":   err.Error(),
-			"details": altiplaerrors.Details(err),
+			"details": errors.Details(err),
 		}).Error("Unknown error in GRPC call")
 	}
 

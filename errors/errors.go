@@ -155,6 +155,27 @@ func (e *altiplaError) writeStackTrace(w io.Writer) {
 	}
 }
 
+func Details(err error) string {
+	e, ok := err.(*altiplaError)
+	if !ok {
+		return "{" + err.Error() + "}"
+	}
+
+	result := []string{
+		"{" + e.cause.Error() + "}",
+	}
+	for _, stack := range Frames(e) {
+		for _, frame := range stack {
+			if frame.Reason != "" {
+				result = append(result, fmt.Sprintf("%s:%d: %s: %s", frame.File, frame.Line, frame.Function, frame.Reason))
+			} else {
+				result = append(result, fmt.Sprintf("%s:%d: %s", frame.File, frame.Line, frame.Function))
+			}
+		}
+	}
+	return strings.Join(result, " ")
+}
+
 // isPrefix checks if a is a prefix of b.
 func isPrefix(a []uintptr, b []uintptr) bool {
 	if len(a) > len(b) {

@@ -4,9 +4,8 @@ import (
 	"html/template"
 	"text/template/parse"
 
-	"github.com/altipla-consulting/errors"
-
 	"libs.altipla.consulting/collections"
+	"libs.altipla.consulting/errors"
 	"libs.altipla.consulting/langs"
 	"libs.altipla.consulting/templates/funcs"
 )

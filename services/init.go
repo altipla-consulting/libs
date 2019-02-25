@@ -17,13 +17,13 @@ import (
 
 	"cloud.google.com/go/profiler"
 	"contrib.go.opencensus.io/exporter/stackdriver"
-	altiplaerrors "github.com/altipla-consulting/errors"
 	log "github.com/sirupsen/logrus"
 	"go.opencensus.io/plugin/ocgrpc"
 	"go.opencensus.io/trace"
 	gotrace "golang.org/x/net/trace"
 	"google.golang.org/grpc"
 
+	"libs.altipla.consulting/errors"
 	"libs.altipla.consulting/routing"
 )
 
@@ -301,7 +301,7 @@ func (service *Service) stopListener() {
 				if err := atexit(); err != nil {
 					log.WithFields(log.Fields{
 						"error":   err.Error(),
-						"details": altiplaerrors.Details(err),
+						"details": errors.Details(err),
 					}).Error("Cannot shutdown app")
 				}
 			}()

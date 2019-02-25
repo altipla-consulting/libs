@@ -7,9 +7,12 @@ gofmt:
 	@gofmt -w $(FILES)
 	@gofmt -r '&α{} -> new(α)' -w $(FILES)
 
-test: gofmt
+test: gofmt lint
 	revive -formatter friendly
 	actools go test ./...
+
+lint:
+	@./infra/lint-errors.sh
 
 update-deps:
 	go get -u

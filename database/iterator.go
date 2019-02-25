@@ -2,6 +2,8 @@ package database
 
 import (
 	"database/sql"
+
+	"libs.altipla.consulting/errors"
 )
 
 // Iterator helps to loop through rows of a collection retrieving a single model each time.
@@ -23,12 +25,12 @@ func (it *Iterator) Next(model Model) error {
 	modelProps := updatedProps(it.props, model)
 
 	if err := it.rows.Err(); err != nil {
-		return err
+		return errors.Trace(err)
 	}
 
 	if !it.rows.Next() {
 		if err := it.rows.Err(); err != nil {
-			return err
+			return errors.Trace(err)
 		}
 
 		it.Close()
@@ -41,7 +43,7 @@ func (it *Iterator) Next(model Model) error {
 		ptrs[i] = prop.Pointer
 	}
 	if err := it.rows.Scan(ptrs...); err != nil {
-		return err
+		return errors.Trace(err)
 	}
 
 	modelProps = updatedProps(it.props, model)
