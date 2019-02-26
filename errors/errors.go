@@ -34,9 +34,7 @@ type altiplaError struct {
 
 // Error implements error, and outputs a full backtrace.
 func (e *altiplaError) Error() string {
-	var buffer bytes.Buffer
-	e.writeStackTrace(&buffer)
-	return buffer.String()
+	return e.cause.Error()
 }
 
 // Cause implements important interfaces in other libs to detect the cause of an error.
@@ -343,7 +341,18 @@ func Recover(p interface{}) error {
 
 func LogFields(err error) log.Fields {
 	return log.Fields{
-		"error":   Cause(err).Error(),
+		"error":   err.Error(),
 		"details": Details(err),
 	}
+}
+
+func Stack(err error) string {
+	e, ok := err.(*altiplaError)
+	if !ok {
+		return err.Error()
+	}
+
+	var buffer bytes.Buffer
+	e.writeStackTrace(&buffer)
+	return buffer.String()
 }
