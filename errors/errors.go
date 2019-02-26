@@ -171,9 +171,9 @@ func Details(err error) string {
 
 		for _, frame := range stack {
 			if frame.Reason != "" {
-				result = append(result, fmt.Sprintf("%s:%d: %s: %s", frame.File, frame.Line, frame.Function, frame.Reason))
+				result = append(result, fmt.Sprintf("{%s:%d:%s: %s}", frame.File, frame.Line, frame.Function, frame.Reason))
 			} else {
-				result = append(result, fmt.Sprintf("%s:%d: %s", frame.File, frame.Line, frame.Function))
+				result = append(result, fmt.Sprintf("{%s:%d:%s}", frame.File, frame.Line, frame.Function))
 			}
 		}
 	}
