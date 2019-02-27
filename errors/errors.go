@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/grpc/status"
 )
 
 // stack is a comparable []uintptr slice.
@@ -296,11 +297,28 @@ func New(err string) error {
 // To check if a wrapped error is a specific error, such as io.EOF, you can
 // extract the error passed in to Wrapf using Cause.
 func Wrapf(err error, format string, a ...interface{}) error {
+	if !shouldWrap(err) {
+		return err
+	}
+	return wrapf(err, fmt.Sprintf(format, a...))
+}
+
+type altiplaDoNotWrapper interface {
+	AltiplaDoNotWrap()
+}
+
+func shouldWrap(err error) bool {
 	if err == nil {
-		return nil
+		return false
+	}
+	if _, ok := status.FromError(err); ok {
+		return false
+	}
+	if _, ok := err.(altiplaDoNotWrapper); ok {
+		return false
 	}
 
-	return wrapf(err, fmt.Sprintf(format, a...))
+	return true
 }
 
 // Trace annotates an error with a stacktrace.
@@ -312,10 +330,9 @@ func Wrapf(err error, format string, a ...interface{}) error {
 // To check if a wrapped error is a specific error, such as io.EOF, you can
 // extract the error passed in to Trace using Cause.
 func Trace(err error) error {
-	if err == nil {
-		return nil
+	if !shouldWrap(err) {
+		return err
 	}
-
 	return wrapf(err, "")
 }
 
