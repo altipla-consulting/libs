@@ -312,7 +312,11 @@ func Wrapf(err error, format string, a ...interface{}) error {
 // To check if a wrapped error is a specific error, such as io.EOF, you can
 // extract the error passed in to Trace using Cause.
 func Trace(err error) error {
-	return Wrapf(err, "")
+	if err == nil {
+		return nil
+	}
+
+	return wrapf(err, "")
 }
 
 // Cause extracts the cause error of an altipla error. If err is not an altipla
