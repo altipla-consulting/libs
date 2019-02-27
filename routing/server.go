@@ -177,7 +177,7 @@ func (s *Server) decorate(lang string, handler Handler) httprouter.Handle {
 		}
 
 		if err := handler(w, r); err != nil {
-			if httperr, ok := err.(Error); ok {
+			if httperr, ok := errors.Cause(err).(Error); ok {
 				switch httperr.StatusCode {
 				case http.StatusNotFound, http.StatusUnauthorized, http.StatusBadRequest:
 					s.emitError(w, r, httperr.StatusCode)
