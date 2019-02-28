@@ -728,9 +728,9 @@ func TestFilterExistsDoesNotAffectSubquery(t *testing.T) {
 	}
 	require.Nil(t, testingsRelChild.Put(child))
 
-	var children []*testingRelParent
+	var unused []*testingRelParent
 	subquery := testingsRelChild.Filter("foo", "foo-value")
-	require.Nil(t, testingsRelParent.FilterExists(subquery, "testing_relparent.id = testing_relchild.parent").GetAll(&children))
+	require.Nil(t, testingsRelParent.FilterExists(subquery, "testing_relparent.id = testing_relchild.parent").GetAll(&unused))
 
 	var submodels []*testingRelChild
 	require.Nil(t, subquery.GetAll(&submodels))
@@ -782,6 +782,103 @@ func TestFilterExistsAliasesAfterTheFilter(t *testing.T) {
 
 	var models []*testingRelParent
 	require.Nil(t, testingsRelParent.FilterExists(testingsRelChild.Filter("foo", "foo-value").Alias("alias2"), "alias1.id = alias2.parent").Alias("alias1").GetAll(&models))
+
+	require.Len(t, models, 1)
+
+	require.EqualValues(t, models[0].ID, 1)
+}
+
+func TestFilterNotExists(t *testing.T) {
+	initDatabase(t)
+	defer closeDatabase()
+
+	parent := new(testingRelParent)
+	require.Nil(t, testingsRelParent.Put(parent))
+
+	otherParent := new(testingRelParent)
+	require.Nil(t, testingsRelParent.Put(otherParent))
+
+	child := &testingRelChild{
+		Parent: otherParent.ID,
+		Foo:    "foo-value",
+	}
+	require.Nil(t, testingsRelChild.Put(child))
+
+	var models []*testingRelParent
+	require.Nil(t, testingsRelParent.FilterNotExists(testingsRelChild.Filter("foo", "foo-value"), "testing_relparent.id = testing_relchild.parent").GetAll(&models))
+
+	require.Len(t, models, 1)
+
+	require.EqualValues(t, models[0].ID, 1)
+}
+
+func TestFilterNotExistsDoesNotAffectSubquery(t *testing.T) {
+	initDatabase(t)
+	defer closeDatabase()
+
+	parent := new(testingRelParent)
+	require.Nil(t, testingsRelParent.Put(parent))
+
+	child := &testingRelChild{
+		Parent: parent.ID,
+		Foo:    "foo-value",
+	}
+	require.Nil(t, testingsRelChild.Put(child))
+
+	var unused []*testingRelParent
+	subquery := testingsRelChild.Filter("foo", "foo-value")
+	require.Nil(t, testingsRelParent.FilterNotExists(subquery, "testing_relparent.id = testing_relchild.parent").GetAll(&unused))
+
+	var submodels []*testingRelChild
+	require.Nil(t, subquery.GetAll(&submodels))
+
+	require.Len(t, submodels, 1)
+
+	require.EqualValues(t, submodels[0].ID, 1)
+}
+
+func TestFilterNotExistsAliases(t *testing.T) {
+	initDatabase(t)
+	defer closeDatabase()
+
+	parent := new(testingRelParent)
+	require.Nil(t, testingsRelParent.Put(parent))
+
+	otherParent := new(testingRelParent)
+	require.Nil(t, testingsRelParent.Put(otherParent))
+
+	child := &testingRelChild{
+		Parent: otherParent.ID,
+		Foo:    "foo-value",
+	}
+	require.Nil(t, testingsRelChild.Put(child))
+
+	var models []*testingRelParent
+	require.Nil(t, testingsRelParent.Alias("alias1").FilterNotExists(testingsRelChild.Filter("foo", "foo-value").Alias("alias2"), "alias1.id = alias2.parent").GetAll(&models))
+
+	require.Len(t, models, 1)
+
+	require.EqualValues(t, models[0].ID, 1)
+}
+
+func TestFilterNotExistsAliasesAfterTheFilter(t *testing.T) {
+	initDatabase(t)
+	defer closeDatabase()
+
+	parent := new(testingRelParent)
+	require.Nil(t, testingsRelParent.Put(parent))
+
+	otherParent := new(testingRelParent)
+	require.Nil(t, testingsRelParent.Put(otherParent))
+
+	child := &testingRelChild{
+		Parent: otherParent.ID,
+		Foo:    "foo-value",
+	}
+	require.Nil(t, testingsRelChild.Put(child))
+
+	var models []*testingRelParent
+	require.Nil(t, testingsRelParent.FilterNotExists(testingsRelChild.Filter("foo", "foo-value").Alias("alias2"), "alias1.id = alias2.parent").Alias("alias1").GetAll(&models))
 
 	require.Len(t, models, 1)
 

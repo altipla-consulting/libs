@@ -86,6 +86,35 @@ func FilterExists(sub *Collection, join string) Condition {
 	return &sqlCondition{fmt.Sprintf("EXISTS (%s)", sql), values}
 }
 
+// FilterNotExists checks if a subquery matches for each row before accepting it. It will use
+// the join SQL statement as an additional filter to those ones both queries have to join the
+// rows of two queries. Not having a join statement will throw a panic.
+//
+// No external parameters are allowed in the join statement because they can be supplied through
+// normal filters in both collections. Limit yourself to relate both tables to make the FilterNotExists
+// call useful.
+//
+// You can alias both collections to use shorter names in the statement. It is recommend to
+// always use aliases when referring to the columns in the join statement.
+func FilterNotExists(sub *Collection, join string) Condition {
+	if join == "" {
+		panic("join SQL statement is required to FilterNotExists")
+	}
+
+	sub = sub.Clone().FilterCond(&sqlCondition{join, nil})
+	b := &sqlBuilder{
+		table:      sub.model.TableName(),
+		conditions: sub.conditions,
+		props:      sub.props,
+		limit:      sub.limit,
+		offset:     sub.offset,
+		orders:     sub.orders,
+		alias:      sub.alias,
+	}
+	sql, values := b.SelectSQLCols("NULL")
+	return &sqlCondition{fmt.Sprintf("NOT EXISTS (%s)", sql), values}
+}
+
 type sqlCondition struct {
 	sql    string
 	values []interface{}

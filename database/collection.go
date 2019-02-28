@@ -584,3 +584,9 @@ func (c *Collection) Truncate() error {
 func (c *Collection) FilterExists(sub *Collection, join string) *Collection {
 	return c.FilterCond(FilterExists(sub, join))
 }
+
+// FilterNotExists applies the global FilterNotExists condition to this collection. See
+// the global function for documentation.
+func (c *Collection) FilterNotExists(sub *Collection, join string) *Collection {
+	return c.FilterCond(FilterNotExists(sub, join))
+}
