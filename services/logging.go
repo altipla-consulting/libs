@@ -44,7 +44,6 @@ func (f *stackdriverFormatter) Format(entry *log.Entry) ([]byte, error) {
 	case log.TraceLevel:
 		entry.Data["severity"] = 0
 	}
-	entry.Data["severity"] = entry.Level.String()
 
 	return f.JSONFormatter.Format(entry)
 }
