@@ -23,6 +23,9 @@ const errorTemplate = `
     {{if eq . 500}}
       Error interno del servidor
     {{end}}
+    {{if eq . 504}}
+      Timeout interno del servidor
+    {{end}}
   </title>
 
   <link href='https://fonts.googleapis.com/css?family=Open+Sans:700,300' rel='stylesheet' type='text/css'>
@@ -81,7 +84,6 @@ const errorTemplate = `
             <circle id="leftKnee" class="robot_joints_and_belly" cx="216.4" cy="203.1" r="5.1"/>
             
             <g id="upperBody">
-              
               <rect x="146" y="143" transform="matrix(-0.968 -0.2511 0.2511 -0.968 362.8447 338.4026)" class="robot_limbs_and_ears" width="114" height="6.1"/>
               <g id="leftArm">
                 <path id="leftOuterClaw" class="robot_hands_feet" d="M247.7,212.6l21.1,21.1c5.8-5.8,5.8-15.3,0-21.1C262.9,206.7,253.5,206.7,247.7,212.6
@@ -138,6 +140,9 @@ const errorTemplate = `
           {{if eq . 500}}
             Error interno del servidor
           {{end}}
+          {{if eq . 504}}
+            Timeout interno del servidor
+          {{end}}
         </p>
 
         {{if eq . 400}}
@@ -153,7 +158,7 @@ const errorTemplate = `
             <a class="robot-buttons" href="/">Página principal</a>
           </div>
         {{end}}
-        {{if eq . 500}}
+        {{if or (eq . 500) (eq . 504)}}
           <p>Pruebe a recargar en unos pocos segundos para ver si se ha arreglado</p>
 
           <div class="robot-buttons">

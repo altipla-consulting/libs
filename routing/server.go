@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"text/template"
+	"time"
 
 	"github.com/julienschmidt/httprouter"
 	log "github.com/sirupsen/logrus"
@@ -147,9 +148,13 @@ func (s *Server) Group(g Group) {
 
 func (s *Server) decorate(lang string, handler Handler) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-		r = r.WithContext(context.WithValue(r.Context(), requestKey, r))
-		r = r.WithContext(context.WithValue(r.Context(), paramsKey, ps))
-		r = r.WithContext(context.WithValue(r.Context(), langKey, lang))
+		ctx := r.Context()
+		ctx = context.WithValue(ctx, requestKey, r)
+		ctx = context.WithValue(ctx, paramsKey, ps)
+		ctx = context.WithValue(ctx, langKey, lang)
+		ctx, cancel := context.WithTimeout(ctx, 29*time.Second)
+		defer cancel()
+		r = r.WithContext(ctx)
 
 		if s.username != "" && s.password != "" {
 			if _, err := r.Cookie("routing.beta"); err != nil && err != http.ErrNoCookie {
@@ -191,6 +196,11 @@ func (s *Server) decorate(lang string, handler Handler) httprouter.Handle {
 
 			if s.sentryClient != nil {
 				s.sentryClient.ReportRequest(err, r)
+			}
+
+			if ctx.Err() == context.DeadlineExceeded {
+				s.emitError(w, r, http.StatusGatewayTimeout)
+				return
 			}
 
 			s.emitError(w, r, http.StatusInternalServerError)
