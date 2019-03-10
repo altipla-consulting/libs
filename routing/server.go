@@ -124,6 +124,11 @@ func (s *Server) Delete(lang, path string, handler Handler) {
 	s.router.DELETE(path, s.decorate(lang, handler))
 }
 
+// Options registers a new OPTIONS route in the router.
+func (s *Server) Options(lang, path string, handler Handler) {
+	s.router.OPTIONS(path, s.decorate(lang, handler))
+}
+
 // Group registers all the routes of the group in the router.
 func (s *Server) Group(g Group) {
 	for lang, url := range g.URL {
@@ -140,6 +145,8 @@ func (s *Server) Group(g Group) {
 			s.Post(lang, url, h)
 		case http.MethodDelete:
 			s.Delete(lang, url, h)
+		case http.MethodOptions:
+			s.Options(lang, url, h)
 		default:
 			s.Get(lang, url, h)
 		}
