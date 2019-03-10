@@ -15,6 +15,9 @@ import (
 	"libs.altipla.consulting/services"
 )
 
+type Endpoint = services.Endpoint
+type RemoteAddress string
+
 const beauthTokenEndpoint = "https://beauth.io/token"
 
 type oauthAccess struct {
@@ -87,4 +90,33 @@ func Local(address, clientID, clientSecret string, opts ...grpc.DialOption) (*gr
 		return Insecure(address, opts...)
 	}
 	return OAuthToken(address, clientID, clientSecret, opts...)
+}
+
+type bearerAccess struct {
+	bearer string
+}
+
+func (access bearerAccess) GetRequestMetadata(ctx context.Context, uri ...string) (map[string]string, error) {
+	return map[string]string{"authorization": "Bearer " + access.bearer}, nil
+}
+
+func (access bearerAccess) RequireTransportSecurity() bool {
+	return true
+}
+
+func WithBearer(bearer string) grpc.DialOption {
+	return grpc.WithPerRPCCredentials(bearerAccess{bearer})
+}
+
+func Remote(address RemoteAddress, opts ...grpc.DialOption) (*grpc.ClientConn, error) {
+	creds := credentials.NewTLS(&tls.Config{
+		ServerName: string(address),
+	})
+	opts = append(opts, grpc.WithTransportCredentials(creds))
+	return grpc.Dial(string(address), opts...)
+}
+
+func Internal(endpoint Endpoint, opts ...grpc.DialOption) (*grpc.ClientConn, error) {
+	opts = append(opts, grpc.WithInsecure())
+	return grpc.Dial(string(endpoint), opts...)
 }
