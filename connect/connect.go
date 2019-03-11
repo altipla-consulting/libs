@@ -113,7 +113,7 @@ func Remote(address RemoteAddress, opts ...grpc.DialOption) (*grpc.ClientConn, e
 		ServerName: string(address),
 	})
 	opts = append(opts, grpc.WithTransportCredentials(creds))
-	return grpc.Dial(string(address), opts...)
+	return grpc.Dial(string(address)+":443", opts...)
 }
 
 func Internal(endpoint Endpoint, opts ...grpc.DialOption) (*grpc.ClientConn, error) {
