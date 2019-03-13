@@ -4,8 +4,6 @@ import (
 	"context"
 
 	log "github.com/sirupsen/logrus"
-	"go.opencensus.io/plugin/ocgrpc"
-	"go.opencensus.io/trace"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -22,26 +20,23 @@ import (
 // if you use grpc.Dial it will report the compilation error inmediatly.
 type Endpoint string
 
-// Dial helps to open a connection to a remote GRPC server with tracing support and
-// other goodies configured in this package.
+// Dial helps to open a connection to a remote GRPC server.
 func Dial(target Endpoint, opts ...grpc.DialOption) (*grpc.ClientConn, error) {
-	opts = append(opts, grpc.WithStatsHandler(new(ocgrpc.ClientHandler)))
 	return grpc.Dial(string(target), opts...)
 }
 
-func grpcUnaryErrorLogger(enableTracer bool, serviceName, dsn string) grpc.UnaryServerInterceptor {
+func grpcUnaryErrorLogger(serviceName, dsn string) grpc.UnaryServerInterceptor {
 	var client *sentry.Client
 	if dsn != "" {
 		client = sentry.NewClient(dsn)
 	}
 
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-		ctx = sentry.WithContextRPC(ctx, serviceName, info.FullMethod)
-
-		if enableTracer {
-			span := trace.FromContext(ctx)
-			span.AddAttributes(trace.StringAttribute("app", serviceName))
+		if client != nil {
+			defer client.ReportPanics(ctx)
 		}
+
+		ctx = sentry.WithContextRPC(ctx, serviceName, info.FullMethod)
 
 		resp, err := handler(ctx, req)
 		if err != nil {
@@ -76,6 +71,11 @@ func grpcStreamErrorLogger(serviceName, dsn string) grpc.StreamServerInterceptor
 			serviceName:  serviceName,
 			method:       info.FullMethod,
 		}
+
+		if client != nil {
+			defer client.ReportPanics(wrapped.Context())
+		}
+
 		err := handler(srv, wrapped)
 		if err != nil {
 			logError(wrapped.Context(), client, err)

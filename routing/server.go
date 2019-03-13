@@ -155,6 +155,10 @@ func (s *Server) Group(g Group) {
 
 func (s *Server) decorate(lang string, handler Handler) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+		if s.sentryClient != nil {
+			defer s.sentryClient.ReportPanicsRequest(r)
+		}
+
 		ctx := r.Context()
 		ctx = context.WithValue(ctx, requestKey, r)
 		ctx = context.WithValue(ctx, paramsKey, ps)

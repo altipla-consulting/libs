@@ -36,6 +36,12 @@ func WithContext(ctx context.Context) context.Context {
 // new generated context that you should use everywhere annotating it with the
 // RPC service name and RPC method name. Used mostly for GRPC calls.
 func WithContextRPC(ctx context.Context, rpcService, rpcMethod string) context.Context {
+	// Do not re-add if it's already there.
+	present := ctx.Value(keySentry)
+	if present != nil {
+		return ctx
+	}
+
 	sentry := &Sentry{
 		rpcService: rpcService,
 		rpcMethod:  rpcMethod,

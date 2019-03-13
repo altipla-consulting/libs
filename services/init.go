@@ -16,11 +16,8 @@ import (
 	_ "net/http/pprof"
 
 	"cloud.google.com/go/profiler"
-	"contrib.go.opencensus.io/exporter/stackdriver"
 	log "github.com/sirupsen/logrus"
-	"go.opencensus.io/plugin/ocgrpc"
-	"go.opencensus.io/trace"
-	gotrace "golang.org/x/net/trace"
+	"golang.org/x/net/trace"
 	"google.golang.org/grpc"
 
 	"libs.altipla.consulting/errors"
@@ -41,10 +38,6 @@ type Service struct {
 	routingOpts         []routing.ServerOption
 
 	enableProfiler bool
-
-	enableTracer        bool
-	tracerGoogleProject string
-	traceExporter       *stackdriver.Exporter
 
 	enableGRPC       bool
 	grpcServer       *grpc.Server
@@ -92,14 +85,6 @@ func (service *Service) ConfigureProfiler() {
 	service.enableProfiler = !IsLocal()
 }
 
-// ConfigureTracer enables the Stackdriver Trace agent.
-func (service *Service) ConfigureTracer(googleProject string) {
-	if googleProject != "" && !IsLocal() {
-		service.enableTracer = true
-		service.tracerGoogleProject = googleProject
-	}
-}
-
 // ConfigureGRPC enables a GRPC server.
 func (service *Service) ConfigureGRPC() {
 	service.enableGRPC = true
@@ -113,13 +98,9 @@ func (service *Service) GRPCServer() *grpc.Server {
 
 	if service.grpcServer == nil {
 		opts := []grpc.ServerOption{
-			grpc.UnaryInterceptor(grpcUnaryErrorLogger(service.enableTracer, service.name, service.sentryDSN)),
+			grpc.UnaryInterceptor(grpcUnaryErrorLogger(service.name, service.sentryDSN)),
 			grpc.StreamInterceptor(grpcStreamErrorLogger(service.name, service.sentryDSN)),
 		}
-		if service.enableTracer {
-			opts = append(opts, grpc.StatsHandler(new(ocgrpc.ServerHandler)))
-		}
-
 		service.grpcServer = grpc.NewServer(opts...)
 	}
 
@@ -175,22 +156,6 @@ func (service *Service) Run() {
 		}
 	}
 
-	if service.enableTracer {
-		log.WithField("project", service.tracerGoogleProject).Info("Stackdriver Trace enabled")
-
-		var err error
-		service.traceExporter, err = stackdriver.NewExporter(stackdriver.Options{ProjectID: service.tracerGoogleProject})
-		if err != nil {
-			log.Fatal(err)
-		}
-		trace.RegisterExporter(service.traceExporter)
-
-		sampler := newCustomSampler()
-		trace.ApplyConfig(trace.Config{
-			DefaultSampler: sampler.Sampler(),
-		})
-	}
-
 	if service.enableRouting {
 		go func() {
 			log.Info("Routing server enabled")
@@ -217,7 +182,7 @@ func (service *Service) Run() {
 		}()
 	}
 
-	gotrace.AuthRequest = func(req *http.Request) (any, sensitive bool) { return true, true }
+	trace.AuthRequest = func(req *http.Request) (any, sensitive bool) { return true, true }
 	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) { fmt.Fprintf(w, "%s is ok\n", service.name) })
 
 	service.stopListener()
@@ -255,15 +220,6 @@ func (service *Service) stopListener() {
 				defer wg.Done()
 
 				service.grpcServer.GracefulStop()
-			}()
-		}
-
-		if service.enableTracer {
-			wg.Add(1)
-			go func() {
-				defer wg.Done()
-
-				service.traceExporter.Flush()
 			}()
 		}
 
