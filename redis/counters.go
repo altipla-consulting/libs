@@ -40,14 +40,14 @@ func (c *Counter) Get() (int64, error) {
 	return result, nil
 }
 
-func (c *Counter) Increment() error {
+func (c *Counter) Increment() (int64, error) {
 	return c.IncrementBy(1)
 }
 
-func (c *Counter) Decrement() error {
+func (c *Counter) Decrement() (int64, error) {
 	return c.IncrementBy(-1)
 }
 
-func (c *Counter) IncrementBy(value int64) error {
-	return c.db.sess.IncrBy(c.key, value).Err()
+func (c *Counter) IncrementBy(value int64) (int64, error) {
+	return c.db.sess.IncrBy(c.key, value).Result()
 }
