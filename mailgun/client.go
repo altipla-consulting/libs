@@ -72,7 +72,7 @@ type sendError struct {
 	Message string `json:"message"`
 }
 
-func (client *Client) Send(ctx context.Context, domain string, email *Email) error {
+func (client *Client) SendReturnID(ctx context.Context, domain string, email *Email) (string, error) {
 	mgclient := mailgun.NewMailgun(domain, client.apiKey)
 
 	deadline, ok := ctx.Deadline()
@@ -98,22 +98,30 @@ func (client *Client) Send(ctx context.Context, domain string, email *Email) err
 	message, id, err := mgclient.Send(msg)
 	if err != nil {
 		if neterr, ok := err.(net.Error); ok && neterr.Timeout() {
-			return ErrTimeout
+			return "", ErrTimeout
 		}
 		if mgerr, ok := err.(*mailgun.UnexpectedResponseError); ok {
 			errdata := new(sendError)
 			if err := json.Unmarshal(mgerr.Data, errdata); err == nil {
 				switch errdata.Message {
 				case "'to' parameter is not a valid address. please check documentation":
-					return errors.Trace(InvalidToEmailError{email.To.String()})
+					return "", errors.Trace(InvalidToEmailError{email.To.String()})
 				}
 			}
 		}
 
-		return errors.Wrapf(err, "send failed")
+		return "", errors.Wrapf(err, "send failed")
 	}
 
 	log.WithFields(log.Fields{"id": id, "message": message}).Info("Mailgun email sent")
+
+	return id, nil
+}
+
+func (client *Client) Send(ctx context.Context, domain string, email *Email) error {
+	if _, err := client.SendReturnID(ctx, domain, email); err != nil {
+		return errors.Trace(err)
+	}
 
 	return nil
 }
