@@ -35,5 +35,6 @@ require (
 	google.golang.org/appengine v1.4.0 // indirect
 	google.golang.org/genproto v0.0.0-20190108161440-ae2f86662275
 	google.golang.org/grpc v1.17.0
+	gopkg.in/yaml.v2 v2.2.2
 	upper.io/db.v3 v3.5.7+incompatible
 )
