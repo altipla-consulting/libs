@@ -32,6 +32,10 @@ type Sender interface {
 	Send(ctx context.Context, domain string, email *Email) error
 }
 
+type SenderReturnID interface {
+	SendReturnID(ctx context.Context, domain string, email *Email) (string, error)
+}
+
 type Validator interface {
 	ValidateEmail(ctx context.Context, email string) (bool, error)
 }
