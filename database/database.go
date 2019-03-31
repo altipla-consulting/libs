@@ -45,8 +45,12 @@ func Open(credentials Credentials, options ...Option) (*Database, error) {
 
 // Collection prepares a new collection using the table name of the model. It won't
 // make any query, it only prepares the structs.
-func (db *Database) Collection(model Model) *Collection {
-	return newCollection(db, model)
+func (db *Database) Collection(model Model, opts ...CollectionOption) *Collection {
+	c := newCollection(db, model)
+	for _, opt := range opts {
+		opt(c)
+	}
+	return c
 }
 
 // Close the connection. You should not use a database after closing it, nor any

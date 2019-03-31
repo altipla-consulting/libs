@@ -10,6 +10,8 @@ import (
 	"libs.altipla.consulting/errors"
 )
 
+type CollectionOption func(c *Collection)
+
 // Collection represents a table. You can apply further filters and operations
 // to the collection and then query it with one of our read methods (Get, GetAll, ...)
 // or use it to store new items (Put).
@@ -22,6 +24,7 @@ type Collection struct {
 	model         Model
 	props         []*Property
 	alias         string
+	h             *hooker
 }
 
 func newCollection(db *Database, model Model) *Collection {
@@ -35,6 +38,7 @@ func newCollection(db *Database, model Model) *Collection {
 		debug: db.debug,
 		model: model,
 		props: props,
+		h:     new(hooker),
 	}
 
 	return c
@@ -53,6 +57,7 @@ func (c *Collection) Clone() *Collection {
 		props:      c.props,
 		alias:      c.alias,
 		debug:      c.debug,
+		h:          c.h,
 	}
 }
 
@@ -199,6 +204,9 @@ func (c *Collection) Put(instance Model) error {
 		if err := h.OnAfterPutHook(); err != nil {
 			return errors.Trace(err)
 		}
+	}
+	if err := c.h.runAfterPut(instance); err != nil {
+		return errors.Trace(err)
 	}
 
 	return nil
