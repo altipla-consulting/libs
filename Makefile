@@ -15,9 +15,9 @@ lint:
 	@./infra/lint-errors.sh
 
 update-deps:
-	go get -u
-	go mod download
-	go mod tidy
+	actools go get -u
+	actools go mod download
+	actools go mod tidy
 
 protos:
 	actools protoc --go_out=paths=source_relative:. ./protos/datetime/datetime.proto
