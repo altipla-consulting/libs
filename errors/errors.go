@@ -348,6 +348,20 @@ func Cause(err error) error {
 	return err
 }
 
+// Is reports whether err or its cause matches target.
+func Is(err, target error) bool {
+	if target == nil {
+		return err == target
+	}
+	if err == target {
+		return true
+	}
+	if e, ok := err.(*altiplaError); ok {
+		return e.cause == target
+	}
+	return false
+}
+
 // Recover recovers from a panic in a defer. If there is no panic, Recover()
 // returns nil. To use, call error.Recover(recover()) and compare the result to nil.
 func Recover(p interface{}) error {
