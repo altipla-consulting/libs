@@ -5,6 +5,7 @@ const (
 	DE = "de"
 	EN = "en"
 	ES = "es"
+	EU = "eu"
 	FR = "fr"
 	IT = "it"
 	JA = "ja"
@@ -17,6 +18,7 @@ var All = []string{
 	DE,
 	EN,
 	ES,
+	EU,
 	FR,
 	IT,
 	JA,
@@ -29,6 +31,7 @@ var native = map[string]string{
 	"DE": "Deutsch",
 	"EN": "English",
 	"ES": "Español",
+	"EU": "Euskera",
 	"FR": "Français",
 	"IT": "Italiano",
 	"JA": "日本語",
