@@ -11,6 +11,9 @@ func getPluralCase(lang string, n int64) pluralCaseType {
 	case "en":
 		return getPluralCaseN1(n)
 
+	case "eu":
+		return getPluralCaseN1(n)
+
 	case "it":
 		return getPluralCaseN1(n)
 
