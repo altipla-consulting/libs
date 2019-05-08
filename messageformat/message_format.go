@@ -70,9 +70,10 @@ func (pcase pluralCaseType) String() string {
 	switch pcase {
 	case pluralCaseOne:
 		return "one"
-
 	case pluralCaseOther:
 		return "other"
+	case pluralCaseExact:
+		return "exact"
 	}
 
 	return fmt.Sprintf("unknown: %d", pcase)
@@ -104,10 +105,8 @@ func (block *pluralBlock) format(lang string, params []interface{}) (string, err
 	switch v := params[block.number].(type) {
 	case int64:
 		number = v
-
 	case int32:
 		number = int64(v)
-
 	case int:
 		number = int64(v)
 	}
@@ -115,7 +114,7 @@ func (block *pluralBlock) format(lang string, params []interface{}) (string, err
 	pcase := getPluralCase(lang, number)
 	var bestMatch *pluralCase
 	for _, c := range block.cases {
-		if c.caseType == pluralCaseExact && c.exactValue == block.number {
+		if c.caseType == pluralCaseExact && c.exactValue == number {
 			bestMatch = c
 			break
 		}
@@ -138,13 +137,13 @@ func (block *pluralBlock) format(lang string, params []interface{}) (string, err
 		return strings.Join(parts, ""), nil
 	}
 
-	return fmt.Sprintf("{MISSING PLURAL CASE: %s}", pcase), nil
+	return "", errors.Errorf("missing plural case: %s", pcase)
 }
 
 type parser struct {
 	input     []rune
-	pos       int64
-	start     int64
+	pos       int
+	start     int
 	subparser bool
 
 	blocks []messageBlock
@@ -168,11 +167,17 @@ func (p *parser) next() {
 	p.pos++
 }
 
-func (p *parser) len() int64 {
+func (p *parser) len() int {
 	return p.pos - p.start
 }
 
+const eofRune = rune(-1)
+
 func (p *parser) rune() rune {
+	if p.eof() {
+		return eofRune
+	}
+
 	return p.input[p.pos]
 }
 
@@ -191,7 +196,7 @@ func (p *parser) emit() string {
 }
 
 func (p *parser) eof() bool {
-	return p.pos == int64(len(p.input))
+	return p.pos == len(p.input)
 }
 
 func (p *parser) eatSpaces() {
@@ -292,7 +297,7 @@ func lexPlural(p *parser) (stateFn, error) {
 	p.emit()
 
 	p.eatSpaces()
-	for !p.eof() && p.len() < int64(len("plural")) {
+	for !p.eof() && p.len() < len("plural") {
 		p.next()
 	}
 	p.eatSpaces()
