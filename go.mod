@@ -13,7 +13,7 @@ require (
 	github.com/go-redis/redis v6.15.2+incompatible
 	github.com/go-sql-driver/mysql v1.4.1
 	github.com/gobuffalo/envy v1.7.0 // indirect
-	github.com/golang/mock v1.3.0 // indirect
+	github.com/golang/mock v1.3.1 // indirect
 	github.com/golang/protobuf v1.3.1
 	github.com/google/go-cmp v0.3.0 // indirect
 	github.com/google/pprof v0.0.0-20190502144155-8358a9778bd1 // indirect
@@ -27,10 +27,12 @@ require (
 	github.com/rogpeppe/go-internal v1.3.0 // indirect
 	github.com/sirupsen/logrus v1.4.1
 	github.com/stretchr/testify v1.3.0
-	golang.org/x/net v0.0.0-20190503192946-f4e77d36d62c
+	golang.org/x/net v0.0.0-20190509222800-a4d6f7feada5
 	golang.org/x/oauth2 v0.0.0-20190402181905-9f3314589c9a
 	golang.org/x/sys v0.0.0-20190509141414-a5b02f93d862 // indirect
 	golang.org/x/text v0.3.2
+	google.golang.org/api v0.5.0 // indirect
+	google.golang.org/appengine v1.5.0 // indirect
 	google.golang.org/genproto v0.0.0-20190508193815-b515fa19cec8 // indirect
 	google.golang.org/grpc v1.20.1
 	gopkg.in/yaml.v2 v2.2.2
