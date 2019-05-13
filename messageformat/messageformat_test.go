@@ -43,6 +43,9 @@ func TestFormat(t *testing.T) {
 		{"{0, plural, one {second priority} one {first priority}}", langs.ES, []interface{}{1}, "first priority"},
 		{"{0, plural, =1 {first priority} =1 {second priority}}", langs.ES, []interface{}{1}, "first priority"},
 
+		// Two different specific cases should not overwrite each other (old bug).
+		{"{0, plural, =1 {first} =2 {second}}", langs.ES, []interface{}{2}, "second"},
+
 		// Escape special chars.
 		{"escaped '' simple", langs.ES, []interface{}{}, "escaped ' simple"},
 		{"escaped '{' open", langs.ES, []interface{}{}, "escaped { open"},
@@ -56,6 +59,14 @@ func TestFormat(t *testing.T) {
 		// Plurals withing plurals.
 		{"{0, plural, one {{1, plural, one {foo}}}}", langs.ES, []interface{}{1, 1}, "foo"},
 		{"{0, plural, other {{1, plural, one {foo #}} #}}", langs.ES, []interface{}{2, 1}, "foo 1 2"},
+
+		// Real complex plurals case.
+		{`{0, plural, one {{1, plural, =0 {1 adulto} one {1 adulto y 1 niño} other {1 adulto y {1} niños}}} other {{1, plural, =0 {{0} adultos} one {{0} adultos y 1 niño} other {{0} adultos y {1} niños}}}}`, langs.ES, []interface{}{1, 0}, "1 adulto"},
+		{`{0, plural, one {{1, plural, =0 {1 adulto} one {1 adulto y 1 niño} other {1 adulto y {1} niños}}} other {{1, plural, =0 {{0} adultos} one {{0} adultos y 1 niño} other {{0} adultos y {1} niños}}}}`, langs.ES, []interface{}{1, 1}, "1 adulto y 1 niño"},
+		{`{0, plural, one {{1, plural, =0 {1 adulto} one {1 adulto y 1 niño} other {1 adulto y {1} niños}}} other {{1, plural, =0 {{0} adultos} one {{0} adultos y 1 niño} other {{0} adultos y {1} niños}}}}`, langs.ES, []interface{}{1, 2}, "1 adulto y 2 niños"},
+		{`{0, plural, one {{1, plural, =0 {1 adulto} one {1 adulto y 1 niño} other {1 adulto y {1} niños}}} other {{1, plural, =0 {{0} adultos} one {{0} adultos y 1 niño} other {{0} adultos y {1} niños}}}}`, langs.ES, []interface{}{2, 0}, "2 adultos"},
+		{`{0, plural, one {{1, plural, =0 {1 adulto} one {1 adulto y 1 niño} other {1 adulto y {1} niños}}} other {{1, plural, =0 {{0} adultos} one {{0} adultos y 1 niño} other {{0} adultos y {1} niños}}}}`, langs.ES, []interface{}{2, 1}, "2 adultos y 1 niño"},
+		{`{0, plural, one {{1, plural, =0 {1 adulto} one {1 adulto y 1 niño} other {1 adulto y {1} niños}}} other {{1, plural, =0 {{0} adultos} one {{0} adultos y 1 niño} other {{0} adultos y {1} niños}}}}`, langs.ES, []interface{}{2, 2}, "2 adultos y 2 niños"},
 	}
 	for _, item := range items {
 		mf, err := New(item.message)

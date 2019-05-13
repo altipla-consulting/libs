@@ -75,7 +75,7 @@ func (s *state) walk(node parse.Node) {
 
 		var bestCase *parse.PluralCase
 		for _, c := range node.Cases {
-			if c.Category == parse.PluralValue {
+			if c.Category == parse.PluralValue && int64(c.Value) == n {
 				bestCase = c
 				break
 			}
