@@ -8,10 +8,10 @@ import (
 )
 
 type testItem struct {
-	message  string
-	lang     string
-	params   []interface{}
-	expected string
+	input  string
+	lang   string
+	params []interface{}
+	want   string
 }
 
 func TestFormat(t *testing.T) {
@@ -69,11 +69,11 @@ func TestFormat(t *testing.T) {
 		{`{0, plural, one {{1, plural, =0 {1 adulto} one {1 adulto y 1 niño} other {1 adulto y {1} niños}}} other {{1, plural, =0 {{0} adultos} one {{0} adultos y 1 niño} other {{0} adultos y {1} niños}}}}`, langs.ES, []interface{}{2, 2}, "2 adultos y 2 niños"},
 	}
 	for _, item := range items {
-		mf, err := New(item.message)
-		require.NoError(t, err, item.message)
+		mf, err := New(item.input)
+		require.NoError(t, err, item.input)
 
 		result, err := mf.Format(item.lang, item.params)
-		require.NoError(t, err, item.message)
-		require.Equal(t, result, item.expected)
+		require.NoError(t, err, item.input)
+		require.Equal(t, result, item.want)
 	}
 }
