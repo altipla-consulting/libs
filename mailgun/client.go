@@ -17,16 +17,9 @@ import (
 )
 
 var (
-	ErrTimeout = errors.New("timeout")
+	ErrTimeout        = errors.New("timeout")
+	ErrInvalidAddress = errors.New("invalid address")
 )
-
-type InvalidToEmailError struct {
-	Email string
-}
-
-func (err InvalidToEmailError) Error() string {
-	return "invalid to email: " + err.Email
-}
 
 type Sender interface {
 	Send(ctx context.Context, domain string, email *Email) error
@@ -61,15 +54,6 @@ type Email struct {
 type Attachment struct {
 	Filename string
 	Content  []byte
-}
-
-// TODO(ernesto): Debemos usar este tipo de error para reconocer rechazos en Mailgun.
-type SendRejectedError struct {
-	Reason string
-}
-
-func (err SendRejectedError) Error() string {
-	return "send rejected: " + err.Reason
 }
 
 type sendError struct {
@@ -109,7 +93,7 @@ func (client *Client) SendReturnID(ctx context.Context, domain string, email *Em
 			if err := json.Unmarshal(mgerr.Data, errdata); err == nil {
 				switch errdata.Message {
 				case "'to' parameter is not a valid address. please check documentation":
-					return "", errors.Trace(InvalidToEmailError{email.To.String()})
+					return "", errors.Wrapf(ErrInvalidAddress, "email: %s", email.To.String())
 				}
 			}
 		}
