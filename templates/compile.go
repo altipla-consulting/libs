@@ -2,6 +2,8 @@ package templates
 
 import (
 	"html/template"
+	"io"
+	"io/ioutil"
 	"text/template/parse"
 
 	"libs.altipla.consulting/collections"
@@ -87,6 +89,30 @@ func Load(folders ...string) (*template.Template, error) {
 		if _, err := tmpl.ParseGlob(folder); err != nil {
 			return nil, errors.Errorf("cannot parse folder %s: %s", folder, err)
 		}
+	}
+
+	for _, template := range tmpl.Templates() {
+		if template.Tree == nil {
+			continue
+		}
+
+		template.Tree.Root.Nodes = applyTreeChanges(template.Tree.Root.Nodes)
+	}
+
+	return tmpl, nil
+}
+
+// LoadFromReader loads a template from a reader.
+func LoadFromReader(r io.Reader) (*template.Template, error) {
+	tmpl := template.New("root").Funcs(viewsFuncs)
+
+	content, err := ioutil.ReadAll(r)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+	tmpl, err = tmpl.Parse(string(content))
+	if err != nil {
+		return nil, errors.Trace(err)
 	}
 
 	for _, template := range tmpl.Templates() {
