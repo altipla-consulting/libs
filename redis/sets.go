@@ -1,7 +1,6 @@
 package redis
 
 import (
-	"fmt"
 	"strconv"
 
 	"github.com/go-redis/redis"
@@ -61,6 +60,10 @@ func (set *StringsSet) sort(sort *redis.Sort) ([]string, error) {
 	return result, nil
 }
 
+func (set *StringsSet) Contains(value string) (bool, error) {
+	return set.db.sess.SIsMember(set.key, value).Result()
+}
+
 type Int64Set struct {
 	db  *Database
 	key string
@@ -92,7 +95,7 @@ func (set *Int64Set) Members() ([]int64, error) {
 func (set *Int64Set) Add(values ...int64) error {
 	members := make([]interface{}, len(values))
 	for i := range values {
-		members[i] = fmt.Sprintf("%d", values[i])
+		members[i] = strconv.FormatInt(values[i], 10)
 	}
 
 	return set.db.sess.SAdd(set.key, members...).Err()
@@ -101,8 +104,12 @@ func (set *Int64Set) Add(values ...int64) error {
 func (set *Int64Set) Remove(values ...int64) error {
 	members := make([]interface{}, len(values))
 	for i := range values {
-		members[i] = fmt.Sprintf("%d", values[i])
+		members[i] = strconv.FormatInt(values[i], 10)
 	}
 
 	return set.db.sess.SRem(set.key, members...).Err()
+}
+
+func (set *Int64Set) Contains(value int64) (bool, error) {
+	return set.db.sess.SIsMember(set.key, strconv.FormatInt(value, 10)).Result()
 }
