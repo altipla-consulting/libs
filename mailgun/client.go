@@ -6,11 +6,9 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net"
-	"net/http"
 	"net/mail"
-	"time"
 
-	"github.com/mailgun/mailgun-go"
+	"github.com/mailgun/mailgun-go/v3"
 	log "github.com/sirupsen/logrus"
 
 	"libs.altipla.consulting/errors"
@@ -42,13 +40,14 @@ func NewClient(apiKey string) *Client {
 }
 
 type Email struct {
-	From        mail.Address
-	To          mail.Address
-	Subject     string
-	HTML        string
-	Tags        []string
-	ReplyTo     string
-	Attachments []*Attachment
+	From          mail.Address
+	To            mail.Address
+	Subject       string
+	HTML          string
+	Tags          []string
+	ReplyTo       string
+	Attachments   []*Attachment
+	UserVariables map[string]string
 }
 
 type Attachment struct {
@@ -63,27 +62,26 @@ type sendError struct {
 func (client *Client) SendReturnID(ctx context.Context, domain string, email *Email) (string, error) {
 	mgclient := mailgun.NewMailgun(domain, client.apiKey)
 
-	deadline, ok := ctx.Deadline()
-	if ok {
-		mgclient.SetClient(&http.Client{
-			Timeout: deadline.Sub(time.Now()),
-		})
-	}
-
-	msg := mailgun.NewMessage(email.From.String(), email.Subject, "", email.To.String())
+	msg := mgclient.NewMessage(email.From.String(), email.Subject, "", email.To.String())
 	msg.SetHtml(email.HTML)
 	if email.ReplyTo != "" {
 		msg.SetReplyTo(email.ReplyTo)
 	}
 	for _, tag := range email.Tags {
-		msg.AddTag(tag)
+		if err := msg.AddTag(tag); err != nil {
+			return "", errors.Trace(err)
+		}
 	}
-
 	for _, attachment := range email.Attachments {
 		msg.AddReaderAttachment(attachment.Filename, ioutil.NopCloser(bytes.NewReader(attachment.Content)))
 	}
+	for k, v := range email.UserVariables {
+		if err := msg.AddVariable(k, v); err != nil {
+			return "", errors.Trace(err)
+		}
+	}
 
-	message, id, err := mgclient.Send(msg)
+	message, id, err := mgclient.Send(ctx, msg)
 	if err != nil {
 		if neterr, ok := err.(net.Error); ok && neterr.Timeout() {
 			return "", ErrTimeout
@@ -117,14 +115,7 @@ func (client *Client) Send(ctx context.Context, domain string, email *Email) err
 func (client *Client) ValidateEmail(ctx context.Context, email string) (bool, error) {
 	validator := mailgun.NewEmailValidator(client.apiKey)
 
-	deadline, ok := ctx.Deadline()
-	if ok {
-		validator.SetClient(&http.Client{
-			Timeout: deadline.Sub(time.Now()),
-		})
-	}
-
-	ev, err := validator.ValidateEmail(email, false)
+	ev, err := validator.ValidateEmail(ctx, email, false)
 	if err != nil {
 		return false, errors.Wrapf(err, "validate failed")
 	}
