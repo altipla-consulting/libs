@@ -58,3 +58,16 @@ func RemoveInt64(list []int64, remove int64) []int64 {
 
 	return result
 }
+
+// DifferenceInt64 returns the items present in a and not in b.
+func DifferenceInt64(a, b []int64) []int64 {
+	result := []int64{}
+
+	for _, item := range a {
+		if !HasInt64(b, item) {
+			result = append(result, item)
+		}
+	}
+
+	return result
+}

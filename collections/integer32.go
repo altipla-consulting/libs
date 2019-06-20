@@ -58,3 +58,16 @@ func RemoveInt32(list []int32, remove int32) []int32 {
 
 	return result
 }
+
+// DifferenceInt32 returns the items present in a and not in b.
+func DifferenceInt32(a, b []int32) []int32 {
+	result := []int32{}
+
+	for _, item := range a {
+		if !HasInt32(b, item) {
+			result = append(result, item)
+		}
+	}
+
+	return result
+}
