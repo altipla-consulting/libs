@@ -73,6 +73,8 @@ func (s *state) walk(node parse.Node) {
 			s.errorf("variable must be numeric for plurals: %s: %v", node.Variable, value)
 		}
 
+		n += int64(node.Offset)
+
 		var bestCase *parse.PluralCase
 		for _, c := range node.Cases {
 			if c.Category == parse.PluralValue && int64(c.Value) == n {
@@ -85,7 +87,7 @@ func (s *state) walk(node parse.Node) {
 			}
 		}
 		if bestCase == nil {
-			s.errorf("plural missing a case for the variable: %s: %v", node.Variable, value)
+			s.errorf("plural missing a case for the variable %s: %v", node.Variable, value)
 		}
 
 		s.walk(bestCase.Content)

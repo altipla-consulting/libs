@@ -67,6 +67,9 @@ func TestFormat(t *testing.T) {
 		{`{0, plural, one {{1, plural, =0 {1 adulto} one {1 adulto y 1 niño} other {1 adulto y {1} niños}}} other {{1, plural, =0 {{0} adultos} one {{0} adultos y 1 niño} other {{0} adultos y {1} niños}}}}`, langs.ES, []interface{}{2, 0}, "2 adultos"},
 		{`{0, plural, one {{1, plural, =0 {1 adulto} one {1 adulto y 1 niño} other {1 adulto y {1} niños}}} other {{1, plural, =0 {{0} adultos} one {{0} adultos y 1 niño} other {{0} adultos y {1} niños}}}}`, langs.ES, []interface{}{2, 1}, "2 adultos y 1 niño"},
 		{`{0, plural, one {{1, plural, =0 {1 adulto} one {1 adulto y 1 niño} other {1 adulto y {1} niños}}} other {{1, plural, =0 {{0} adultos} one {{0} adultos y 1 niño} other {{0} adultos y {1} niños}}}}`, langs.ES, []interface{}{2, 2}, "2 adultos y 2 niños"},
+
+		// Offset in plurals
+		{`{0, plural, offset:1, =1 {1 foo} =2 {2 foo}}`, langs.ES, []interface{}{1}, "2 foo"},
 	}
 	for _, item := range items {
 		mf, err := New(item.input)

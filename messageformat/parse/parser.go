@@ -167,7 +167,26 @@ func (t *Tree) parsePlural() Node {
 	t.expect(itemPlural, "plural")
 	t.expect(itemDelimiter, "second plural delimiter")
 
-	for t.peek().typ != itemRightDelim {
+CasesLoop:
+	for {
+		switch t.peek().typ {
+		case itemPluralOffset:
+			t.next()
+			token = t.next()
+			if token.typ != itemPluralOffsetValue {
+				t.unexpected(token, "plural offset value")
+			}
+
+			var err error
+			p.Offset, err = strconv.Atoi(token.val)
+			if err != nil {
+				t.errorf("unexpected numeric literal parsing error: %v: %v", token.val, err)
+			}
+
+		case itemRightDelim:
+			break CasesLoop
+		}
+
 		p.Cases = append(p.Cases, t.parsePluralCase(p.Variable))
 	}
 	t.next()
@@ -193,7 +212,7 @@ func (t *Tree) parsePluralCase(pluralRecent string) *PluralCase {
 		var err error
 		c.Value, err = strconv.Atoi(token.val[1:])
 		if err != nil {
-			t.errorf("unexpected numeric literal parsing error: %v: %v", token.val, err)
+			t.errorf("unexpected numeric literal parsing error: %v: %v", token.val[1:], err)
 		}
 	default:
 		t.unexpected(token, "plural case")

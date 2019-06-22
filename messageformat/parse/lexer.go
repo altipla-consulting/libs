@@ -11,18 +11,20 @@ import (
 type itemType string
 
 const (
-	itemEOF          = itemType("eof")
-	itemText         = itemType("text")
-	itemError        = itemType("error")
-	itemLeftDelim    = itemType("leftDelim")
-	itemRightDelim   = itemType("rightDelim")
-	itemIdentifier   = itemType("identifier")
-	itemPlural       = itemType("plural")
-	itemDelimiter    = itemType("delimiter")
-	itemPluralOne    = itemType("pluralOne")
-	itemPluralOther  = itemType("pluralOther")
-	itemPluralValue  = itemType("pluralValue")
-	itemPluralRecent = itemType("pluralRecent")
+	itemEOF               = itemType("eof")
+	itemText              = itemType("text")
+	itemError             = itemType("error")
+	itemLeftDelim         = itemType("leftDelim")
+	itemRightDelim        = itemType("rightDelim")
+	itemIdentifier        = itemType("identifier")
+	itemPlural            = itemType("plural")
+	itemDelimiter         = itemType("delimiter")
+	itemPluralOne         = itemType("pluralOne")
+	itemPluralOther       = itemType("pluralOther")
+	itemPluralValue       = itemType("pluralValue")
+	itemPluralRecent      = itemType("pluralRecent")
+	itemPluralOffset      = itemType("pluralOffset")
+	itemPluralOffsetValue = itemType("pluralOffsetValue")
 )
 
 const eof = -1
@@ -311,6 +313,14 @@ func lexPluralCase(l *lexer) stateFn {
 		return l.errorf("unclosed plural cases")
 	}
 
+	return lexPluralCaseCategory
+}
+
+// lexPluralCaseCategory parses the header of the plural case until the open brace appears.
+func lexPluralCaseCategory(l *lexer) stateFn {
+	l.acceptRun(" \t")
+	l.ignore()
+
 	for {
 		if r := l.next(); !isAlphaNumeric(r) && r != '=' {
 			break
@@ -329,17 +339,44 @@ func lexPluralCase(l *lexer) stateFn {
 			return l.errorf("unexpected numeric literal in plural case value: %s: %v", word, err)
 		}
 		l.emit(itemPluralValue)
+	case word == "offset":
+		l.emit(itemPluralOffset)
+
+		if r := l.next(); r != ':' {
+			return l.errorf("unexpected character in plural offset: %#U", r)
+		}
+		l.ignore()
+
+		l.acceptRun(" \t")
+		l.ignore()
+
+		for {
+			if r := l.next(); r == ',' || r == eof {
+				break
+			}
+		}
+		l.backup()
+
+		if _, err := strconv.Atoi(l.input[l.start:l.pos]); err != nil {
+			return l.errorf("unexpected numeric literal in plural case offset value: %s: %v", word, err)
+		}
+		l.emit(itemPluralOffsetValue)
+	default:
+		return l.errorf("unexpected plural word: %v", word)
 	}
 
 	l.acceptRun(" \t")
 	l.ignore()
 
-	if r := l.next(); r != leftDelim {
-		return l.errorf("unexpected character in plural: %#U", r)
+	switch r := l.next(); r {
+	case leftDelim:
+		l.emit(itemLeftDelim)
+		return lexText
+	case ',':
+		return lexPluralCaseCategory
+	default:
+		return l.errorf("unexpected character in plural category: %#U", r)
 	}
-	l.emit(itemLeftDelim)
-
-	return lexText
 }
 
 // isSpace reports whether r is a space character.

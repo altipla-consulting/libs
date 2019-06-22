@@ -63,6 +63,7 @@ type PluralNode struct {
 	NodeType
 	Variable string
 	Cases    []*PluralCase
+	Offset   int
 }
 
 func (p *PluralNode) String() string {
