@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"libs.altipla.consulting/errors"
 )
@@ -18,6 +19,26 @@ type renderReply struct {
 }
 
 func Render(ctx context.Context, content string) (string, error) {
+	for ctx.Err() != nil {
+		result, err := renderShort(ctx, content)
+		if err != nil {
+			if errors.Is(err, context.DeadlineExceeded) {
+				continue
+			}
+
+			return "", errors.Trace(err)
+		}
+
+		return result, nil
+	}
+
+	return "", errors.Trace(ctx.Err())
+}
+
+func renderShort(ctx context.Context, content string) (string, error) {
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+
 	data := &renderRequest{
 		Content: content,
 	}
