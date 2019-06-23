@@ -1,6 +1,8 @@
 package datetime
 
 import (
+	"fmt"
+	"sync"
 	"time"
 
 	"github.com/golang/protobuf/ptypes"
@@ -8,6 +10,23 @@ import (
 
 	pbdatetime "libs.altipla.consulting/protos/datetime"
 )
+
+var (
+	europeMadrid *time.Location
+	locOnce      sync.Once
+)
+
+func EuropeMadrid() *time.Location {
+	locOnce.Do(func() {
+		var err error
+		europeMadrid, err = time.LoadLocation("Europe/Madrid")
+		if err != nil {
+			panic(fmt.Sprintf("cannot load location Europe/Madrid: %v", err))
+		}
+	})
+
+	return europeMadrid
+}
 
 // DiffDays returns the difference between the two dates in days.
 func DiffDays(a, b time.Time) int64 {
