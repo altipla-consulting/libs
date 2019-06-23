@@ -96,7 +96,7 @@ func logError(ctx context.Context, client *sentry.Client, err error) {
 
 		// Do not notify those status codes.
 		switch grpcerr.Code() {
-		case codes.InvalidArgument, codes.NotFound, codes.AlreadyExists, codes.FailedPrecondition, codes.Aborted, codes.Unimplemented, codes.Canceled:
+		case codes.InvalidArgument, codes.NotFound, codes.AlreadyExists, codes.FailedPrecondition, codes.Aborted, codes.Unimplemented, codes.Canceled, codes.Unauthenticated:
 			return
 		}
 	} else {
