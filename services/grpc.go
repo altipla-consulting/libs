@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
@@ -101,6 +102,14 @@ func logError(ctx context.Context, client *sentry.Client, err error) {
 		}
 	} else {
 		log.WithFields(errors.LogFields(err)).Error("Unknown error in GRPC call")
+	}
+
+	// Do not notify UTF-8 decoding errors.
+	//
+	// These kind of errors are common when receiving Envoy access logs or validating
+	// HTML inputs in admin editors.
+	if strings.HasPrefix(err.Error(), "rpc error: code = Internal desc = grpc: failed to unmarshal the received message proto: field") && strings.HasSuffix(err.Error(), "contains invalid UTF-8") {
+		return
 	}
 
 	if client != nil {
