@@ -19,7 +19,7 @@ type renderReply struct {
 }
 
 func Render(ctx context.Context, content string) (string, error) {
-	for ctx.Err() != nil {
+	for ctx.Err() == nil {
 		result, err := renderShort(ctx, content)
 		if err != nil {
 			if errors.Is(err, context.DeadlineExceeded) {
