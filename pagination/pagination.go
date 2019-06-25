@@ -5,20 +5,22 @@ import (
 	"encoding/base64"
 	"fmt"
 	"reflect"
-	"strconv"
 
 	"github.com/golang/protobuf/proto"
 
 	"libs.altipla.consulting/database"
 	"libs.altipla.consulting/errors"
-	pb "libs.altipla.consulting/protos/pagination"
+	pb "libs.altipla.consulting/pagination/internal/model"
 )
 
 const DefaultPageSize = 50
 
+var ErrInvalidPageToken = errors.New("invalid page token")
+
 type Pager struct {
 	NextPageToken string
 	TotalSize     int32
+	PrevPageToken string
 
 	c         *database.Collection
 	params    []*pagerParam
@@ -64,27 +66,27 @@ func (pager *Pager) Fetch(models interface{}) error {
 	if pager.pageToken != "" {
 		decoded, err := base64.StdEncoding.DecodeString(pager.pageToken)
 		if err != nil {
-			return errors.Wrapf(err, "cannot decode token")
+			return errors.Wrapf(ErrInvalidPageToken, "cannot decode token: %v", err)
 		}
 		status := new(pb.Status)
 		if err := proto.Unmarshal(decoded, status); err != nil {
-			return errors.Wrapf(err, "cannot unmarshal token")
+			return errors.Wrapf(ErrInvalidPageToken, "cannot unmarshal token: %v", err)
+		}
+
+		start = status.Cursor
+		if status.End {
+			start = status.Cursor - int64(pager.pageSize)
+			if start < 0 {
+				start = 0
+			}
 		}
 
 		if paramsChecksum != status.ParamsChecksum {
-			return errors.Errorf("wrong pager status")
-		}
-
-		if status.Cursor != "" {
-			start, err = strconv.ParseInt(status.Cursor, 10, 64)
-			if err != nil {
-				return errors.Wrapf(err, "cannot decode cursor")
-			}
+			return errors.Wrapf(ErrInvalidPageToken, "wrong pager checksum: %s != %s", paramsChecksum, status.ParamsChecksum)
 		}
 	}
 
 	c := pager.c.Clone().Offset(start).Limit(int64(pager.pageSize))
-
 	if err := c.GetAll(models); err != nil {
 		return errors.Trace(err)
 	}
@@ -96,15 +98,27 @@ func (pager *Pager) Fetch(models interface{}) error {
 	pager.TotalSize = int32(n)
 
 	end := start + int64(reflect.ValueOf(models).Elem().Len())
-	if int64(pager.TotalSize) > end {
+	if n > end {
 		token, err := proto.Marshal(&pb.Status{
 			ParamsChecksum: paramsChecksum,
-			Cursor:         fmt.Sprintf("%d", end),
+			Cursor:         end,
 		})
 		if err != nil {
-			return errors.Wrapf(err, "cannot marshal token")
+			return errors.Wrapf(err, "cannot marshal next token")
 		}
 		pager.NextPageToken = base64.StdEncoding.EncodeToString(token)
+	}
+
+	if n > 0 {
+		token, err := proto.Marshal(&pb.Status{
+			ParamsChecksum: paramsChecksum,
+			Cursor:         n,
+			End:            true,
+		})
+		if err != nil {
+			return errors.Wrapf(err, "cannot marshal prev token")
+		}
+		pager.PrevPageToken = base64.StdEncoding.EncodeToString(token)
 	}
 
 	return nil
