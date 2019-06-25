@@ -19,20 +19,23 @@ type renderReply struct {
 }
 
 func Render(ctx context.Context, content string) (string, error) {
+	var lastErr string
 	for ctx.Err() == nil {
 		result, err := renderShort(ctx, content)
 		if err != nil {
+			lastErr = err.Error()
 			if errors.Is(err, context.DeadlineExceeded) {
+				return "", errors.Trace(err)
+			} else {
+				time.Sleep(500 * time.Millisecond)
 				continue
 			}
-
-			return "", errors.Trace(err)
 		}
 
 		return result, nil
 	}
 
-	return "", errors.Trace(ctx.Err())
+	return "", errors.Wrapf(ctx.Err(), "last error: %v", lastErr)
 }
 
 func renderShort(ctx context.Context, content string) (string, error) {
