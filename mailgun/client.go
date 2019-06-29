@@ -69,7 +69,7 @@ func (client *Client) SendReturnID(ctx context.Context, domain string, email *Em
 	}
 	for _, tag := range email.Tags {
 		if err := msg.AddTag(tag); err != nil {
-			return "", errors.Trace(err)
+			return "", errors.Wrapf(err, "failed tag: %s; all tags: %v", tag, email.Tags)
 		}
 	}
 	for _, attachment := range email.Attachments {
