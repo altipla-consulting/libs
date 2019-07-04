@@ -4,7 +4,7 @@ syntax = "proto3";
 package libs.pagination.internal.proto;
 
 message Status {
-  string params_checksum = 1;
+  string checksum = 1;
   int64 cursor = 3;
   bool end = 4;
 }

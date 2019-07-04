@@ -1,12 +1,12 @@
 package pagination
 
 import (
-	"crypto/md5"
 	"encoding/base64"
-	"fmt"
 	"reflect"
 
 	"github.com/golang/protobuf/proto"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"libs.altipla.consulting/database"
 	"libs.altipla.consulting/errors"
@@ -15,15 +15,12 @@ import (
 
 const DefaultPageSize = 50
 
-var ErrInvalidPageToken = errors.New("invalid page token")
-
 type Pager struct {
 	NextPageToken string
 	TotalSize     int32
 	PrevPageToken string
 
 	c         *database.Collection
-	params    []*pagerParam
 	pageSize  int32
 	pageToken string
 }
@@ -40,85 +37,69 @@ func (pager *Pager) SetInputs(pageToken string, pageSize int32) {
 	if pager.pageSize <= 0 || pager.pageSize > DefaultPageSize {
 		pager.pageSize = DefaultPageSize
 	}
-
-	pager.RegisterParam("PageSize", pageSize)
-}
-
-type pagerParam struct {
-	key   string
-	value interface{}
-}
-
-func (pager *Pager) RegisterParam(key string, value interface{}) {
-	pager.params = append(pager.params, &pagerParam{key, value})
 }
 
 func (pager *Pager) Fetch(models interface{}) error {
-	checksums := []byte{}
-	for _, param := range pager.params {
-		checksums = append(checksums, []byte(param.key)...)
-		checksums = append(checksums, []byte(fmt.Sprintf("%+v", param.value))...)
-	}
-	md5Checksum := md5.Sum(checksums)
-	paramsChecksum := base64.StdEncoding.EncodeToString(md5Checksum[:])
+	c := pager.c.Clone().Limit(int64(pager.pageSize))
+	checksum := c.Checksum()
 
 	var start int64
 	if pager.pageToken != "" {
-		decoded, err := base64.StdEncoding.DecodeString(pager.pageToken)
+		decoded, err := base64.RawURLEncoding.DecodeString(pager.pageToken)
 		if err != nil {
-			return errors.Wrapf(ErrInvalidPageToken, "cannot decode token: %v", err)
+			return status.Errorf(codes.InvalidArgument, "invalid pagination token: %v: %v", pager.pageToken, err)
 		}
-		status := new(pb.Status)
-		if err := proto.Unmarshal(decoded, status); err != nil {
-			return errors.Wrapf(ErrInvalidPageToken, "cannot unmarshal token: %v", err)
+		in := new(pb.Status)
+		if err := proto.Unmarshal(decoded, in); err != nil {
+			return status.Errorf(codes.InvalidArgument, "invalid pagination token: %v: %v", pager.pageToken, err)
 		}
 
-		start = status.Cursor
-		if status.End {
-			start = status.Cursor - int64(pager.pageSize)
+		start = in.Cursor
+		if in.End {
+			start = in.Cursor - int64(pager.pageSize)
 			if start < 0 {
 				start = 0
 			}
 		}
 
-		if paramsChecksum != status.ParamsChecksum {
-			return errors.Wrapf(ErrInvalidPageToken, "wrong pager checksum: %s != %s", paramsChecksum, status.ParamsChecksum)
+		if checksum != in.Checksum {
+			return status.Errorf(codes.InvalidArgument, "invalid pagination token: %v: wrong checksum", pager.pageToken)
 		}
 	}
 
-	c := pager.c.Clone().Offset(start).Limit(int64(pager.pageSize))
+	c = c.Offset(start)
 	if err := c.GetAll(models); err != nil {
 		return errors.Trace(err)
 	}
 
 	n, err := pager.c.Count()
 	if err != nil {
-		return errors.Wrapf(err, "cannot count records")
+		return errors.Trace(err)
 	}
 	pager.TotalSize = int32(n)
 
 	end := start + int64(reflect.ValueOf(models).Elem().Len())
 	if n > end {
 		token, err := proto.Marshal(&pb.Status{
-			ParamsChecksum: paramsChecksum,
-			Cursor:         end,
+			Checksum: checksum,
+			Cursor:   end,
 		})
 		if err != nil {
-			return errors.Wrapf(err, "cannot marshal next token")
+			return errors.Trace(err)
 		}
-		pager.NextPageToken = base64.StdEncoding.EncodeToString(token)
+		pager.NextPageToken = base64.RawURLEncoding.EncodeToString(token)
 	}
 
 	if n > 0 {
 		token, err := proto.Marshal(&pb.Status{
-			ParamsChecksum: paramsChecksum,
-			Cursor:         n,
-			End:            true,
+			Checksum: checksum,
+			Cursor:   n,
+			End:      true,
 		})
 		if err != nil {
-			return errors.Wrapf(err, "cannot marshal prev token")
+			return errors.Trace(err)
 		}
-		pager.PrevPageToken = base64.StdEncoding.EncodeToString(token)
+		pager.PrevPageToken = base64.RawURLEncoding.EncodeToString(token)
 	}
 
 	return nil
