@@ -188,3 +188,12 @@ func FilterIsNotNil(column string) Condition {
 		sql: fmt.Sprintf("%s IS NOT NULL", column),
 	}
 }
+
+// FilterLikeIgnoreCase filter rows with a LIKE match with wildcards in both sides
+// and ignoring the case of the values.
+func FilterLikeIgnoreCase(column, value string) Condition {
+	return &sqlCondition{
+		sql:    "LOWER(" + column + ") LIKE",
+		values: []interface{}{"%" + EscapeLike(value) + "%"},
+	}
+}

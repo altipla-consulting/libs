@@ -231,6 +231,12 @@ func (c *Collection) FilterIsNotNil(column string) *Collection {
 	return c.FilterCond(FilterIsNotNil(column))
 }
 
+// FilterLikeIgnoreCase filter rows with a LIKE match with wildcards in both sides
+// and ignoring the case of the values.
+func (c *Collection) FilterLikeIgnoreCase(column, value string) *Collection {
+	return c.FilterCond(FilterLikeIgnoreCase(column, value))
+}
+
 // FilterCond applies a generic condition to the collection. We have some helpers
 // in this library to build conditions; and other libraries (like github.com/altipla-consulting/geo)
 // can implement their own conditions too.
