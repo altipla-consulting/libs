@@ -1,9 +1,0 @@
-
-syntax = "proto3";
-
-package libs.pagination.internal.proto;
-
-message Status {
-  string checksum = 1;
-  int64 cursor = 3;
-}

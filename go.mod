@@ -24,6 +24,7 @@ require (
 	github.com/onsi/gomega v1.5.0 // indirect
 	github.com/rogpeppe/go-internal v1.3.0 // indirect
 	github.com/sirupsen/logrus v1.4.1
+	github.com/speps/go-hashids v2.0.0+incompatible
 	github.com/stretchr/testify v1.3.0
 	golang.org/x/net v0.0.0-20190509222800-a4d6f7feada5
 	golang.org/x/oauth2 v0.0.0-20190402181905-9f3314589c9a

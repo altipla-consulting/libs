@@ -1,9 +1,9 @@
 package database
 
 import (
-	"crypto/md5"
 	"database/sql"
 	"fmt"
+	"hash/crc32"
 	"log"
 	"reflect"
 	"strings"
@@ -603,7 +603,7 @@ func (c *Collection) FilterNotExists(sub *Collection, join string) *Collection {
 // Checksum returns a checksum of the filters, conditions, table name, ... and other
 // internal data of the collection that identifies it. It won't include the
 // columns, so you can add or remove them without busting the checksums.
-func (c *Collection) Checksum() string {
+func (c *Collection) Checksum() uint32 {
 	var checksum []string
 	checksum = append(checksum, c.model.TableName())
 	checksum = append(checksum, c.orders...)
@@ -616,5 +616,5 @@ func (c *Collection) Checksum() string {
 	checksum = append(checksum, c.alias)
 	checksum = append(checksum, fmt.Sprintf("%d", c.limit))
 
-	return fmt.Sprintf("%x", md5.Sum([]byte(strings.Join(checksum, ""))))
+	return crc32.ChecksumIEEE([]byte(strings.Join(checksum, "")))
 }
