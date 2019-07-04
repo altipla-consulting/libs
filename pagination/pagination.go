@@ -55,12 +55,6 @@ func (pager *Pager) Fetch(models interface{}) error {
 		}
 
 		start = in.Cursor
-		if in.End {
-			start = in.Cursor - int64(pager.pageSize)
-			if start < 0 {
-				start = 0
-			}
-		}
 
 		if checksum != in.Checksum {
 			return status.Errorf(codes.InvalidArgument, "invalid pagination token: %v: wrong checksum", pager.pageToken)
@@ -90,11 +84,10 @@ func (pager *Pager) Fetch(models interface{}) error {
 		pager.NextPageToken = base64.RawURLEncoding.EncodeToString(token)
 	}
 
-	if n > 0 {
+	if start > 0 {
 		token, err := proto.Marshal(&pb.Status{
 			Checksum: checksum,
-			Cursor:   n,
-			End:      true,
+			Cursor:   start - int64(pager.pageSize),
 		})
 		if err != nil {
 			return errors.Trace(err)
