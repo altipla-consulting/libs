@@ -75,7 +75,7 @@ func (pager *Pager) Fetch(models interface{}) error {
 	}
 	pager.TotalSize = int32(n)
 
-	if start >= n {
+	if start > 0 && start >= n {
 		return status.Errorf(codes.InvalidArgument, "invalid pagination token: start is after end: %d > %d", start, n)
 	}
 

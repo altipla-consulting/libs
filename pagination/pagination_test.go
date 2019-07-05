@@ -142,3 +142,15 @@ func TestMovingBetweenAllPages(t *testing.T) {
 		require.NotEmpty(t, p.NextPageToken)
 	}
 }
+
+func TestEmptyResultSet(t *testing.T) {
+	initDatabase(t)
+	defer closeDatabase()
+
+	p := NewPager(testings)
+	p.SetInputs("", 3)
+	var page []*testingModel
+	require.NoError(t, p.Fetch(&page))
+
+	require.Empty(t, page)
+}
