@@ -87,6 +87,9 @@ type Property struct {
 	// Name of the column. Already escaped.
 	Name string
 
+	// Name of the column. Unescaped.
+	UnescapedName string
+
 	// Struct field name.
 	Field string
 
@@ -118,10 +121,11 @@ func extractModelProps(model Model) ([]*Property, error) {
 
 		if ft.Type == modelTrackingType {
 			props = append(props, &Property{
-				Name:    "`revision`",
-				Field:   "Revision",
-				Value:   fv.FieldByName("Revision").Interface(),
-				Pointer: fv.FieldByName("Revision").Addr().Interface(),
+				Name:          "`revision`",
+				Field:         "Revision",
+				Value:         fv.FieldByName("Revision").Interface(),
+				Pointer:       fv.FieldByName("Revision").Addr().Interface(),
+				UnescapedName: "revision",
 			})
 
 			continue
@@ -165,6 +169,7 @@ func extractModelProps(model Model) ([]*Property, error) {
 		}
 
 		// Escape the name inside the SQL query. It is NOT for security.
+		prop.UnescapedName = prop.Name
 		prop.Name = fmt.Sprintf("`%s`", prop.Name)
 
 		props = append(props, prop)
@@ -190,18 +195,19 @@ func isZero(value interface{}) bool {
 	return false
 }
 
-func updatedProps(props []*Property, model Model) []*Property {
+func updateModelProps(props []*Property, model Model) []*Property {
 	v := reflect.ValueOf(model).Elem()
 
 	var result []*Property
 	for _, prop := range props {
 		result = append(result, &Property{
-			Name:       prop.Name,
-			Field:      prop.Field,
-			Value:      v.FieldByName(prop.Field).Interface(),
-			Pointer:    v.FieldByName(prop.Field).Addr().Interface(),
-			PrimaryKey: prop.PrimaryKey,
-			OmitEmpty:  prop.OmitEmpty,
+			Name:          prop.Name,
+			UnescapedName: prop.UnescapedName,
+			Field:         prop.Field,
+			Value:         v.FieldByName(prop.Field).Interface(),
+			Pointer:       v.FieldByName(prop.Field).Addr().Interface(),
+			PrimaryKey:    prop.PrimaryKey,
+			OmitEmpty:     prop.OmitEmpty,
 		})
 	}
 
@@ -214,4 +220,58 @@ func startsWithUppercase(s string) bool {
 	}
 
 	return false
+}
+
+func extractGenericProps(model interface{}) ([]*Property, error) {
+	v := reflect.ValueOf(model).Elem()
+	t := reflect.TypeOf(model).Elem()
+
+	props := []*Property{}
+	for i := 0; i < t.NumField(); i++ {
+		fv := v.Field(i)
+		ft := t.Field(i)
+
+		if !startsWithUppercase(ft.Name) {
+			continue
+		}
+
+		prop := &Property{
+			Name:    ft.Name,
+			Field:   ft.Name,
+			Pointer: fv.Addr().Interface(),
+		}
+
+		tag := ft.Tag.Get("db")
+		if tag != "" {
+			prop.Name = tag
+		}
+
+		if prop.Name == "-" {
+			continue
+		}
+
+		// Escape the name inside the SQL query. It is NOT for security.
+		prop.UnescapedName = prop.Name
+		prop.Name = fmt.Sprintf("`%s`", prop.Name)
+
+		props = append(props, prop)
+	}
+
+	return props, nil
+}
+
+func updateGenericProps(props []*Property, model interface{}) []*Property {
+	v := reflect.ValueOf(model).Elem()
+
+	var result []*Property
+	for _, prop := range props {
+		result = append(result, &Property{
+			Name:          prop.Name,
+			UnescapedName: prop.UnescapedName,
+			Field:         prop.Field,
+			Pointer:       v.FieldByName(prop.Field).Addr().Interface(),
+		})
+	}
+
+	return result
 }

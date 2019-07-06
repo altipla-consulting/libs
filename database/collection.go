@@ -72,7 +72,7 @@ func (c *Collection) Alias(alias string) *Collection {
 // Get retrieves the model matching the collection filters and the model primary key.
 // If no model is found ErrNoSuchEntity will be returned and the model won't be touched.
 func (c *Collection) Get(instance Model) error {
-	modelProps := updatedProps(c.props, instance)
+	modelProps := updateModelProps(c.props, instance)
 	b := &sqlBuilder{
 		table:      c.model.TableName(),
 		conditions: c.conditions,
@@ -103,7 +103,7 @@ func (c *Collection) Get(instance Model) error {
 		return errors.Trace(err)
 	}
 
-	modelProps = updatedProps(c.props, instance)
+	modelProps = updateModelProps(c.props, instance)
 
 	return instance.Tracking().AfterGet(modelProps)
 }
@@ -126,7 +126,7 @@ func (c *Collection) Put(instance Model) error {
 	b := &sqlBuilder{
 		table: c.model.TableName(),
 	}
-	modelProps := updatedProps(c.props, instance)
+	modelProps := updateModelProps(c.props, instance)
 
 	var q string
 	var values []interface{}
@@ -306,7 +306,7 @@ func (c *Collection) Delete(instance Model) error {
 		offset:     c.offset,
 		alias:      c.alias,
 	}
-	modelProps := updatedProps(c.props, instance)
+	modelProps := updateModelProps(c.props, instance)
 
 	for _, prop := range modelProps {
 		if prop.PrimaryKey {
@@ -404,7 +404,7 @@ func (c *Collection) GetAll(models interface{}) error {
 func (c *Collection) First(instance Model) error {
 	c = c.Limit(1)
 
-	modelProps := updatedProps(c.props, instance)
+	modelProps := updateModelProps(c.props, instance)
 	b := &sqlBuilder{
 		table:      c.model.TableName(),
 		conditions: c.conditions,
@@ -432,7 +432,7 @@ func (c *Collection) First(instance Model) error {
 		return errors.Trace(err)
 	}
 
-	modelProps = updatedProps(c.props, instance)
+	modelProps = updateModelProps(c.props, instance)
 
 	return instance.Tracking().AfterGet(modelProps)
 }

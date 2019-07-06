@@ -3,6 +3,7 @@ package database
 import (
 	"database/sql"
 	"log"
+	"reflect"
 
 	"libs.altipla.consulting/errors"
 
@@ -70,6 +71,114 @@ func (db *Database) Exec(query string, params ...interface{}) error {
 // MySQL. It is recommended to use Collections instead.
 func (db *Database) QueryRow(query string, params ...interface{}) *sql.Row {
 	return db.sess.QueryRow(query, params...)
+}
+
+// Select fetchs a single row and loads the provided structure.
+func (db *Database) Select(dest interface{}, query string, params ...interface{}) error {
+	propsList, err := extractGenericProps(dest)
+	if err != nil {
+		return errors.Trace(err)
+	}
+	props := make(map[string]*Property)
+	for _, prop := range propsList {
+		props[prop.UnescapedName] = prop
+	}
+
+	rows, err := db.sess.Query(query, params...)
+	if err != nil {
+		return errors.Trace(err)
+	}
+	defer rows.Close()
+
+	cols, err := rows.Columns()
+	if err != nil {
+		return errors.Trace(err)
+	}
+	var pointers []interface{}
+	for _, col := range cols {
+		prop, ok := props[col]
+		if !ok {
+			return errors.Errorf("column in result not found in dest struct: %v", col)
+		}
+
+		pointers = append(pointers, prop.Pointer)
+	}
+
+	if !rows.Next() {
+		return errors.Trace(ErrNoSuchEntity)
+	}
+	if err := rows.Scan(pointers...); err != nil {
+		return errors.Trace(err)
+	}
+	if rows.Next() {
+		return errors.Errorf("only one row expected in Select call, use LIMIT in your query to avoid more than one result")
+	}
+	if rows.Err() != nil {
+		return errors.Trace(rows.Err())
+	}
+
+	return nil
+}
+
+// SelectAll fetchs the full list of rows and loads a pointer to a slice with them.
+func (db *Database) SelectAll(dest interface{}, query string, params ...interface{}) error {
+	v := reflect.ValueOf(dest)
+	t := reflect.TypeOf(dest)
+
+	if v.Kind() != reflect.Ptr {
+		return errors.Errorf("pass a pointer to a slice to SelectAll")
+	}
+	v = v.Elem()
+	t = t.Elem()
+	if v.Kind() != reflect.Slice {
+		return errors.Errorf("pass a slice to SelectAll")
+	}
+
+	example := reflect.New(t.Elem().Elem())
+	globalProps, err := extractGenericProps(example.Interface())
+	if err != nil {
+		return errors.Trace(err)
+	}
+
+	rows, err := db.sess.Query(query, params...)
+	if err != nil {
+		return errors.Trace(err)
+	}
+	defer rows.Close()
+
+	cols, err := rows.Columns()
+	if err != nil {
+		return errors.Trace(err)
+	}
+
+	result := reflect.MakeSlice(t, 0, 0)
+	for rows.Next() {
+		model := reflect.New(t.Elem().Elem())
+
+		props := make(map[string]*Property)
+		for _, prop := range updateGenericProps(globalProps, model.Interface()) {
+			props[prop.UnescapedName] = prop
+		}
+		var pointers []interface{}
+		for _, col := range cols {
+			prop, ok := props[col]
+			if !ok {
+				return errors.Errorf("column in result not found in dest struct: %v", col)
+			}
+
+			pointers = append(pointers, prop.Pointer)
+		}
+
+		if err := rows.Scan(pointers...); err != nil {
+			return errors.Trace(err)
+		}
+
+		result = reflect.Append(result, model)
+	}
+
+	v.Set(result)
+
+	return nil
 }
 
 // Option can be passed when opening a new connection to a database.

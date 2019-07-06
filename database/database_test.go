@@ -173,6 +173,7 @@ func closeDatabase() {
 
 func TestQueryRow(t *testing.T) {
 	initDatabase(t)
+	defer closeDatabase()
 
 	model := &testingModel{
 		Code: "Test",
@@ -185,4 +186,51 @@ func TestQueryRow(t *testing.T) {
 	var name string
 	require.NoError(t, row.Scan(&name))
 	require.Equal(t, "test", name)
+}
+
+type testingModelSelect struct {
+	Code string `db:"code"`
+	Name string `db:"name"`
+}
+
+func TestSelect(t *testing.T) {
+	initDatabase(t)
+	defer closeDatabase()
+
+	model := &testingModel{
+		Code: "foo",
+		Name: "Foo Name",
+	}
+	require.Nil(t, testings.Put(model))
+
+	other := new(testingModelSelect)
+	require.NoError(t, testDB.Select(other, `SELECT code, name FROM testing`))
+
+	require.Equal(t, other.Code, "foo")
+	require.Equal(t, other.Name, "Foo Name")
+}
+
+func TestSelectAll(t *testing.T) {
+	initDatabase(t)
+	defer closeDatabase()
+
+	model := &testingModel{
+		Code: "foo",
+		Name: "Foo Name",
+	}
+	require.Nil(t, testings.Put(model))
+	model = &testingModel{
+		Code: "bar",
+		Name: "Bar Name",
+	}
+	require.Nil(t, testings.Put(model))
+
+	var other []*testingModelSelect
+	require.NoError(t, testDB.SelectAll(&other, `SELECT code, name FROM testing`))
+
+	require.Len(t, other, 2)
+	require.Equal(t, other[0].Code, "bar")
+	require.Equal(t, other[0].Name, "Bar Name")
+	require.Equal(t, other[1].Code, "foo")
+	require.Equal(t, other[1].Name, "Foo Name")
 }

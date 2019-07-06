@@ -22,8 +22,6 @@ func (it *Iterator) Close() {
 //
 // When the iterator reaches the end of the collection it returns ErrDone.
 func (it *Iterator) Next(model Model) error {
-	modelProps := updatedProps(it.props, model)
-
 	if err := it.rows.Err(); err != nil {
 		return errors.Trace(err)
 	}
@@ -38,15 +36,16 @@ func (it *Iterator) Next(model Model) error {
 		return ErrDone
 	}
 
-	ptrs := make([]interface{}, len(modelProps))
-	for i, prop := range modelProps {
-		ptrs[i] = prop.Pointer
+	props := updateModelProps(it.props, model)
+	pointers := make([]interface{}, len(props))
+	for i, prop := range props {
+		pointers[i] = prop.Pointer
 	}
-	if err := it.rows.Scan(ptrs...); err != nil {
+	if err := it.rows.Scan(pointers...); err != nil {
 		return errors.Trace(err)
 	}
 
-	modelProps = updatedProps(it.props, model)
+	props = updateModelProps(it.props, model)
 
-	return model.Tracking().AfterGet(modelProps)
+	return model.Tracking().AfterGet(props)
 }
