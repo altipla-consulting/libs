@@ -163,6 +163,8 @@ func (service *Service) Run() {
 	}
 
 	if service.enableGRPC {
+		grpc.EnableTracing = true
+		
 		go func() {
 			log.Info("GRPC server enabled")
 
