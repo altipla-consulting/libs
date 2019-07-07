@@ -72,14 +72,6 @@ func (service *Service) ConfigureRouting(opts ...routing.ServerOption) {
 	service.routingOpts = opts
 }
 
-// ConfigureBetaRouting enables a HTTP router with a simple password for to beta
-// test the real application.
-//
-// DEPRECATED: Use ConfigureRouting(routing.WithBetaAuth(username, password)) instead.
-func (service *Service) ConfigureBetaRouting(username, password string) {
-	service.ConfigureRouting(routing.WithBetaAuth(username, password))
-}
-
 // ConfigureProfiler enables the Stackdriver Profiler agent.
 func (service *Service) ConfigureProfiler() {
 	service.enableProfiler = !IsLocal()
