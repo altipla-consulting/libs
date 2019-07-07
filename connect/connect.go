@@ -15,7 +15,14 @@ import (
 	"libs.altipla.consulting/services"
 )
 
-type Endpoint = services.Endpoint
+// Endpoint is a simple string with the host and port of the remote GRPC
+// service. We use a custom type to avoid using grpc.Dial without noticing the bug.
+//
+// This needs a "discovery" package with the full list of remote addresses that
+// use this type instead of string and never using the direct address. That way
+// if you use grpc.Dial it will report the compilation error inmediatly.
+type Endpoint string
+
 type RemoteAddress string
 
 const beauthTokenEndpoint = "https://beauth.io/token"

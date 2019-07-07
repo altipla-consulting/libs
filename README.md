@@ -5,6 +5,8 @@
 
 Go shared libs.
 
+**WARNING:** We do incompatible releases from minor to minor because it is an internal lib. All backwards incompatible changes will be listed on [CHANGELOG.md](CHANGELOG.md)
+
 
 ### Install
 
