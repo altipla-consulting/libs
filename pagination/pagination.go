@@ -94,11 +94,8 @@ func (pager *Pager) Fetch(models interface{}) error {
 	}
 
 	pager.PrevPageToken = ""
-	if start > 0 {
-		prev := start - int64(pager.pageSize)
-		if prev < 0 {
-			prev = 0
-		}
+	prev := start - int64(pager.pageSize)
+	if prev > 0 {
 		pager.PrevPageToken, err = h.EncodeInt64([]int64{checksum, prev})
 		if err != nil {
 			return errors.Trace(err)

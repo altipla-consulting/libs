@@ -94,7 +94,6 @@ func TestMovingBetweenAllPages(t *testing.T) {
 		require.Equal(t, page[2].Code, "foo-5")
 
 		require.EqualValues(t, p.TotalSize, 8)
-		require.NotEmpty(t, p.PrevPageToken)
 		require.NotEmpty(t, p.NextPageToken)
 	}
 	{
@@ -123,7 +122,6 @@ func TestMovingBetweenAllPages(t *testing.T) {
 		require.Equal(t, page[2].Code, "foo-5")
 
 		require.EqualValues(t, p.TotalSize, 8)
-		require.NotEmpty(t, p.PrevPageToken)
 		require.NotEmpty(t, p.NextPageToken)
 	}
 	{
