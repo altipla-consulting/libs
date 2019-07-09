@@ -193,7 +193,7 @@ func FilterIsNotNil(column string) Condition {
 // and ignoring the case of the values.
 func FilterLikeIgnoreCase(column, value string) Condition {
 	return &sqlCondition{
-		sql:    "LOWER(" + column + ") LIKE",
+		sql:    "LOWER(" + column + ") LIKE ?",
 		values: []interface{}{"%" + EscapeLike(value) + "%"},
 	}
 }
