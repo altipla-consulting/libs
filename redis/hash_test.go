@@ -8,17 +8,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var db *Database
-
-func initDB(t *testing.T) {
-	db = Open("redis:6379", "test")
-	db.FlushAllKeysFromDatabase()
-}
-
-func closeDB(t *testing.T) {
-	require.NoError(t, db.Close())
-}
-
 type hashItem struct {
 	StrField  string    `redis:"str_field"`
 	IntField  int64     `redis:"int_field"`

@@ -5,6 +5,8 @@ import (
 	"fmt"
 
 	"github.com/go-redis/redis"
+
+	"libs.altipla.consulting/errors"
 )
 
 // Database keeps a connection to a Redis server.
@@ -144,5 +146,32 @@ func (db *Database) Hash(name string, model Model) *Hash {
 // is inside a transaction it will return the Tx object instead. Both objects has
 // the same Cmdable interface of the third party library.
 func (db *Database) Cmdable(ctx context.Context) redis.Cmdable {
+	tx, ok := ctx.Value(keyTx).(redis.Pipeliner)
+	if ok {
+		return tx
+	}
 	return db.directSess
+}
+
+type key int
+
+const (
+	keyTx = key(1)
+)
+
+// TransactionFn is a callback for transactions.
+type TransactionFn func(ctx context.Context) error
+
+// Transaction runs fn inside a transaction. You have to use the new context
+// for every operation, otherwise they won't be transactional.
+func (db *Database) Transaction(ctx context.Context, fn TransactionFn) error {
+	tx := db.directSess.TxPipeline()
+	ctx = context.WithValue(ctx, keyTx, tx)
+
+	if err := fn(ctx); err != nil {
+		return errors.Trace(err)
+	}
+
+	_, err := tx.Exec()
+	return errors.Trace(err)
 }
