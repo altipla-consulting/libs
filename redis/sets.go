@@ -1,6 +1,7 @@
 package redis
 
 import (
+	"context"
 	"strconv"
 
 	"github.com/go-redis/redis"
@@ -11,12 +12,12 @@ type StringsSet struct {
 	key string
 }
 
-func (set *StringsSet) Len() (int64, error) {
-	return set.db.sess.SCard(set.key).Result()
+func (set *StringsSet) Len(ctx context.Context) (int64, error) {
+	return set.db.Cmdable(ctx).SCard(set.key).Result()
 }
 
-func (set *StringsSet) Members() ([]string, error) {
-	result, err := set.db.sess.SMembers(set.key).Result()
+func (set *StringsSet) Members(ctx context.Context) ([]string, error) {
+	result, err := set.db.Cmdable(ctx).SMembers(set.key).Result()
 	if err != nil {
 		return nil, err
 	}
@@ -24,26 +25,26 @@ func (set *StringsSet) Members() ([]string, error) {
 	return result, nil
 }
 
-func (set *StringsSet) Add(values ...string) error {
+func (set *StringsSet) Add(ctx context.Context, values ...string) error {
 	members := make([]interface{}, len(values))
 	for i := range values {
 		members[i] = values[i]
 	}
 
-	return set.db.sess.SAdd(set.key, members...).Err()
+	return set.db.Cmdable(ctx).SAdd(set.key, members...).Err()
 }
 
-func (set *StringsSet) Remove(values ...string) error {
+func (set *StringsSet) Remove(ctx context.Context, values ...string) error {
 	members := make([]interface{}, len(values))
 	for i := range values {
 		members[i] = values[i]
 	}
 
-	return set.db.sess.SRem(set.key, members...).Err()
+	return set.db.Cmdable(ctx).SRem(set.key, members...).Err()
 }
 
-func (set *StringsSet) SortAlpha() ([]string, error) {
-	result, err := set.sort(&redis.Sort{Alpha: true})
+func (set *StringsSet) SortAlpha(ctx context.Context) ([]string, error) {
+	result, err := set.sort(ctx, &redis.Sort{Alpha: true})
 	if err != nil {
 		return nil, err
 	}
@@ -51,8 +52,8 @@ func (set *StringsSet) SortAlpha() ([]string, error) {
 	return result, nil
 }
 
-func (set *StringsSet) sort(sort *redis.Sort) ([]string, error) {
-	result, err := set.db.sess.Sort(set.key, sort).Result()
+func (set *StringsSet) sort(ctx context.Context, sort *redis.Sort) ([]string, error) {
+	result, err := set.db.Cmdable(ctx).Sort(set.key, sort).Result()
 	if err != nil {
 		return nil, err
 	}
@@ -60,8 +61,8 @@ func (set *StringsSet) sort(sort *redis.Sort) ([]string, error) {
 	return result, nil
 }
 
-func (set *StringsSet) Contains(value string) (bool, error) {
-	return set.db.sess.SIsMember(set.key, value).Result()
+func (set *StringsSet) Contains(ctx context.Context, value string) (bool, error) {
+	return set.db.Cmdable(ctx).SIsMember(set.key, value).Result()
 }
 
 type Int64Set struct {
@@ -69,12 +70,12 @@ type Int64Set struct {
 	key string
 }
 
-func (set *Int64Set) Len() (int64, error) {
-	return set.db.sess.SCard(set.key).Result()
+func (set *Int64Set) Len(ctx context.Context) (int64, error) {
+	return set.db.Cmdable(ctx).SCard(set.key).Result()
 }
 
-func (set *Int64Set) Members() ([]int64, error) {
-	rawResult, err := set.db.sess.SMembers(set.key).Result()
+func (set *Int64Set) Members(ctx context.Context) ([]int64, error) {
+	rawResult, err := set.db.Cmdable(ctx).SMembers(set.key).Result()
 	if err != nil {
 		return nil, err
 	}
@@ -92,24 +93,24 @@ func (set *Int64Set) Members() ([]int64, error) {
 	return result, nil
 }
 
-func (set *Int64Set) Add(values ...int64) error {
+func (set *Int64Set) Add(ctx context.Context, values ...int64) error {
 	members := make([]interface{}, len(values))
 	for i := range values {
 		members[i] = strconv.FormatInt(values[i], 10)
 	}
 
-	return set.db.sess.SAdd(set.key, members...).Err()
+	return set.db.Cmdable(ctx).SAdd(set.key, members...).Err()
 }
 
-func (set *Int64Set) Remove(values ...int64) error {
+func (set *Int64Set) Remove(ctx context.Context, values ...int64) error {
 	members := make([]interface{}, len(values))
 	for i := range values {
 		members[i] = strconv.FormatInt(values[i], 10)
 	}
 
-	return set.db.sess.SRem(set.key, members...).Err()
+	return set.db.Cmdable(ctx).SRem(set.key, members...).Err()
 }
 
-func (set *Int64Set) Contains(value int64) (bool, error) {
-	return set.db.sess.SIsMember(set.key, strconv.FormatInt(value, 10)).Result()
+func (set *Int64Set) Contains(ctx context.Context, value int64) (bool, error) {
+	return set.db.Cmdable(ctx).SIsMember(set.key, strconv.FormatInt(value, 10)).Result()
 }

@@ -1,6 +1,7 @@
 package redis
 
 import (
+	"context"
 	"strconv"
 	"time"
 
@@ -16,16 +17,16 @@ type StringKV struct {
 	key string
 }
 
-func (kv *StringKV) Set(value string) error {
-	return kv.db.sess.Set(kv.key, value, 0).Err()
+func (kv *StringKV) Set(ctx context.Context, value string) error {
+	return kv.db.Cmdable(ctx).Set(kv.key, value, 0).Err()
 }
 
-func (kv *StringKV) SetTTL(value string, ttl time.Duration) error {
-	return kv.db.sess.Set(kv.key, value, ttl).Err()
+func (kv *StringKV) SetTTL(ctx context.Context, value string, ttl time.Duration) error {
+	return kv.db.Cmdable(ctx).Set(kv.key, value, ttl).Err()
 }
 
-func (kv *StringKV) Get() (string, error) {
-	result, err := kv.db.sess.Get(kv.key).Result()
+func (kv *StringKV) Get(ctx context.Context) (string, error) {
+	result, err := kv.db.Cmdable(ctx).Get(kv.key).Result()
 	if err != nil {
 		if err == redis.Nil {
 			return "", ErrNoSuchEntity
@@ -37,8 +38,8 @@ func (kv *StringKV) Get() (string, error) {
 	return result, nil
 }
 
-func (kv *StringKV) Exists() (bool, error) {
-	result, err := kv.db.sess.Exists(kv.key).Result()
+func (kv *StringKV) Exists(ctx context.Context) (bool, error) {
+	result, err := kv.db.Cmdable(ctx).Exists(kv.key).Result()
 	if err != nil {
 		return false, err
 	}
@@ -46,8 +47,8 @@ func (kv *StringKV) Exists() (bool, error) {
 	return result == 1, nil
 }
 
-func (kv *StringKV) Delete() error {
-	return kv.db.sess.Del(kv.key).Err()
+func (kv *StringKV) Delete(ctx context.Context) error {
+	return kv.db.Cmdable(ctx).Del(kv.key).Err()
 }
 
 type Int32KV struct {
@@ -55,16 +56,16 @@ type Int32KV struct {
 	key string
 }
 
-func (kv *Int32KV) Set(value int32) error {
-	return kv.db.sess.Set(kv.key, value, 0).Err()
+func (kv *Int32KV) Set(ctx context.Context, value int32) error {
+	return kv.db.Cmdable(ctx).Set(kv.key, value, 0).Err()
 }
 
-func (kv *Int32KV) SetTTL(value int32, ttl time.Duration) error {
-	return kv.db.sess.Set(kv.key, value, ttl).Err()
+func (kv *Int32KV) SetTTL(ctx context.Context, value int32, ttl time.Duration) error {
+	return kv.db.Cmdable(ctx).Set(kv.key, value, ttl).Err()
 }
 
-func (kv *Int32KV) Get() (int32, error) {
-	result, err := kv.db.sess.Get(kv.key).Int64()
+func (kv *Int32KV) Get(ctx context.Context) (int32, error) {
+	result, err := kv.db.Cmdable(ctx).Get(kv.key).Int64()
 	if err != nil {
 		if err == redis.Nil {
 			return 0, ErrNoSuchEntity
@@ -76,8 +77,8 @@ func (kv *Int32KV) Get() (int32, error) {
 	return int32(result), nil
 }
 
-func (kv *Int32KV) Exists() (bool, error) {
-	result, err := kv.db.sess.Exists(kv.key).Result()
+func (kv *Int32KV) Exists(ctx context.Context) (bool, error) {
+	result, err := kv.db.Cmdable(ctx).Exists(kv.key).Result()
 	if err != nil {
 		return false, err
 	}
@@ -85,8 +86,8 @@ func (kv *Int32KV) Exists() (bool, error) {
 	return result == 1, nil
 }
 
-func (kv *Int32KV) Delete() error {
-	return kv.db.sess.Del(kv.key).Err()
+func (kv *Int32KV) Delete(ctx context.Context) error {
+	return kv.db.Cmdable(ctx).Del(kv.key).Err()
 }
 
 type Int64KV struct {
@@ -94,16 +95,16 @@ type Int64KV struct {
 	key string
 }
 
-func (kv *Int64KV) Set(value int64) error {
-	return kv.db.sess.Set(kv.key, value, 0).Err()
+func (kv *Int64KV) Set(ctx context.Context, value int64) error {
+	return kv.db.Cmdable(ctx).Set(kv.key, value, 0).Err()
 }
 
-func (kv *Int64KV) SetTTL(value int64, ttl time.Duration) error {
-	return kv.db.sess.Set(kv.key, value, ttl).Err()
+func (kv *Int64KV) SetTTL(ctx context.Context, value int64, ttl time.Duration) error {
+	return kv.db.Cmdable(ctx).Set(kv.key, value, ttl).Err()
 }
 
-func (kv *Int64KV) Get() (int64, error) {
-	result, err := kv.db.sess.Get(kv.key).Int64()
+func (kv *Int64KV) Get(ctx context.Context) (int64, error) {
+	result, err := kv.db.Cmdable(ctx).Get(kv.key).Int64()
 	if err != nil {
 		if err == redis.Nil {
 			return 0, ErrNoSuchEntity
@@ -115,8 +116,8 @@ func (kv *Int64KV) Get() (int64, error) {
 	return int64(result), nil
 }
 
-func (kv *Int64KV) Exists() (bool, error) {
-	result, err := kv.db.sess.Exists(kv.key).Result()
+func (kv *Int64KV) Exists(ctx context.Context) (bool, error) {
+	result, err := kv.db.Cmdable(ctx).Exists(kv.key).Result()
 	if err != nil {
 		return false, err
 	}
@@ -124,8 +125,8 @@ func (kv *Int64KV) Exists() (bool, error) {
 	return result == 1, nil
 }
 
-func (kv *Int64KV) Delete() error {
-	return kv.db.sess.Del(kv.key).Err()
+func (kv *Int64KV) Delete(ctx context.Context) error {
+	return kv.db.Cmdable(ctx).Del(kv.key).Err()
 }
 
 // ProtoKV interacts with a protobuf value key.
@@ -135,24 +136,24 @@ type ProtoKV struct {
 }
 
 // Set changes the value of the key.
-func (kv *ProtoKV) Set(value proto.Message) error {
-	return kv.SetTTL(value, 0)
+func (kv *ProtoKV) Set(ctx context.Context, value proto.Message) error {
+	return kv.SetTTL(ctx, value, 0)
 }
 
 // SetTTL changes the value of the key with a Time-To-Live.
-func (kv *ProtoKV) SetTTL(value proto.Message, ttl time.Duration) error {
+func (kv *ProtoKV) SetTTL(ctx context.Context, value proto.Message, ttl time.Duration) error {
 	m := new(jsonpb.Marshaler)
 	encoded, err := m.MarshalToString(value)
 	if err != nil {
 		return errors.Trace(err)
 	}
 
-	return kv.db.sess.Set(kv.key, encoded, ttl).Err()
+	return kv.db.Cmdable(ctx).Set(kv.key, encoded, ttl).Err()
 }
 
 // Get decodes the value in the provided message.
-func (kv *ProtoKV) Get(value proto.Message) error {
-	result, err := kv.db.sess.Get(kv.key).Result()
+func (kv *ProtoKV) Get(ctx context.Context, value proto.Message) error {
+	result, err := kv.db.Cmdable(ctx).Get(kv.key).Result()
 	if err != nil {
 		if err == redis.Nil {
 			return ErrNoSuchEntity
@@ -165,8 +166,8 @@ func (kv *ProtoKV) Get(value proto.Message) error {
 }
 
 // Exists checks if the key exists previously.
-func (kv *ProtoKV) Exists() (bool, error) {
-	result, err := kv.db.sess.Exists(kv.key).Result()
+func (kv *ProtoKV) Exists(ctx context.Context) (bool, error) {
+	result, err := kv.db.Cmdable(ctx).Exists(kv.key).Result()
 	if err != nil {
 		return false, err
 	}
@@ -175,8 +176,8 @@ func (kv *ProtoKV) Exists() (bool, error) {
 }
 
 // Delete the key.
-func (kv *ProtoKV) Delete() error {
-	return kv.db.sess.Del(kv.key).Err()
+func (kv *ProtoKV) Delete(ctx context.Context) error {
+	return kv.db.Cmdable(ctx).Del(kv.key).Err()
 }
 
 type BooleanKV struct {
@@ -184,16 +185,16 @@ type BooleanKV struct {
 	key string
 }
 
-func (kv *BooleanKV) Set(value bool) error {
-	return kv.db.sess.Set(kv.key, value, 0).Err()
+func (kv *BooleanKV) Set(ctx context.Context, value bool) error {
+	return kv.db.Cmdable(ctx).Set(kv.key, value, 0).Err()
 }
 
-func (kv *BooleanKV) SetTTL(value bool, ttl time.Duration) error {
-	return kv.db.sess.Set(kv.key, value, ttl).Err()
+func (kv *BooleanKV) SetTTL(ctx context.Context, value bool, ttl time.Duration) error {
+	return kv.db.Cmdable(ctx).Set(kv.key, value, ttl).Err()
 }
 
-func (kv *BooleanKV) Get() (bool, error) {
-	result, err := kv.db.sess.Get(kv.key).Result()
+func (kv *BooleanKV) Get(ctx context.Context) (bool, error) {
+	result, err := kv.db.Cmdable(ctx).Get(kv.key).Result()
 	if err != nil {
 		if err == redis.Nil {
 			return false, ErrNoSuchEntity
@@ -205,8 +206,8 @@ func (kv *BooleanKV) Get() (bool, error) {
 	return strconv.ParseBool(result)
 }
 
-func (kv *BooleanKV) Exists() (bool, error) {
-	result, err := kv.db.sess.Exists(kv.key).Result()
+func (kv *BooleanKV) Exists(ctx context.Context) (bool, error) {
+	result, err := kv.db.Cmdable(ctx).Exists(kv.key).Result()
 	if err != nil {
 		return false, err
 	}
@@ -214,8 +215,8 @@ func (kv *BooleanKV) Exists() (bool, error) {
 	return result == 1, nil
 }
 
-func (kv *BooleanKV) Delete() error {
-	return kv.db.sess.Del(kv.key).Err()
+func (kv *BooleanKV) Delete(ctx context.Context) error {
+	return kv.db.Cmdable(ctx).Del(kv.key).Err()
 }
 
 type TimeKV struct {
@@ -223,26 +224,26 @@ type TimeKV struct {
 	key string
 }
 
-func (kv *TimeKV) Set(value time.Time) error {
+func (kv *TimeKV) Set(ctx context.Context, value time.Time) error {
 	rawValue, err := value.MarshalText()
 	if err != nil {
 		return errors.Trace(err)
 	}
 
-	return kv.db.sess.Set(kv.key, string(rawValue), 0).Err()
+	return kv.db.Cmdable(ctx).Set(kv.key, string(rawValue), 0).Err()
 }
 
-func (kv *TimeKV) SetTTL(value time.Time, ttl time.Duration) error {
+func (kv *TimeKV) SetTTL(ctx context.Context, value time.Time, ttl time.Duration) error {
 	rawValue, err := value.MarshalText()
 	if err != nil {
 		return errors.Trace(err)
 	}
 
-	return kv.db.sess.Set(kv.key, string(rawValue), ttl).Err()
+	return kv.db.Cmdable(ctx).Set(kv.key, string(rawValue), ttl).Err()
 }
 
-func (kv *TimeKV) Get() (time.Time, error) {
-	rawResult, err := kv.db.sess.Get(kv.key).Result()
+func (kv *TimeKV) Get(ctx context.Context) (time.Time, error) {
+	rawResult, err := kv.db.Cmdable(ctx).Get(kv.key).Result()
 	if err != nil {
 		if err == redis.Nil {
 			return time.Time{}, ErrNoSuchEntity
@@ -259,8 +260,8 @@ func (kv *TimeKV) Get() (time.Time, error) {
 	return result, nil
 }
 
-func (kv *TimeKV) Exists() (bool, error) {
-	result, err := kv.db.sess.Exists(kv.key).Result()
+func (kv *TimeKV) Exists(ctx context.Context) (bool, error) {
+	result, err := kv.db.Cmdable(ctx).Exists(kv.key).Result()
 	if err != nil {
 		return false, err
 	}
@@ -268,6 +269,6 @@ func (kv *TimeKV) Exists() (bool, error) {
 	return result == 1, nil
 }
 
-func (kv *TimeKV) Delete() error {
-	return kv.db.sess.Del(kv.key).Err()
+func (kv *TimeKV) Delete(ctx context.Context) error {
+	return kv.db.Cmdable(ctx).Del(kv.key).Err()
 }

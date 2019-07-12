@@ -1,6 +1,7 @@
 package redis
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -34,7 +35,7 @@ func TestGetNoSuchEntity(t *testing.T) {
 	defer closeDB(t)
 	hash := db.Hash("foo-hash", new(hashItem))
 
-	require.EqualError(t, hash.Get("foo", new(hashItem)), ErrNoSuchEntity.Error())
+	require.EqualError(t, hash.Get(context.Background(), "foo", new(hashItem)), ErrNoSuchEntity.Error())
 }
 
 func TestGet(t *testing.T) {
@@ -50,10 +51,10 @@ func TestGet(t *testing.T) {
 		"time_field": timeField,
 		"FreeField":  "free str field",
 	}
-	require.NoError(t, db.sess.HMSet("test:foo-hash:foo", fields).Err())
+	require.NoError(t, db.Cmdable(context.Background()).HMSet("test:foo-hash:foo", fields).Err())
 
 	item := new(hashItem)
-	require.NoError(t, hash.Get("foo", item))
+	require.NoError(t, hash.Get(context.Background(), "foo", item))
 
 	require.Equal(t, item.StrField, "foo str field")
 	require.EqualValues(t, item.IntField, 32)
@@ -72,9 +73,9 @@ func TestPut(t *testing.T) {
 		TimeField: time.Date(2006, time.January, 2, 15, 4, 5, 0, time.UTC),
 		FreeField: "free str field",
 	}
-	require.NoError(t, hash.Put("foo", item))
+	require.NoError(t, hash.Put(context.Background(), "foo", item))
 
-	fields, err := db.sess.HMGet("test:foo-hash:foo", "str_field", "int_field", "time_field", "FreeField").Result()
+	fields, err := db.Cmdable(context.Background()).HMGet("test:foo-hash:foo", "str_field", "int_field", "time_field", "FreeField").Result()
 	require.NoError(t, err)
 
 	require.Equal(t, fields[0].(string), "foo str field")
@@ -94,10 +95,10 @@ func TestPutGet(t *testing.T) {
 		TimeField: time.Date(2006, time.January, 2, 15, 4, 5, 0, time.UTC),
 		FreeField: "free str field",
 	}
-	require.NoError(t, hash.Put("foo", save))
+	require.NoError(t, hash.Put(context.Background(), "foo", save))
 
 	item := new(hashItem)
-	require.NoError(t, hash.Get("foo", item))
+	require.NoError(t, hash.Get(context.Background(), "foo", item))
 
 	require.Equal(t, item.StrField, "foo str field")
 	require.EqualValues(t, item.IntField, 32)
@@ -116,9 +117,9 @@ func TestPutMask(t *testing.T) {
 		TimeField: time.Date(2006, time.January, 2, 15, 4, 5, 0, time.UTC),
 		FreeField: "free str field",
 	}
-	require.NoError(t, hash.Put("foo", item, Mask("str_field", "int_field")))
+	require.NoError(t, hash.Put(context.Background(), "foo", item, Mask("str_field", "int_field")))
 
-	fields, err := db.sess.HMGet("test:foo-hash:foo", "str_field", "int_field", "time_field", "FreeField").Result()
+	fields, err := db.Cmdable(context.Background()).HMGet("test:foo-hash:foo", "str_field", "int_field", "time_field", "FreeField").Result()
 	require.NoError(t, err)
 
 	require.Equal(t, fields[0].(string), "foo str field")
@@ -137,10 +138,10 @@ func TestGetMask(t *testing.T) {
 		"int_field": "32",
 		"FreeField": "free str field",
 	}
-	require.NoError(t, db.sess.HMSet("test:foo-hash:foo", fields).Err())
+	require.NoError(t, db.Cmdable(context.Background()).HMSet("test:foo-hash:foo", fields).Err())
 
 	item := new(hashItem)
-	require.NoError(t, hash.Get("foo", item, Mask("str_field", "FreeField")))
+	require.NoError(t, hash.Get(context.Background(), "foo", item, Mask("str_field", "FreeField")))
 
 	require.Equal(t, item.StrField, "foo str field")
 	require.Zero(t, item.IntField)
@@ -159,9 +160,9 @@ func TestDelete(t *testing.T) {
 		TimeField: time.Date(2006, time.January, 2, 15, 4, 5, 0, time.UTC),
 		FreeField: "free str field",
 	}
-	require.NoError(t, hash.Put("foo", item))
+	require.NoError(t, hash.Put(context.Background(), "foo", item))
 
-	require.NoError(t, hash.Delete("foo"))
+	require.NoError(t, hash.Delete(context.Background(), "foo"))
 
-	require.EqualError(t, hash.Get("foo", item), ErrNoSuchEntity.Error())
+	require.EqualError(t, hash.Get(context.Background(), "foo", item), ErrNoSuchEntity.Error())
 }

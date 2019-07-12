@@ -1,6 +1,7 @@
 package redis
 
 import (
+	"context"
 	"reflect"
 	"strconv"
 	"time"
@@ -21,7 +22,7 @@ func Mask(cols ...string) []string {
 	return cols
 }
 
-func (hash *Hash) Get(key string, instance Model, masks ...MaskOpt) error {
+func (hash *Hash) Get(ctx context.Context, key string, instance Model, masks ...MaskOpt) error {
 	var included []string
 	for _, mask := range masks {
 		included = append(included, mask...)
@@ -40,7 +41,7 @@ func (hash *Hash) Get(key string, instance Model, masks ...MaskOpt) error {
 		filteredProps = append(filteredProps, prop)
 	}
 
-	fields, err := hash.db.sess.HMGet(hash.name+":"+key, names...).Result()
+	fields, err := hash.db.Cmdable(ctx).HMGet(hash.name+":"+key, names...).Result()
 	if err != nil {
 		return errors.Wrapf(err, "cannot get fields of hash")
 	}
@@ -78,7 +79,7 @@ func (hash *Hash) Get(key string, instance Model, masks ...MaskOpt) error {
 	return nil
 }
 
-func (hash *Hash) Put(key string, instance Model, masks ...MaskOpt) error {
+func (hash *Hash) Put(ctx context.Context, key string, instance Model, masks ...MaskOpt) error {
 	var included []string
 	for _, mask := range masks {
 		included = append(included, mask...)
@@ -109,7 +110,7 @@ func (hash *Hash) Put(key string, instance Model, masks ...MaskOpt) error {
 		fields[prop.Name] = store
 	}
 
-	if err := hash.db.sess.HMSet(hash.name+":"+key, fields).Err(); err != nil {
+	if err := hash.db.Cmdable(ctx).HMSet(hash.name+":"+key, fields).Err(); err != nil {
 		return errors.Wrapf(err, "cannot set fields of hash")
 	}
 
@@ -117,16 +118,16 @@ func (hash *Hash) Put(key string, instance Model, masks ...MaskOpt) error {
 }
 
 // Delete inmediately removes the key from the hash.
-func (hash *Hash) Delete(key string) error {
-	if err := hash.db.sess.Del(hash.name + ":" + key).Err(); err != nil {
+func (hash *Hash) Delete(ctx context.Context, key string) error {
+	if err := hash.db.Cmdable(ctx).Del(hash.name + ":" + key).Err(); err != nil {
 		return errors.Wrapf(err, "cannot delete hash %s", key)
 	}
 	return nil
 }
 
 // ExpireAt sets the expiration of a key of this hash.
-func (hash *Hash) ExpireAt(key string, t time.Time) error {
-	if err := hash.db.sess.ExpireAt(hash.name+":"+key, t).Err(); err != nil {
+func (hash *Hash) ExpireAt(ctx context.Context, key string, t time.Time) error {
+	if err := hash.db.Cmdable(ctx).ExpireAt(hash.name+":"+key, t).Err(); err != nil {
 		return errors.Wrapf(err, "cannot expire hash %s", key)
 	}
 	return nil

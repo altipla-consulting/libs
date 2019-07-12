@@ -1,6 +1,7 @@
 package redis
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/go-redis/redis"
@@ -23,12 +24,12 @@ type Counter struct {
 	key string
 }
 
-func (c *Counter) Set(value int64) error {
-	return c.db.sess.Set(c.key, value, 0).Err()
+func (c *Counter) Set(ctx context.Context, value int64) error {
+	return c.db.Cmdable(ctx).Set(c.key, value, 0).Err()
 }
 
-func (c *Counter) Get() (int64, error) {
-	result, err := c.db.sess.Get(c.key).Int64()
+func (c *Counter) Get(ctx context.Context) (int64, error) {
+	result, err := c.db.Cmdable(ctx).Get(c.key).Int64()
 	if err != nil {
 		if err == redis.Nil {
 			return 0, nil
@@ -40,14 +41,14 @@ func (c *Counter) Get() (int64, error) {
 	return result, nil
 }
 
-func (c *Counter) Increment() (int64, error) {
-	return c.IncrementBy(1)
+func (c *Counter) Increment(ctx context.Context) (int64, error) {
+	return c.IncrementBy(ctx, 1)
 }
 
-func (c *Counter) Decrement() (int64, error) {
-	return c.IncrementBy(-1)
+func (c *Counter) Decrement(ctx context.Context) (int64, error) {
+	return c.IncrementBy(ctx, -1)
 }
 
-func (c *Counter) IncrementBy(value int64) (int64, error) {
-	return c.db.sess.IncrBy(c.key, value).Result()
+func (c *Counter) IncrementBy(ctx context.Context, value int64) (int64, error) {
+	return c.db.Cmdable(ctx).IncrBy(c.key, value).Result()
 }

@@ -1,6 +1,7 @@
 package redis
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/go-redis/redis"
@@ -24,7 +25,7 @@ func (hash *ProtoHash) PrepareInsert() *ProtoHashInsert {
 
 // GetMulti fetchs a list of keys from the hash. Result should be a slice of proto.Message
 // that will be filled with the results in the same order as the keys.
-func (hash *ProtoHash) GetMulti(keys []string, result interface{}) error {
+func (hash *ProtoHash) GetMulti(ctx context.Context, keys []string, result interface{}) error {
 	if len(keys) == 0 {
 		return nil
 	}
@@ -40,7 +41,7 @@ func (hash *ProtoHash) GetMulti(keys []string, result interface{}) error {
 
 	var merr MultiError
 
-	redisResult, err := hash.db.sess.HMGet(hash.key, keys...).Result()
+	redisResult, err := hash.db.Cmdable(ctx).HMGet(hash.key, keys...).Result()
 	if err != nil {
 		return errors.Trace(err)
 	}
@@ -68,8 +69,8 @@ func (hash *ProtoHash) GetMulti(keys []string, result interface{}) error {
 	return nil
 }
 
-func (hash *ProtoHash) Get(key string, model proto.Message) error {
-	redisResult, err := hash.db.sess.HGet(hash.key, key).Result()
+func (hash *ProtoHash) Get(ctx context.Context, key string, model proto.Message) error {
+	redisResult, err := hash.db.Cmdable(ctx).HGet(hash.key, key).Result()
 	if err != nil {
 		if err == redis.Nil {
 			return ErrNoSuchEntity
@@ -81,8 +82,8 @@ func (hash *ProtoHash) Get(key string, model proto.Message) error {
 	return unmarshalProto(redisResult, model)
 }
 
-func (hash *ProtoHash) Delete(key string) error {
-	return hash.db.sess.HDel(hash.key, key).Err()
+func (hash *ProtoHash) Delete(ctx context.Context, key string) error {
+	return hash.db.Cmdable(ctx).HDel(hash.key, key).Err()
 }
 
 type ProtoHashInsert struct {
@@ -90,7 +91,7 @@ type ProtoHashInsert struct {
 	fields map[string]interface{}
 }
 
-func (insert *ProtoHashInsert) Set(key string, value proto.Message) error {
+func (insert *ProtoHashInsert) Set(ctx context.Context, key string, value proto.Message) error {
 	m := new(jsonpb.Marshaler)
 	encoded, err := m.MarshalToString(value)
 	if err != nil {
@@ -102,6 +103,6 @@ func (insert *ProtoHashInsert) Set(key string, value proto.Message) error {
 	return nil
 }
 
-func (insert *ProtoHashInsert) Commit() error {
-	return insert.hash.db.sess.HMSet(insert.hash.key, insert.fields).Err()
+func (insert *ProtoHashInsert) Commit(ctx context.Context) error {
+	return insert.hash.db.Cmdable(ctx).HMSet(insert.hash.key, insert.fields).Err()
 }

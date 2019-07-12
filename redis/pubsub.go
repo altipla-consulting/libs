@@ -1,6 +1,8 @@
 package redis
 
 import (
+	"context"
+
 	"github.com/go-redis/redis"
 	"github.com/golang/protobuf/proto"
 
@@ -15,8 +17,12 @@ type PubSub struct {
 }
 
 // Subscribe opens a new connection to the server and starts downloading messages.
-func (pubsub *PubSub) Subscribe() *PubSubSubscription {
-	ps := pubsub.db.sess.Subscribe(pubsub.name)
+func (pubsub *PubSub) Subscribe(ctx context.Context) *PubSubSubscription {
+	client, ok := pubsub.db.Cmdable(ctx).(*redis.Client)
+	if !ok {
+		panic("cannot subscribe inside a redis transaction")
+	}
+	ps := client.Subscribe(pubsub.name)
 
 	return &PubSubSubscription{
 		ps: ps,
@@ -26,12 +32,12 @@ func (pubsub *PubSub) Subscribe() *PubSubSubscription {
 
 // Publish sends a new message to the server. Only subscription connected at
 // the same time will receive the message.
-func (pubsub *PubSub) Publish(msg proto.Message) error {
+func (pubsub *PubSub) Publish(ctx context.Context, msg proto.Message) error {
 	serialized, err := proto.Marshal(msg)
 	if err != nil {
 		return errors.Wrapf(err, "cannot serialize pubsub message")
 	}
-	if err := pubsub.db.sess.Publish(pubsub.name, string(serialized)).Err(); err != nil {
+	if err := pubsub.db.Cmdable(ctx).Publish(pubsub.name, string(serialized)).Err(); err != nil {
 		return errors.Wrapf(err, "cannot publish pubsub message")
 	}
 	return nil

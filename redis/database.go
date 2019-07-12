@@ -1,6 +1,7 @@
 package redis
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/go-redis/redis"
@@ -8,21 +9,21 @@ import (
 
 // Database keeps a connection to a Redis server.
 type Database struct {
-	app  string
-	sess *redis.Client
+	app        string
+	directSess *redis.Client
 }
 
 // Open a new database connection to the remote Redis server.
 func Open(hostname, applicationName string) *Database {
 	return &Database{
-		app:  applicationName,
-		sess: redis.NewClient(&redis.Options{Addr: hostname}),
+		app:        applicationName,
+		directSess: redis.NewClient(&redis.Options{Addr: hostname}),
 	}
 }
 
 // Close the connection to the remote database.
 func (db *Database) Close() error {
-	return db.sess.Close()
+	return db.directSess.Close()
 }
 
 func (db *Database) StringsSet(key string) *StringsSet {
@@ -109,18 +110,11 @@ func (db *Database) StringsList(key string) *StringsList {
 	}
 }
 
-// DirectClient returns the underlying client of go-redis to call advanced
-// methods not exposed through this library. Please consider to add the functionality
-// here after it's tested to improve all the users of the library.
-func (db *Database) DirectClient() *redis.Client {
-	return db.sess
-}
-
 // FlushAllKeysFromDatabase is exposed as a simple way for tests to reset the local
 // database. It is not intended to be run in production. It will clean up all the keys
 // of the whole database and leav an empty canvas to fill again.
 func (db *Database) FlushAllKeysFromDatabase() error {
-	return db.sess.FlushAll().Err()
+	return db.directSess.FlushAll().Err()
 }
 
 // PubSub returns an entrypoint to a PubSub queue in redisIt can be used to publish
@@ -144,4 +138,11 @@ func (db *Database) Hash(name string, model Model) *Hash {
 		name:  fmt.Sprintf("%s:%s", db.app, name),
 		props: props,
 	}
+}
+
+// Cmdable returns a reference to the direct Redis database connection. If context
+// is inside a transaction it will return the Tx object instead. Both objects has
+// the same Cmdable interface of the third party library.
+func (db *Database) Cmdable(ctx context.Context) redis.Cmdable {
+	return db.directSess
 }
