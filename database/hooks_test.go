@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestwithAfterPut(t *testing.T) {
+func TestWithAfterPut(t *testing.T) {
 	initDatabase(t)
 	defer closeDatabase()
 
