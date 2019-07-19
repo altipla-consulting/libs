@@ -11,7 +11,11 @@ import (
 	"libs.altipla.consulting/errors"
 )
 
-const DefaultPageSize = 50
+const (
+	DefaultPageSize = 50
+
+	Alphabet = "abcdefghijklmnopqrstuvwxyz1234567890"
+)
 
 type Pager struct {
 	NextPageToken string
@@ -46,6 +50,7 @@ func (pager *Pager) Fetch(models interface{}) error {
 	checksum := int64(c.Checksum())
 
 	hd := hashids.NewData()
+	hd.Alphabet = Alphabet
 	hd.Salt = "libs.altipla.consulting/pagination"
 	h, err := hashids.NewWithData(hd)
 	if err != nil {
