@@ -17,11 +17,16 @@ func (ns *NullableString) Scan(value interface{}) error {
 		*ns = ""
 		return nil
 	}
-	s, ok := value.(string)
-	if !ok {
+
+	switch s := value.(type) {
+	case string:
+		*ns = NullableString(s)
+	case []byte:
+		*ns = NullableString(s)
+	default:
 		return errors.Errorf("type %T is not a string that NullableString can scan: %#v", value, value)
 	}
-	*ns = NullableString(s)
+
 	return nil
 }
 
