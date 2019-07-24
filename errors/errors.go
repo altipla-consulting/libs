@@ -43,6 +43,12 @@ func (e *altiplaError) Cause() error {
 	return e.cause
 }
 
+// GRPCStatus allows us to wrap GRPC errors without losing the original error
+// code and retaining the ability to compare it.
+func (e *altiplaError) GRPCStatus() *status.Status {
+	return status.Convert(e.cause)
+}
+
 // A Frame represents a Frame in an altipla callstack. The Reason is the manual
 // annotation passed to altipla.Wrapf.
 type Frame struct {
@@ -297,28 +303,10 @@ func New(err string) error {
 // To check if a wrapped error is a specific error, such as io.EOF, you can
 // extract the error passed in to Wrapf using Cause.
 func Wrapf(err error, format string, a ...interface{}) error {
-	if !shouldWrap(err) {
-		return err
+	if err == nil {
+		return nil
 	}
 	return wrapf(err, fmt.Sprintf(format, a...))
-}
-
-type altiplaDoNotWrapper interface {
-	AltiplaDoNotWrap()
-}
-
-func shouldWrap(err error) bool {
-	if err == nil {
-		return false
-	}
-	if _, ok := status.FromError(err); ok {
-		return false
-	}
-	if _, ok := err.(altiplaDoNotWrapper); ok {
-		return false
-	}
-
-	return true
 }
 
 // Trace annotates an error with a stacktrace.
@@ -330,8 +318,8 @@ func shouldWrap(err error) bool {
 // To check if a wrapped error is a specific error, such as io.EOF, you can
 // extract the error passed in to Trace using Cause.
 func Trace(err error) error {
-	if !shouldWrap(err) {
-		return err
+	if err == nil {
+		return nil
 	}
 	return wrapf(err, "")
 }
