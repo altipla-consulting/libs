@@ -16,10 +16,6 @@ func (err Error) Error() string {
 	return fmt.Sprintf("routing error %d: %s", err.StatusCode, err.Message)
 }
 
-// AltiplaDoNotWraps avoids wrapping this error when reporting the chain
-// with github.com/altipla-consulting/errors
-func (err Error) AltiplaDoNotWrap() {}
-
 // NotFound returns a 404 HTTP error and formats its message.
 func NotFound(s string, args ...interface{}) error {
 	return Error{
