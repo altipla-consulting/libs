@@ -180,10 +180,12 @@ func (c *Collection) Put(instance Model) error {
 			return errors.Wrapf(err, "cannot get last inserted id")
 		}
 
-		for _, prop := range modelProps {
-			if prop.PrimaryKey {
-				if _, ok := prop.Value.(int64); ok {
-					reflect.ValueOf(prop.Pointer).Elem().Set(reflect.ValueOf(id))
+		if id != 0 {
+			for _, prop := range modelProps {
+				if prop.PrimaryKey {
+					if _, ok := prop.Value.(int64); ok {
+						reflect.ValueOf(prop.Pointer).Elem().Set(reflect.ValueOf(id))
+					}
 				}
 			}
 		}
