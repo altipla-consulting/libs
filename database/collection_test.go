@@ -220,7 +220,7 @@ func TestTransactionalPut(t *testing.T) {
 
 		return nil
 	}
-	require.NoError(t, testDB.Transaction(context.Background(), fn))
+	require.NoError(t, testDB.RunTransaction(context.Background(), fn))
 
 	count, err = testings.Count()
 	require.NoError(t, err)
@@ -246,7 +246,7 @@ func TestTransactionalPutRollback(t *testing.T) {
 
 		return errors.New("foo")
 	}
-	require.EqualError(t, testDB.Transaction(context.Background(), fn), "foo")
+	require.EqualError(t, testDB.RunTransaction(context.Background(), fn), "foo")
 
 	count, err = testings.Count()
 	require.NoError(t, err)

@@ -210,7 +210,7 @@ func (db *Database) executor(ctx context.Context) executor {
 
 type TransactionalFn func(ctx context.Context) error
 
-func (db *Database) Transaction(ctx context.Context, fn TransactionalFn) error {
+func (db *Database) RunTransaction(ctx context.Context, fn TransactionalFn) error {
 	tx, err := db.sess.BeginTx(ctx, nil)
 	if err != nil {
 		return errors.Trace(err)
