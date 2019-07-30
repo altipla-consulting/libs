@@ -190,12 +190,49 @@ func (db *Database) SelectAll(dest interface{}, query string, params ...interfac
 	return nil
 }
 
+type key int
+
+const (
+	keyTx = key(1)
+)
+
 type executor interface {
 	ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
 }
 
 func (db *Database) executor(ctx context.Context) executor {
+	tx, ok := ctx.Value(keyTx).(*sql.Tx)
+	if ok {
+		return tx
+	}
 	return db.sess
+}
+
+type TransactionalFn func(ctx context.Context) error
+
+func (db *Database) Transaction(ctx context.Context, fn TransactionalFn) error {
+	tx, err := db.sess.BeginTx(ctx, nil)
+	if err != nil {
+		return errors.Trace(err)
+	}
+
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	ctx = context.WithValue(ctx, keyTx, tx)
+
+	if err := fn(ctx); err != nil {
+		if err := tx.Rollback(); err != nil {
+			return errors.Wrapf(err, "unable to rollback transaction")
+		}
+
+		return errors.Trace(err)
+	}
+
+	if err := tx.Commit(); err != nil {
+		return errors.Trace(err)
+	}
+
+	return nil
 }
 
 // Option can be passed when opening a new connection to a database.
