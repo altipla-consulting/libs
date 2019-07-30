@@ -571,25 +571,10 @@ func (c *Collection) GetMulti(keys interface{}, models interface{}) error {
 // Truncate removes every single row of a table. It also resets any autoincrement
 // value it may have to the value "1".
 func (c *Collection) Truncate() error {
-	b := &sqlBuilder{
-		table: c.model.TableName(),
-	}
-
-	statement := b.TruncateSQL()
-	if c.debug {
-		log.Println("database [Truncate]:", statement)
-	}
-
-	if _, err := c.sess.Exec(statement); err != nil {
+	if _, err := c.sess.Exec(fmt.Sprintf(`DELETE FROM %s`, c.model.TableName())); err != nil {
 		return errors.Trace(err)
 	}
-
-	statement = b.ResetAutoIncrementSQL()
-	if c.debug {
-		log.Println("database [Truncate]:", statement)
-	}
-
-	if _, err := c.sess.Exec(statement); err != nil {
+	if _, err := c.sess.Exec(fmt.Sprintf(`ALTER TABLE %s AUTO_INCREMENT = 1`, c.model.TableName())); err != nil {
 		return errors.Trace(err)
 	}
 

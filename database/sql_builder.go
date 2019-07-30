@@ -99,11 +99,3 @@ func (b *sqlBuilder) DeleteSQL() (string, []interface{}) {
 
 	return sql, values
 }
-
-func (b *sqlBuilder) TruncateSQL() string {
-	return fmt.Sprintf(`DELETE FROM %s`, b.table)
-}
-
-func (b *sqlBuilder) ResetAutoIncrementSQL() string {
-	return fmt.Sprintf(`ALTER TABLE %s AUTO_INCREMENT = 1`, b.table)
-}

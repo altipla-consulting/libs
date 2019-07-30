@@ -2,9 +2,10 @@ package database
 
 import (
 	"database/sql"
-	"log"
+	"fmt"
 	"reflect"
 
+	log "github.com/sirupsen/logrus"
 	"libs.altipla.consulting/errors"
 
 	// Imports and registers the MySQL driver.
@@ -25,7 +26,7 @@ func Open(credentials Credentials, options ...Option) (*Database, error) {
 	}
 
 	if db.debug {
-		log.Println("database [Open]:", credentials)
+		log.WithField("credentials", credentials.String()).Debug("Open database connection")
 	}
 
 	var err error
@@ -63,6 +64,13 @@ func (db *Database) Close() {
 // Exec runs a raw SQL query in the database and returns nothing. It is
 // recommended to use Collections instead.
 func (db *Database) Exec(query string, params ...interface{}) error {
+	if db.debug {
+		log.WithFields(log.Fields{
+			"query":  query,
+			"params": fmt.Sprintf("%#v", params),
+		}).Debug("Exec SQL query")
+	}
+
 	_, err := db.sess.Exec(query, params...)
 	return errors.Trace(err)
 }
