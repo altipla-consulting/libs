@@ -1,9 +1,11 @@
 package database
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"libs.altipla.consulting/errors"
 )
 
 func TestGet(t *testing.T) {
@@ -197,6 +199,58 @@ func TestInsertAndUpdate(t *testing.T) {
 	require.Nil(t, testings.Get(other))
 	require.Equal(t, "qux", other.Name)
 	require.EqualValues(t, 1, other.Tracking().StoredRevision())
+}
+
+func TestTransactionalPut(t *testing.T) {
+	initDatabase(t)
+	defer closeDatabase()
+
+	require.Nil(t, testings.PutContext(context.Background(), &testingModel{Code: "foo"}))
+
+	count, err := testings.Count()
+	require.NoError(t, err)
+	require.EqualValues(t, count, 1)
+
+	fn := func(ctx context.Context) error {
+		require.Nil(t, testings.PutContext(ctx, &testingModel{Code: "bar"}))
+
+		count, err := testings.Count()
+		require.NoError(t, err)
+		require.EqualValues(t, count, 1)
+
+		return nil
+	}
+	require.NoError(t, testDB.Transaction(context.Background(), fn))
+
+	count, err = testings.Count()
+	require.NoError(t, err)
+	require.EqualValues(t, count, 2)
+}
+
+func TestTransactionalPutRollback(t *testing.T) {
+	initDatabase(t)
+	defer closeDatabase()
+
+	require.Nil(t, testings.PutContext(context.Background(), &testingModel{Code: "foo"}))
+
+	count, err := testings.Count()
+	require.NoError(t, err)
+	require.EqualValues(t, count, 1)
+
+	fn := func(ctx context.Context) error {
+		require.Nil(t, testings.PutContext(ctx, &testingModel{Code: "bar"}))
+
+		count, err := testings.Count()
+		require.NoError(t, err)
+		require.EqualValues(t, count, 1)
+
+		return errors.New("foo")
+	}
+	require.EqualError(t, testDB.Transaction(context.Background(), fn), "foo")
+
+	count, err = testings.Count()
+	require.NoError(t, err)
+	require.EqualValues(t, count, 1)
 }
 
 func TestDelete(t *testing.T) {
