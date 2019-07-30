@@ -1,6 +1,7 @@
 package database
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"reflect"
@@ -187,6 +188,14 @@ func (db *Database) SelectAll(dest interface{}, query string, params ...interfac
 	v.Set(result)
 
 	return nil
+}
+
+type executor interface {
+	ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
+}
+
+func (db *Database) executor(ctx context.Context) executor {
+	return db.sess
 }
 
 // Option can be passed when opening a new connection to a database.

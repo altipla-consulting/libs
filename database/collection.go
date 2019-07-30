@@ -1,13 +1,14 @@
 package database
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"hash/crc32"
-	"log"
 	"reflect"
 	"strings"
 
+	log "github.com/sirupsen/logrus"
 	"libs.altipla.consulting/errors"
 )
 
@@ -18,7 +19,7 @@ type CollectionOption func(c *Collection)
 // or use it to store new items (Put).
 type Collection struct {
 	sess          *sql.DB
-	debug         bool
+	db            *Database
 	conditions    []Condition
 	orders        []string
 	offset, limit int64
@@ -36,7 +37,7 @@ func newCollection(db *Database, model Model) *Collection {
 
 	c := &Collection{
 		sess:  db.sess,
-		debug: db.debug,
+		db:    db,
 		model: model,
 		props: props,
 		h:     new(hooker),
@@ -50,6 +51,7 @@ func newCollection(db *Database, model Model) *Collection {
 func (c *Collection) Clone() *Collection {
 	return &Collection{
 		sess:       c.sess,
+		db:         c.db,
 		conditions: c.conditions,
 		orders:     c.orders,
 		offset:     c.offset,
@@ -57,7 +59,6 @@ func (c *Collection) Clone() *Collection {
 		model:      c.model,
 		props:      c.props,
 		alias:      c.alias,
-		debug:      c.debug,
 		h:          c.h,
 	}
 }
@@ -87,7 +88,7 @@ func (c *Collection) Get(instance Model) error {
 	}
 
 	statement, values := b.SelectSQL()
-	if c.debug {
+	if c.db.debug {
 		log.Println("database [Get]:", statement)
 	}
 
@@ -111,6 +112,15 @@ func (c *Collection) Get(instance Model) error {
 // Put stores a new item of the collection. Any filter or limit of the
 // collection won't be applied.
 func (c *Collection) Put(instance Model) error {
+	return errors.Trace(c.PutContext(context.Background(), instance))
+}
+
+// PutContext stores a new item of the collection. Any filter or limit of the
+// collection won't be applied.
+//
+// The additional context compared to Put allows it to run inside a transaction
+// and to apply timeouts.
+func (c *Collection) PutContext(ctx context.Context, instance Model) error {
 	modelt := reflect.TypeOf(c.model)
 	instancet := reflect.TypeOf(instance)
 	if modelt != instancet {
@@ -159,11 +169,15 @@ func (c *Collection) Put(instance Model) error {
 
 		q, values = b.InsertSQL()
 	}
-	if c.debug {
-		log.Println("database [Put]:", q)
+
+	if c.db.debug {
+		log.WithFields(log.Fields{
+			"query":  q,
+			"params": fmt.Sprintf("%#v", values),
+		}).Debug("Put instance")
 	}
 
-	result, err := c.sess.Exec(q, values...)
+	result, err := c.db.executor(ctx).ExecContext(ctx, q, values...)
 	if err != nil {
 		return errors.Trace(err)
 	}
@@ -317,7 +331,7 @@ func (c *Collection) Delete(instance Model) error {
 	}
 
 	statement, values := b.DeleteSQL()
-	if c.debug {
+	if c.db.debug {
 		log.Println("database [Delete]:", statement)
 	}
 
@@ -342,7 +356,7 @@ func (c *Collection) Iterator() (*Iterator, error) {
 	}
 
 	sql, values := b.SelectSQL()
-	if c.debug {
+	if c.db.debug {
 		log.Println("database [Iterator]:", sql)
 	}
 
@@ -418,7 +432,7 @@ func (c *Collection) First(instance Model) error {
 	}
 
 	statement, values := b.SelectSQL()
-	if c.debug {
+	if c.db.debug {
 		log.Println("database [First]:", statement)
 	}
 
@@ -448,7 +462,7 @@ func (c *Collection) Count() (int64, error) {
 	}
 
 	sql, values := b.SelectSQLCols("COUNT(*)")
-	if c.debug {
+	if c.db.debug {
 		log.Println("database [Count]:", sql)
 	}
 

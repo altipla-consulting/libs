@@ -10,12 +10,12 @@ func TestGet(t *testing.T) {
 	initDatabase(t)
 	defer closeDatabase()
 
-	require.Nil(t, testDB.Exec(`INSERT INTO testing(code, name, revision) VALUES ("foo", "foov", 1), ("bar", "barv", 2)`))
+	require.NoError(t, testDB.Exec(`INSERT INTO testing(code, name, revision) VALUES ("foo", "foov", 1), ("bar", "barv", 2)`))
 
 	m := &testingModel{
 		Code: "bar",
 	}
-	require.Nil(t, testings.Get(m))
+	require.NoError(t, testings.Get(m))
 
 	require.Equal(t, "barv", m.Name)
 	require.EqualValues(t, 2, m.Tracking().StoredRevision())
