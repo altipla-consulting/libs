@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net"
 	"net/mail"
+	"strings"
 
 	"github.com/mailgun/mailgun-go/v3"
 	log "github.com/sirupsen/logrus"
@@ -84,8 +85,15 @@ func (client *Client) SendReturnID(ctx context.Context, domain string, email *Em
 	message, id, err := mgclient.Send(ctx, msg)
 	if err != nil {
 		if neterr, ok := err.(net.Error); ok && neterr.Timeout() {
-			return "", ErrTimeout
+			return "", errors.Trace(ErrTimeout)
 		}
+		if strings.HasPrefix(err.Error(), "remote server prematurely closed connection:") {
+			return "", errors.Trace(ErrTimeout)
+		}
+		if strings.HasPrefix(err.Error(), "while making http request:") && strings.Contains(err.Error(), "read: connection reset by peer") {
+			return "", errors.Trace(ErrTimeout)
+		}
+
 		if mgerr, ok := err.(*mailgun.UnexpectedResponseError); ok {
 			errdata := new(sendError)
 			if err := json.Unmarshal(mgerr.Data, errdata); err == nil {
