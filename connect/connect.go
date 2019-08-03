@@ -124,6 +124,6 @@ func Remote(address RemoteAddress, opts ...grpc.DialOption) (*grpc.ClientConn, e
 }
 
 func Internal(endpoint Endpoint, opts ...grpc.DialOption) (*grpc.ClientConn, error) {
-	opts = append(opts, grpc.WithInsecure())
+	opts = append(opts, grpc.WithInsecure(), grpc.WithDefaultCallOptions(grpc.WaitForReady(true)))
 	return grpc.Dial(string(endpoint), opts...)
 }
