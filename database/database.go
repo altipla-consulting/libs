@@ -65,6 +65,10 @@ func (db *Database) Close() {
 // Exec runs a raw SQL query in the database and returns nothing. It is
 // recommended to use Collections instead.
 func (db *Database) Exec(query string, params ...interface{}) error {
+	return errors.Trace(db.ExecContext(context.Background(), query, params...))
+}
+
+func (db *Database) ExecContext(ctx context.Context, query string, params ...interface{}) error {
 	if db.debug {
 		log.WithFields(log.Fields{
 			"query":  query,
@@ -72,18 +76,26 @@ func (db *Database) Exec(query string, params ...interface{}) error {
 		}).Debug("Exec SQL query")
 	}
 
-	_, err := db.sess.Exec(query, params...)
+	_, err := db.executor(ctx).ExecContext(ctx, query, params...)
 	return errors.Trace(err)
 }
 
 // QueryRow runs a raw SQL query in the database and returns the raw row from
 // MySQL. It is recommended to use Collections instead.
 func (db *Database) QueryRow(query string, params ...interface{}) *sql.Row {
-	return db.sess.QueryRow(query, params...)
+	return db.QueryRowContext(context.Background(), query, params...)
+}
+
+func (db *Database) QueryRowContext(ctx context.Context, query string, params ...interface{}) *sql.Row {
+	return db.executor(ctx).QueryRowContext(ctx, query, params...)
 }
 
 // Select fetchs a single row and loads the provided structure.
 func (db *Database) Select(dest interface{}, query string, params ...interface{}) error {
+	return errors.Trace(db.SelectContext(context.Background(), dest, query, params...))
+}
+
+func (db *Database) SelectContext(ctx context.Context, dest interface{}, query string, params ...interface{}) error {
 	propsList, err := extractGenericProps(dest)
 	if err != nil {
 		return errors.Trace(err)
@@ -93,7 +105,7 @@ func (db *Database) Select(dest interface{}, query string, params ...interface{}
 		props[prop.UnescapedName] = prop
 	}
 
-	rows, err := db.sess.Query(query, params...)
+	rows, err := db.executor(ctx).QueryContext(ctx, query, params...)
 	if err != nil {
 		return errors.Trace(err)
 	}
@@ -131,6 +143,10 @@ func (db *Database) Select(dest interface{}, query string, params ...interface{}
 
 // SelectAll fetchs the full list of rows and loads a pointer to a slice with them.
 func (db *Database) SelectAll(dest interface{}, query string, params ...interface{}) error {
+	return errors.Trace(db.SelectAllContext(context.Background(), dest, query, params...))
+}
+
+func (db *Database) SelectAllContext(ctx context.Context, dest interface{}, query string, params ...interface{}) error {
 	v := reflect.ValueOf(dest)
 	t := reflect.TypeOf(dest)
 
@@ -149,7 +165,7 @@ func (db *Database) SelectAll(dest interface{}, query string, params ...interfac
 		return errors.Trace(err)
 	}
 
-	rows, err := db.sess.Query(query, params...)
+	rows, err := db.executor(ctx).QueryContext(ctx, query, params...)
 	if err != nil {
 		return errors.Trace(err)
 	}
@@ -198,6 +214,8 @@ const (
 
 type executor interface {
 	ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
+	QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error)
+	QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row
 }
 
 func (db *Database) executor(ctx context.Context) executor {

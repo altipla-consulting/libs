@@ -1,5 +1,5 @@
 
-This changelog will list breaking changes in our APIs.
+This changelog will list only breaking changes in our APIs.
 
 
 ## v1.40.0:

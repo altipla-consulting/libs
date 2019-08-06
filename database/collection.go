@@ -18,7 +18,6 @@ type CollectionOption func(c *Collection)
 // to the collection and then query it with one of our read methods (Get, GetAll, ...)
 // or use it to store new items (Put).
 type Collection struct {
-	sess          *sql.DB
 	db            *Database
 	conditions    []Condition
 	orders        []string
@@ -36,7 +35,6 @@ func newCollection(db *Database, model Model) *Collection {
 	}
 
 	c := &Collection{
-		sess:  db.sess,
 		db:    db,
 		model: model,
 		props: props,
@@ -50,7 +48,6 @@ func newCollection(db *Database, model Model) *Collection {
 // the original one.
 func (c *Collection) Clone() *Collection {
 	return &Collection{
-		sess:       c.sess,
 		db:         c.db,
 		conditions: c.conditions,
 		orders:     c.orders,
@@ -73,6 +70,11 @@ func (c *Collection) Alias(alias string) *Collection {
 // Get retrieves the model matching the collection filters and the model primary key.
 // If no model is found ErrNoSuchEntity will be returned and the model won't be touched.
 func (c *Collection) Get(instance Model) error {
+	// DO NOT TRACE HERE: ErrNoSuchEntity should be preserved right now.
+	return c.GetContext(context.Background(), instance)
+}
+
+func (c *Collection) GetContext(ctx context.Context, instance Model) error {
 	modelProps := updateModelProps(c.props, instance)
 	b := &sqlBuilder{
 		table:      c.model.TableName(),
@@ -96,7 +98,7 @@ func (c *Collection) Get(instance Model) error {
 	for _, prop := range modelProps {
 		pointers = append(pointers, prop.Pointer)
 	}
-	if err := c.sess.QueryRow(statement, values...).Scan(pointers...); err != nil {
+	if err := c.db.executor(ctx).QueryRowContext(ctx, statement, values...).Scan(pointers...); err != nil {
 		if err == sql.ErrNoRows {
 			return ErrNoSuchEntity
 		}
@@ -315,6 +317,10 @@ func (c *Collection) OrderSorter(sorter Sorter) *Collection {
 // PK exists when the filters do not match. Limits won't be applied but the offset
 // of the collection will.
 func (c *Collection) Delete(instance Model) error {
+	return errors.Trace(c.DeleteContext(context.Background(), instance))
+}
+
+func (c *Collection) DeleteContext(ctx context.Context, instance Model) error {
 	b := &sqlBuilder{
 		table:      c.model.TableName(),
 		conditions: c.conditions,
@@ -335,7 +341,7 @@ func (c *Collection) Delete(instance Model) error {
 		log.Println("database [Delete]:", statement)
 	}
 
-	if _, err := c.sess.Exec(statement, values...); err != nil {
+	if _, err := c.db.executor(ctx).ExecContext(ctx, statement, values...); err != nil {
 		return errors.Trace(err)
 	}
 
@@ -345,6 +351,10 @@ func (c *Collection) Delete(instance Model) error {
 // Iterator returns a new iterator that can be used to extract models one by one in a loop.
 // You should close the Iterator after you are done with it.
 func (c *Collection) Iterator() (*Iterator, error) {
+	return c.IteratorContext(context.Background())
+}
+
+func (c *Collection) IteratorContext(ctx context.Context) (*Iterator, error) {
 	b := &sqlBuilder{
 		table:      c.model.TableName(),
 		conditions: c.conditions,
@@ -360,7 +370,7 @@ func (c *Collection) Iterator() (*Iterator, error) {
 		log.Println("database [Iterator]:", sql)
 	}
 
-	rows, err := c.sess.Query(sql, values...)
+	rows, err := c.db.executor(ctx).QueryContext(ctx, sql, values...)
 	if err != nil {
 		return nil, err
 	}
@@ -372,6 +382,11 @@ func (c *Collection) Iterator() (*Iterator, error) {
 // models that match the filters of the collection. Take care to avoid fetching large
 // collections of models or you will run out of memory.
 func (c *Collection) GetAll(models interface{}) error {
+	// DO NOT TRACE HERE: ErrNoSuchEntity should be preserved right now.
+	return c.GetAllContext(context.Background(), models)
+}
+
+func (c *Collection) GetAllContext(ctx context.Context, models interface{}) error {
 	v := reflect.ValueOf(models)
 	t := reflect.TypeOf(models)
 
@@ -391,7 +406,7 @@ func (c *Collection) GetAll(models interface{}) error {
 
 	dest := reflect.MakeSlice(t, 0, 0)
 
-	it, err := c.Iterator()
+	it, err := c.IteratorContext(ctx)
 	if err != nil {
 		return errors.Trace(err)
 	}
@@ -418,6 +433,11 @@ func (c *Collection) GetAll(models interface{}) error {
 // First returns the first model that matches the collection. If no one is found
 // it will return ErrNoSuchEntity and it won't touch model.
 func (c *Collection) First(instance Model) error {
+	// DO NOT TRACE HERE: ErrNoSuchEntity should be preserved right now.
+	return c.FirstContext(context.Background(), instance)
+}
+
+func (c *Collection) FirstContext(ctx context.Context, instance Model) error {
 	c = c.Limit(1)
 
 	modelProps := updateModelProps(c.props, instance)
@@ -440,7 +460,7 @@ func (c *Collection) First(instance Model) error {
 	for _, prop := range modelProps {
 		pointers = append(pointers, prop.Pointer)
 	}
-	if err := c.sess.QueryRow(statement, values...).Scan(pointers...); err != nil {
+	if err := c.db.executor(ctx).QueryRowContext(ctx, statement, values...).Scan(pointers...); err != nil {
 		if err == sql.ErrNoRows {
 			return ErrNoSuchEntity
 		}
@@ -455,6 +475,10 @@ func (c *Collection) First(instance Model) error {
 
 // Count queries the number of rows that the collection matches.
 func (c *Collection) Count() (int64, error) {
+	return c.CountContext(context.Background())
+}
+
+func (c *Collection) CountContext(ctx context.Context) (int64, error) {
 	b := &sqlBuilder{
 		table:      c.model.TableName(),
 		conditions: c.conditions,
@@ -467,7 +491,7 @@ func (c *Collection) Count() (int64, error) {
 	}
 
 	var n int64
-	if err := c.sess.QueryRow(sql, values...).Scan(&n); err != nil {
+	if err := c.db.executor(ctx).QueryRowContext(ctx, sql, values...).Scan(&n); err != nil {
 		return 0, err
 	}
 
@@ -481,6 +505,11 @@ func (c *Collection) Count() (int64, error) {
 // be in the same order as the keys and they will have nil's when the row is found. The result
 // list will also have the same length as keys with nil's filled when the row is not found.
 func (c *Collection) GetMulti(keys interface{}, models interface{}) error {
+	// DO NOT TRACE HERE: ErrNoSuchEntity should be preserved right now.
+	return c.GetMultiContext(context.Background(), keys, models)
+}
+
+func (c *Collection) GetMultiContext(ctx context.Context, keys interface{}, models interface{}) error {
 	v := reflect.ValueOf(models)
 	t := reflect.TypeOf(models)
 	keyst := reflect.TypeOf(keys)
@@ -521,7 +550,7 @@ func (c *Collection) GetMulti(keys interface{}, models interface{}) error {
 
 	fetch := reflect.New(t)
 	fetch.Elem().Set(reflect.MakeSlice(t, 0, 0))
-	if err := c.GetAll(fetch.Interface()); err != nil {
+	if err := c.GetAllContext(ctx, fetch.Interface()); err != nil {
 		return errors.Trace(err)
 	}
 
@@ -585,10 +614,14 @@ func (c *Collection) GetMulti(keys interface{}, models interface{}) error {
 // Truncate removes every single row of a table. It also resets any autoincrement
 // value it may have to the value "1".
 func (c *Collection) Truncate() error {
-	if _, err := c.sess.Exec(fmt.Sprintf(`DELETE FROM %s`, c.model.TableName())); err != nil {
+	return errors.Trace(c.TruncateContext(context.Background()))
+}
+
+func (c *Collection) TruncateContext(ctx context.Context) error {
+	if _, err := c.db.executor(ctx).ExecContext(ctx, fmt.Sprintf(`DELETE FROM %s`, c.model.TableName())); err != nil {
 		return errors.Trace(err)
 	}
-	if _, err := c.sess.Exec(fmt.Sprintf(`ALTER TABLE %s AUTO_INCREMENT = 1`, c.model.TableName())); err != nil {
+	if _, err := c.db.executor(ctx).ExecContext(ctx, fmt.Sprintf(`ALTER TABLE %s AUTO_INCREMENT = 1`, c.model.TableName())); err != nil {
 		return errors.Trace(err)
 	}
 
