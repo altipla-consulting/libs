@@ -196,13 +196,23 @@ func (s *Server) decorate(lang string, handler Handler) httprouter.Handle {
 			if httperr, ok := errors.Cause(err).(Error); ok {
 				switch httperr.StatusCode {
 				case http.StatusNotFound, http.StatusUnauthorized, http.StatusBadRequest:
+					log.WithFields(log.Fields{
+						"status": http.StatusText(httperr.StatusCode),
+						"reason": httperr.Message,
+					}).Error("Handler failed")
+
 					s.emitError(w, r, httperr.StatusCode)
 					return
 				}
 			}
 
 			if s.logging {
-				log.WithFields(errors.LogFields(err)).Errorf("Handler failed")
+				log.WithFields(errors.LogFields(err)).Error("Handler failed")
+			}
+
+			if ctx.Err() == context.Canceled {
+				s.emitError(w, r, http.StatusRequestTimeout)
+				return
 			}
 
 			if s.sentryClient != nil {

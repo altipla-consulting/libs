@@ -23,7 +23,7 @@ const errorTemplate = `
     {{if eq . 500}}
       Error interno del servidor
     {{end}}
-    {{if eq . 504}}
+    {{if or (eq . 504) (eq . 408)}}
       Timeout interno del servidor
     {{end}}
   </title>
@@ -140,7 +140,7 @@ const errorTemplate = `
           {{if eq . 500}}
             Error interno del servidor
           {{end}}
-          {{if eq . 504}}
+          {{if or (eq . 504) (eq . 408)}}
             Timeout interno del servidor
           {{end}}
         </p>
@@ -158,7 +158,7 @@ const errorTemplate = `
             <a class="robot-buttons" href="/">Página principal</a>
           </div>
         {{end}}
-        {{if or (eq . 500) (eq . 504)}}
+        {{if or (eq . 500) (eq . 504) (eq . 408)}}
           <p>Pruebe a recargar en unos pocos segundos para ver si se ha arreglado</p>
 
           <div class="robot-buttons">
