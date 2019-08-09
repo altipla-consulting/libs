@@ -24,8 +24,8 @@ func Render(ctx context.Context, content string) (string, error) {
 		result, err := renderShort(ctx, content)
 		if err != nil {
 			lastErr = err.Error()
-			if errors.Is(err, context.DeadlineExceeded) {
-				return "", errors.Trace(err)
+			if ctx.Err() != nil {
+				return "", errors.Trace(ctx.Err())
 			} else {
 				time.Sleep(500 * time.Millisecond)
 				continue
