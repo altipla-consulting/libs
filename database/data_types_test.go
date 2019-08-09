@@ -1,6 +1,7 @@
 package database
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -20,18 +21,19 @@ func (model *testingModelNullString) TableName() string {
 func TestNullableStringDefaultsValid(t *testing.T) {
 	initDatabase(t)
 	defer closeDatabase()
+	ctx := context.Background()
 
 	c := testDB.Collection(new(testingModelNullString))
 
 	m := &testingModelNullString{
 		Code: "foo",
 	}
-	require.NoError(t, c.Put(m))
+	require.NoError(t, c.Put(ctx, m))
 
 	other := &testingModel{
 		Code: "foo",
 	}
-	require.NoError(t, testings.Get(other))
+	require.NoError(t, testings.Get(ctx, other))
 
 	require.Empty(t, other.Name)
 }
@@ -39,6 +41,7 @@ func TestNullableStringDefaultsValid(t *testing.T) {
 func TestNullableStringStoresValue(t *testing.T) {
 	initDatabase(t)
 	defer closeDatabase()
+	ctx := context.Background()
 
 	c := testDB.Collection(new(testingModelNullString))
 
@@ -46,12 +49,12 @@ func TestNullableStringStoresValue(t *testing.T) {
 		Code: "foo",
 		Name: "foo value",
 	}
-	require.NoError(t, c.Put(m))
+	require.NoError(t, c.Put(ctx, m))
 
 	other := &testingModel{
 		Code: "foo",
 	}
-	require.NoError(t, testings.Get(other))
+	require.NoError(t, testings.Get(ctx, other))
 
 	require.Equal(t, other.Name, "foo value")
 }
@@ -70,9 +73,10 @@ func (model *testingModelText) TableName() string {
 func TestNullableStringText(t *testing.T) {
 	initDatabase(t)
 	defer closeDatabase()
+	ctx := context.Background()
 
-	require.Nil(t, testDB.Exec(`DROP TABLE IF EXISTS testing_text`))
-	err := testDB.Exec(`
+	require.Nil(t, testDB.Exec(ctx, `DROP TABLE IF EXISTS testing_text`))
+	err := testDB.Exec(ctx, `
     CREATE TABLE testing_text (
       code VARCHAR(191),
       name TEXT,
@@ -88,12 +92,12 @@ func TestNullableStringText(t *testing.T) {
 	m := &testingModelText{
 		Code: "foo",
 	}
-	require.NoError(t, c.Put(m))
+	require.NoError(t, c.Put(ctx, m))
 
 	other := &testingModelText{
 		Code: "foo",
 	}
-	require.NoError(t, c.Get(other))
+	require.NoError(t, c.Get(ctx, other))
 
 	require.Empty(t, other.Name)
 }

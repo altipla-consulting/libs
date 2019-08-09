@@ -10,6 +10,7 @@ import (
 func TestWithAfterPut(t *testing.T) {
 	initDatabase(t)
 	defer closeDatabase()
+	ctx := context.Background()
 
 	var called int
 	fn := func(ctx context.Context, instance Model) error {
@@ -22,7 +23,7 @@ func TestWithAfterPut(t *testing.T) {
 		Code: "foo",
 		Name: "bar",
 	}
-	require.Nil(t, c.Put(m))
+	require.Nil(t, c.Put(ctx, m))
 
 	require.Equal(t, called, 1)
 }

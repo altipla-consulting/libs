@@ -1,6 +1,7 @@
 package pagination
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/speps/go-hashids"
@@ -41,7 +42,7 @@ func (pager *Pager) SetInputs(pageToken string, pageSize int32) {
 	}
 }
 
-func (pager *Pager) Fetch(models interface{}) error {
+func (pager *Pager) Fetch(ctx context.Context, models interface{}) error {
 	// Count the page size between the params we checksum.
 	c := pager.c.Clone().Limit(int64(pager.pageSize))
 
@@ -74,7 +75,7 @@ func (pager *Pager) Fetch(models interface{}) error {
 		}
 	}
 
-	n, err := pager.c.Count()
+	n, err := pager.c.Count(ctx)
 	if err != nil {
 		return errors.Trace(err)
 	}
@@ -85,7 +86,7 @@ func (pager *Pager) Fetch(models interface{}) error {
 	}
 
 	c = c.Offset(start)
-	if err := c.GetAll(models); err != nil {
+	if err := c.GetAll(ctx, models); err != nil {
 		return errors.Trace(err)
 	}
 

@@ -1,6 +1,7 @@
 package database
 
 import (
+	"context"
 	"os"
 	"testing"
 
@@ -88,6 +89,8 @@ func (model *testingRelChild) TableName() string {
 }
 
 func initDatabase(t *testing.T) {
+	ctx := context.Background()
+
 	var err error
 	testDB, err = Open(Credentials{
 		User:      "dev-user",
@@ -99,8 +102,8 @@ func initDatabase(t *testing.T) {
 	}, WithDebug(os.Getenv("DEBUG") == "true"))
 	require.Nil(t, err)
 
-	require.Nil(t, testDB.Exec(`DROP TABLE IF EXISTS testing`))
-	err = testDB.Exec(`
+	require.Nil(t, testDB.Exec(ctx, `DROP TABLE IF EXISTS testing`))
+	err = testDB.Exec(ctx, `
     CREATE TABLE testing (
       code VARCHAR(191),
       name VARCHAR(191),
@@ -111,8 +114,8 @@ func initDatabase(t *testing.T) {
   `)
 	require.Nil(t, err)
 
-	require.Nil(t, testDB.Exec(`DROP TABLE IF EXISTS testing_auto`))
-	err = testDB.Exec(`
+	require.Nil(t, testDB.Exec(ctx, `DROP TABLE IF EXISTS testing_auto`))
+	err = testDB.Exec(ctx, `
     CREATE TABLE testing_auto (
       id INT(11) NOT NULL AUTO_INCREMENT,
       name VARCHAR(191),
@@ -123,8 +126,8 @@ func initDatabase(t *testing.T) {
   `)
 	require.Nil(t, err)
 
-	require.Nil(t, testDB.Exec(`DROP TABLE IF EXISTS testing_hooker`))
-	err = testDB.Exec(`
+	require.Nil(t, testDB.Exec(ctx, `DROP TABLE IF EXISTS testing_hooker`))
+	err = testDB.Exec(ctx, `
     CREATE TABLE testing_hooker (
       code VARCHAR(191),
       executed BOOLEAN,
@@ -136,8 +139,8 @@ func initDatabase(t *testing.T) {
   `)
 	require.Nil(t, err)
 
-	require.Nil(t, testDB.Exec(`DROP TABLE IF EXISTS testing_relparent`))
-	err = testDB.Exec(`
+	require.Nil(t, testDB.Exec(ctx, `DROP TABLE IF EXISTS testing_relparent`))
+	err = testDB.Exec(ctx, `
     CREATE TABLE testing_relparent (
       id INT(11) NOT NULL AUTO_INCREMENT,
       revision INT(11) NOT NULL,
@@ -147,8 +150,8 @@ func initDatabase(t *testing.T) {
   `)
 	require.Nil(t, err)
 
-	require.Nil(t, testDB.Exec(`DROP TABLE IF EXISTS testing_relchild`))
-	err = testDB.Exec(`
+	require.Nil(t, testDB.Exec(ctx, `DROP TABLE IF EXISTS testing_relchild`))
+	err = testDB.Exec(ctx, `
     CREATE TABLE testing_relchild (
       id INT(11) NOT NULL AUTO_INCREMENT,
       parent INT(11),
@@ -179,9 +182,9 @@ func TestQueryRow(t *testing.T) {
 		Code: "Test",
 		Name: "test",
 	}
-	require.Nil(t, testings.Put(model))
+	require.Nil(t, testings.Put(context.Background(), model))
 
-	row := testDB.QueryRow(`SELECT name FROM testing`)
+	row := testDB.QueryRow(context.Background(), `SELECT name FROM testing`)
 
 	var name string
 	require.NoError(t, row.Scan(&name))
@@ -201,10 +204,10 @@ func TestSelect(t *testing.T) {
 		Code: "foo",
 		Name: "Foo Name",
 	}
-	require.Nil(t, testings.Put(model))
+	require.Nil(t, testings.Put(context.Background(), model))
 
 	other := new(testingModelSelect)
-	require.NoError(t, testDB.Select(other, `SELECT code, name FROM testing`))
+	require.NoError(t, testDB.Select(context.Background(), other, `SELECT code, name FROM testing`))
 
 	require.Equal(t, other.Code, "foo")
 	require.Equal(t, other.Name, "Foo Name")
@@ -218,15 +221,15 @@ func TestSelectAll(t *testing.T) {
 		Code: "foo",
 		Name: "Foo Name",
 	}
-	require.Nil(t, testings.Put(model))
+	require.Nil(t, testings.Put(context.Background(), model))
 	model = &testingModel{
 		Code: "bar",
 		Name: "Bar Name",
 	}
-	require.Nil(t, testings.Put(model))
+	require.Nil(t, testings.Put(context.Background(), model))
 
 	var other []*testingModelSelect
-	require.NoError(t, testDB.SelectAll(&other, `SELECT code, name FROM testing`))
+	require.NoError(t, testDB.SelectAll(context.Background(), &other, `SELECT code, name FROM testing`))
 
 	require.Len(t, other, 2)
 	require.Equal(t, other[0].Code, "bar")

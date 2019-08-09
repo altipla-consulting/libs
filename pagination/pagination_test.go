@@ -1,6 +1,7 @@
 package pagination
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"testing"
@@ -26,6 +27,8 @@ func (model *testingModel) TableName() string {
 }
 
 func initDatabase(t *testing.T) {
+	ctx := context.Background()
+
 	var err error
 	testDB, err = database.Open(database.Credentials{
 		User:      "dev-user",
@@ -37,8 +40,8 @@ func initDatabase(t *testing.T) {
 	}, database.WithDebug(os.Getenv("DEBUG") == "true"))
 	require.Nil(t, err)
 
-	require.Nil(t, testDB.Exec(`DROP TABLE IF EXISTS testing`))
-	err = testDB.Exec(`
+	require.Nil(t, testDB.Exec(ctx, `DROP TABLE IF EXISTS testing`))
+	err = testDB.Exec(ctx, `
     CREATE TABLE testing (
       code VARCHAR(191),
       revision INT(11) NOT NULL,
@@ -58,19 +61,20 @@ func closeDatabase() {
 func TestMovingBetweenAllPages(t *testing.T) {
 	initDatabase(t)
 	defer closeDatabase()
+	ctx := context.Background()
 
 	for i := 0; i < 8; i++ {
 		foo := &testingModel{
 			Code: fmt.Sprintf("foo-%d", i),
 		}
-		require.NoError(t, testings.Put(foo))
+		require.NoError(t, testings.Put(ctx, foo))
 	}
 
 	p := NewPager(testings)
 	{
 		p.SetInputs("", 3)
 		var page []*testingModel
-		require.NoError(t, p.Fetch(&page))
+		require.NoError(t, p.Fetch(ctx, &page))
 
 		require.Len(t, page, 3)
 
@@ -85,7 +89,7 @@ func TestMovingBetweenAllPages(t *testing.T) {
 	{
 		p.SetInputs(p.NextPageToken, 3)
 		var page []*testingModel
-		require.NoError(t, p.Fetch(&page))
+		require.NoError(t, p.Fetch(ctx, &page))
 
 		require.Len(t, page, 3)
 
@@ -99,7 +103,7 @@ func TestMovingBetweenAllPages(t *testing.T) {
 	{
 		p.SetInputs(p.NextPageToken, 3)
 		var page []*testingModel
-		require.NoError(t, p.Fetch(&page))
+		require.NoError(t, p.Fetch(ctx, &page))
 
 		require.Len(t, page, 2)
 
@@ -113,7 +117,7 @@ func TestMovingBetweenAllPages(t *testing.T) {
 	{
 		p.SetInputs(p.PrevPageToken, 3)
 		var page []*testingModel
-		require.NoError(t, p.Fetch(&page))
+		require.NoError(t, p.Fetch(ctx, &page))
 
 		require.Len(t, page, 3)
 
@@ -127,7 +131,7 @@ func TestMovingBetweenAllPages(t *testing.T) {
 	{
 		p.SetInputs(p.PrevPageToken, 3)
 		var page []*testingModel
-		require.NoError(t, p.Fetch(&page))
+		require.NoError(t, p.Fetch(ctx, &page))
 
 		require.Len(t, page, 3)
 
@@ -144,11 +148,12 @@ func TestMovingBetweenAllPages(t *testing.T) {
 func TestEmptyResultSet(t *testing.T) {
 	initDatabase(t)
 	defer closeDatabase()
+	ctx := context.Background()
 
 	p := NewPager(testings)
 	p.SetInputs("", 3)
 	var page []*testingModel
-	require.NoError(t, p.Fetch(&page))
+	require.NoError(t, p.Fetch(ctx, &page))
 
 	require.Empty(t, page)
 }

@@ -64,11 +64,7 @@ func (db *Database) Close() {
 
 // Exec runs a raw SQL query in the database and returns nothing. It is
 // recommended to use Collections instead.
-func (db *Database) Exec(query string, params ...interface{}) error {
-	return errors.Trace(db.ExecContext(context.Background(), query, params...))
-}
-
-func (db *Database) ExecContext(ctx context.Context, query string, params ...interface{}) error {
+func (db *Database) Exec(ctx context.Context, query string, params ...interface{}) error {
 	if db.debug {
 		log.WithFields(log.Fields{
 			"query":  query,
@@ -82,20 +78,12 @@ func (db *Database) ExecContext(ctx context.Context, query string, params ...int
 
 // QueryRow runs a raw SQL query in the database and returns the raw row from
 // MySQL. It is recommended to use Collections instead.
-func (db *Database) QueryRow(query string, params ...interface{}) *sql.Row {
-	return db.QueryRowContext(context.Background(), query, params...)
-}
-
-func (db *Database) QueryRowContext(ctx context.Context, query string, params ...interface{}) *sql.Row {
+func (db *Database) QueryRow(ctx context.Context, query string, params ...interface{}) *sql.Row {
 	return db.executor(ctx).QueryRowContext(ctx, query, params...)
 }
 
 // Select fetchs a single row and loads the provided structure.
-func (db *Database) Select(dest interface{}, query string, params ...interface{}) error {
-	return errors.Trace(db.SelectContext(context.Background(), dest, query, params...))
-}
-
-func (db *Database) SelectContext(ctx context.Context, dest interface{}, query string, params ...interface{}) error {
+func (db *Database) Select(ctx context.Context, dest interface{}, query string, params ...interface{}) error {
 	propsList, err := extractGenericProps(dest)
 	if err != nil {
 		return errors.Trace(err)
@@ -142,11 +130,7 @@ func (db *Database) SelectContext(ctx context.Context, dest interface{}, query s
 }
 
 // SelectAll fetchs the full list of rows and loads a pointer to a slice with them.
-func (db *Database) SelectAll(dest interface{}, query string, params ...interface{}) error {
-	return errors.Trace(db.SelectAllContext(context.Background(), dest, query, params...))
-}
-
-func (db *Database) SelectAllContext(ctx context.Context, dest interface{}, query string, params ...interface{}) error {
+func (db *Database) SelectAll(ctx context.Context, dest interface{}, query string, params ...interface{}) error {
 	v := reflect.ValueOf(dest)
 	t := reflect.TypeOf(dest)
 

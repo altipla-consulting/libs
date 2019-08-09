@@ -12,9 +12,9 @@ type hooker struct {
 	afterPut []HookFn
 }
 
-func (h *hooker) runAfterPut(instance Model) error {
+func (h *hooker) runAfterPut(ctx context.Context, instance Model) error {
 	for _, fn := range h.afterPut {
-		if err := fn(context.Background(), instance); err != nil {
+		if err := fn(ctx, instance); err != nil {
 			return errors.Trace(err)
 		}
 	}
