@@ -3,6 +3,7 @@ package connect
 import (
 	"context"
 	"crypto/tls"
+	"strings"
 	"time"
 
 	"golang.org/x/oauth2"
@@ -10,6 +11,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/keepalive"
+	"google.golang.org/grpc/metadata"
 
 	"libs.altipla.consulting/errors"
 	"libs.altipla.consulting/services"
@@ -124,6 +126,27 @@ func Remote(address RemoteAddress, opts ...grpc.DialOption) (*grpc.ClientConn, e
 }
 
 func Internal(endpoint Endpoint, opts ...grpc.DialOption) (*grpc.ClientConn, error) {
-	opts = append(opts, grpc.WithInsecure(), grpc.WithDefaultCallOptions(grpc.WaitForReady(true)))
+	opts = append(opts, grpc.WithInsecure(), grpc.WithDefaultCallOptions(grpc.WaitForReady(true)), grpc.WithPerRPCCredentials(new(autoMetadataCredentials)))
 	return grpc.Dial(string(endpoint), opts...)
+}
+
+type autoMetadataCredentials struct{}
+
+func (amc *autoMetadataCredentials) GetRequestMetadata(ctx context.Context, uri ...string) (map[string]string, error) {
+	outgoing := map[string]string{}
+
+	md, ok := metadata.FromIncomingContext(ctx)
+	if ok {
+		for k, v := range md {
+			if strings.HasPrefix(k, "auto-") {
+				outgoing[k] = v[0]
+			}
+		}
+	}
+
+	return outgoing, nil
+}
+
+func (amc *autoMetadataCredentials) RequireTransportSecurity() bool {
+	return false
 }
