@@ -4,7 +4,7 @@ This changelog will list only breaking changes in our APIs.
 
 ## v1.49.0
 
-- *routing:* `NotFound`, `Unauthorized`, `BadRequest`, and `Internal` do not receive a format now. If you want to keep the functionality use the equivalent `NotFoundf`, `Unauthorizedf`, `BadRequestf` and `Internalf`.
+- **routing:** `NotFound`, `Unauthorized`, `BadRequest`, and `Internal` do not receive a format now. If you want to keep the functionality use the equivalent `NotFoundf`, `Unauthorizedf`, `BadRequestf` and `Internalf`.
 
 
 ## v1.46.0:

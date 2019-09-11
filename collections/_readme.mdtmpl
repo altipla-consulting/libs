@@ -1,0 +1,27 @@
+
+### Basic usage
+
+```go
+package main
+
+import (
+  "fmt"
+  
+  "libs.altipla.consulting/collections"
+)
+
+  func main() {
+    goFounders := []string{"Robert Griesemer", "Rob Pike", "Ken Thompson"}
+    fmt.Println("Francis McCabe:", collections.HasString(goFounders, "Francis McCabe"))
+    fmt.Println("RobertGriesemer:", collections.HasString(goFounders, "RobertGriesemer"))
+    fmt.Println("Robert Griesemer:", collections.HasString(goFounders, "Robert Griesemer"))
+  }
+)
+```
+
+Result:
+```
+Fracis McCabe: false 
+RobertGriesemer: false 
+Robert Griesemer: true 
+```

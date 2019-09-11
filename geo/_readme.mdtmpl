@@ -1,0 +1,15 @@
+
+### Basic usage
+
+You can use the types of this package in your models structs when working with `libs.altipla.consulting/database`:
+
+```go
+import (
+  "libs.altipla.consulting/geo"
+)
+
+type MyModel struct {
+  ID          int64      `db:"id,pk"`
+  Location    geo.Point `db:"location"`
+}
+```
