@@ -3,7 +3,16 @@
 
 [![GoDoc](https://godoc.org/libs.altipla.consulting/arrays?status.svg)](https://godoc.org/libs.altipla.consulting/arrays)
 
-Models for integer and string arrays in MySQL.
+Package `arrays` has models for integer and string arrays in MySQL.
+
+
+### Install
+
+```go
+import (
+	"libs.altipla.consulting/arrays"
+)
+```
 
 
 ### Basic usage
@@ -18,3 +27,22 @@ type MyModel struct {
   Codes arrays.Strings    `db:"codes"`
 }
 ```
+
+
+### Contributing
+
+You can make pull requests or create issues in GitHub. Any code you send should be formatted using ```make gofmt```.
+
+
+### Running tests
+
+Run the tests:
+
+```shell
+make test
+```
+
+
+### License
+
+[MIT License](../LICENSE)

@@ -3,13 +3,32 @@
 
 [![GoDoc](https://godoc.org/libs.altipla.consulting/datetime?status.svg)](https://godoc.org/libs.altipla.consulting/datetime)
 
-Date & time serialization, comparison and other common operations.
+Package `datetime` contains date & time protobuf serialization, comparison and other common operations.
 
 
-### Basic usage
+### Install
 
 ```go
 import (
-  "libs.altipla.consulting/datetime"
+	"libs.altipla.consulting/datetime"
 )
 ```
+
+
+### Contributing
+
+You can make pull requests or create issues in GitHub. Any code you send should be formatted using ```make gofmt```.
+
+
+### Running tests
+
+Run the tests:
+
+```shell
+make test
+```
+
+
+### License
+
+[MIT License](../LICENSE)

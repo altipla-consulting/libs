@@ -4,9 +4,19 @@
 </p>
 <br>
 
+
 [![GoDoc](https://godoc.org/libs.altipla.consulting/collections?status.svg)](https://godoc.org/libs.altipla.consulting/collections)
 
-Set of functions that help us work with slices and maps.
+Package `collections` is a set of functions that help us work with slices and maps.
+
+
+### Install
+
+```go
+import (
+	"libs.altipla.consulting/collections"
+)
+```
 
 
 ### Basic usage
@@ -35,3 +45,22 @@ Fracis McCabe: false
 RobertGriesemer: false 
 Robert Griesemer: true 
 ```
+
+
+### Contributing
+
+You can make pull requests or create issues in GitHub. Any code you send should be formatted using ```make gofmt```.
+
+
+### Running tests
+
+Run the tests:
+
+```shell
+make test
+```
+
+
+### License
+
+[MIT License](../LICENSE)

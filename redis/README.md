@@ -3,7 +3,16 @@
 
 [![GoDoc](https://godoc.org/libs.altipla.consulting/redis?status.svg)](https://godoc.org/libs.altipla.consulting/redis)
 
-Abstraction layer to access Redis with repositories and models.
+Package `redis` is an abstraction layer to access Redis with repositories and models.
+
+
+### Install
+
+```go
+import (
+	"libs.altipla.consulting/redis"
+)
+```
 
 
 ### Basic usage
@@ -48,3 +57,22 @@ func run() error {
   }
 }
 ```
+
+
+### Contributing
+
+You can make pull requests or create issues in GitHub. Any code you send should be formatted using ```make gofmt```.
+
+
+### Running tests
+
+Run the tests:
+
+```shell
+make test
+```
+
+
+### License
+
+[MIT License](../LICENSE)

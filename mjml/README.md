@@ -3,13 +3,32 @@
 
 [![GoDoc](https://godoc.org/libs.altipla.consulting/mjml?status.svg)](https://godoc.org/libs.altipla.consulting/mjml)
 
-Render MJML with a remote server.
+Package `mjml` renders MJML with a remote Cloud Function server.
 
 
-### Basic usage
+### Install
 
 ```go
 import (
-  "libs.altipla.consulting/mjml"
+	"libs.altipla.consulting/mjml"
 )
 ```
+
+
+### Contributing
+
+You can make pull requests or create issues in GitHub. Any code you send should be formatted using ```make gofmt```.
+
+
+### Running tests
+
+Run the tests:
+
+```shell
+make test
+```
+
+
+### License
+
+[MIT License](../LICENSE)

@@ -3,13 +3,32 @@
 
 [![GoDoc](https://godoc.org/libs.altipla.consulting/messageformat?status.svg)](https://godoc.org/libs.altipla.consulting/messageformat)
 
-Simplified MessageFormat Go implementation.
+Package `messageformat` is a simplified MessageFormat Go implementation.
 
 
-### Basic usage
+### Install
 
 ```go
 import (
-  "libs.altipla.consulting/messageformat"
+	"libs.altipla.consulting/messageformat"
 )
 ```
+
+
+### Contributing
+
+You can make pull requests or create issues in GitHub. Any code you send should be formatted using ```make gofmt```.
+
+
+### Running tests
+
+Run the tests:
+
+```shell
+make test
+```
+
+
+### License
+
+[MIT License](../LICENSE)

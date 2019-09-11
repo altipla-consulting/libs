@@ -3,7 +3,18 @@
 
 [![GoDoc](https://godoc.org/libs.altipla.consulting/tokensource?status.svg)](https://godoc.org/libs.altipla.consulting/tokensource)
 
-Golang OAuth2 Token Source that notifies the refresh operations.
+Package `tokensource` has a Golang OAuth2 Token Source that notifies the refresh operations.
+
+This is useful to react to those events and store the new token in your database.
+
+
+### Install
+
+```go
+import (
+	"libs.altipla.consulting/tokensource"
+)
+```
 
 
 ### Basic usage
@@ -97,3 +108,22 @@ func Handler(w http.ResponseWriter, r *http.Request) {
   // use ts.Client(r.Context()) to make the requests
 }
 ```
+
+
+### Contributing
+
+You can make pull requests or create issues in GitHub. Any code you send should be formatted using ```make gofmt```.
+
+
+### Running tests
+
+Run the tests:
+
+```shell
+make test
+```
+
+
+### License
+
+[MIT License](../LICENSE)

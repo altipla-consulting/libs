@@ -3,13 +3,32 @@
 
 [![GoDoc](https://godoc.org/libs.altipla.consulting/storage?status.svg)](https://godoc.org/libs.altipla.consulting/storage)
 
-Abstracts Google Cloud Storage primitives with testable interfaces.
+Package `storage` abstracts Google Cloud Storage primitives with testable interfaces.
 
 
-### Basic usage
+### Install
 
 ```go
 import (
-  "libs.altipla.consulting/storage"
+	"libs.altipla.consulting/storage"
 )
 ```
+
+
+### Contributing
+
+You can make pull requests or create issues in GitHub. Any code you send should be formatted using ```make gofmt```.
+
+
+### Running tests
+
+Run the tests:
+
+```shell
+make test
+```
+
+
+### License
+
+[MIT License](../LICENSE)

@@ -3,7 +3,16 @@
 
 [![GoDoc](https://godoc.org/libs.altipla.consulting/routing?status.svg)](https://godoc.org/libs.altipla.consulting/routing)
 
-Routing requests to handlers.
+Package `routing` sends requests to handlers and process the errors.
+
+
+### Install
+
+```go
+import (
+	"libs.altipla.consulting/routing"
+)
+```
 
 
 ### Basic usage
@@ -30,3 +39,22 @@ func main {
   s.Get(langs.ES, "/robots.txt", RobotsHandler)
 }
 ```
+
+
+### Contributing
+
+You can make pull requests or create issues in GitHub. Any code you send should be formatted using ```make gofmt```.
+
+
+### Running tests
+
+Run the tests:
+
+```shell
+make test
+```
+
+
+### License
+
+[MIT License](../LICENSE)

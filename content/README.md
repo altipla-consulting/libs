@@ -3,7 +3,16 @@
 
 [![GoDoc](https://godoc.org/libs.altipla.consulting/content?status.svg)](https://godoc.org/libs.altipla.consulting/content)
 
-Models for translated content coming from multiple providers.
+Package `content` has models for translated content coming from multiple providers.
+
+
+### Install
+
+```go
+import (
+	"libs.altipla.consulting/content"
+)
+```
 
 
 ### Basic usage
@@ -22,3 +31,22 @@ type MyModel struct {
   Description content.Provider   `db:"description"`
 }
 ```
+
+
+### Contributing
+
+You can make pull requests or create issues in GitHub. Any code you send should be formatted using ```make gofmt```.
+
+
+### Running tests
+
+Run the tests:
+
+```shell
+make test
+```
+
+
+### License
+
+[MIT License](../LICENSE)
