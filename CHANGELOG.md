@@ -2,6 +2,11 @@
 This changelog will list only breaking changes in our APIs.
 
 
+## v1.49.0
+
+- *routing:* `NotFound`, `Unauthorized`, `BadRequest`, and `Internal` do not receive a format now. If you want to keep the functionality use the equivalent `NotFoundf`, `Unauthorizedf`, `BadRequestf` and `Internalf`.
+
+
 ## v1.46.0:
 
 - `database.Database.Select`, `database.Collection.GetAll`, `database.Collection.Put`, ...: All the operations sending or receiving data receive now a context as a first argument. This allows these methods to be used inside a transaction.

@@ -3,9 +3,9 @@
 
 [![GoDoc](https://godoc.org/libs.altipla.consulting?status.svg)](https://godoc.org/libs.altipla.consulting)
 
-Go shared libs.
+Go shared libs inside our company.
 
-**WARNING:** We do incompatible releases from minor to minor because it is an internal lib. All backwards incompatible changes will be listed on [CHANGELOG.md](CHANGELOG.md)
+**WARNING:** We do incompatible releases from minor to minor release because it is an internal lib. All backwards incompatible changes will be listed on [CHANGELOG.md](CHANGELOG.md)
 
 
 ### Install
