@@ -2,6 +2,8 @@ package sentry
 
 import (
 	"context"
+
+	"github.com/getsentry/sentry-go"
 )
 
 type key int
@@ -11,7 +13,7 @@ var keySentry key = 1
 // Sentry accumulates info through out the whole request to send them in case
 // an error is reported.
 type Sentry struct {
-	breadcrumbs           []*ravenBreadcrumb
+	breadcrumbs           []*sentry.Breadcrumb
 	rpcService, rpcMethod string
 }
 

@@ -5,9 +5,9 @@ go 1.11
 require (
 	cloud.google.com/go v0.45.1
 	cloud.google.com/go/bigquery v1.0.1
-	github.com/certifi/gocertifi v0.0.0-20190905060710-a5e0173ced67 // indirect
+	cloud.google.com/go/pubsub v1.0.1 // indirect
 	github.com/ernestoalejo/aeimagesflags v0.0.0-20150830225655-eed2909a7c2b
-	github.com/getsentry/raven-go v0.2.0
+	github.com/getsentry/sentry-go v0.3.0
 	github.com/go-chi/chi v4.0.2+incompatible // indirect
 	github.com/go-redis/redis v6.15.5+incompatible
 	github.com/go-sql-driver/mysql v1.4.1
@@ -18,11 +18,8 @@ require (
 	github.com/gorilla/schema v1.1.0
 	github.com/julienschmidt/httprouter v1.2.0
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
-	github.com/kr/pretty v0.1.0 // indirect
 	github.com/mailgun/mailgun-go/v3 v3.6.0
 	github.com/mailru/easyjson v0.7.0 // indirect
-	github.com/onsi/ginkgo v1.10.1 // indirect
-	github.com/onsi/gomega v1.7.0 // indirect
 	github.com/sirupsen/logrus v1.4.2
 	github.com/speps/go-hashids v2.0.0+incompatible
 	github.com/stretchr/testify v1.4.0
