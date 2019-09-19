@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"time"
+	"runtime/debug"
 
 	"github.com/getsentry/sentry-go"
 	log "github.com/sirupsen/logrus"
@@ -65,11 +66,8 @@ func (client *Client) ReportRequest(appErr error, r *http.Request) {
 // ReportPanics detects panics in the body of the function and reports them.
 func (client *Client) ReportPanics(ctx context.Context) {
 	if rec := recover(); rec != nil {
-		appErr, ok := rec.(error)
-		if !ok {
-			appErr = errors.Errorf("panic: %v", rec)
-		}
-		client.report(ctx, appErr, nil)
+		appErr := rec.(error)
+		client.reportPanic(ctx, appErr, string(debug.Stack()), nil)
 	}
 }
 
@@ -77,11 +75,8 @@ func (client *Client) ReportPanics(ctx context.Context) {
 // linked to a HTTP request.
 func (client *Client) ReportPanicsRequest(r *http.Request) {
 	if rec := recover(); rec != nil {
-		appErr, ok := rec.(error)
-		if !ok {
-			appErr = errors.Errorf("panic: %v", rec)
-		}
-		client.report(r.Context(), appErr, r)
+		appErr := rec.(error)
+		client.reportPanic(r.Context(), appErr, string(debug.Stack()), r)
 	}
 }
 
@@ -128,6 +123,38 @@ func (client *Client) report(ctx context.Context, appErr error, r *http.Request)
 		if info != nil {
 			event.Breadcrumbs = info.breadcrumbs
 
+			if info.rpcMethod != "" {
+				event.Extra["rpc_service"] = info.rpcService
+				event.Extra["rpc_method"] = info.rpcMethod
+			}
+		}
+
+		if r != nil {
+			event.Request = event.Request.FromHTTPRequest(r)
+		}
+
+		eventID := client.hub.CaptureEvent(event)
+		log.WithField("eventID", eventID).Info("Error logged to sentry")
+	}()
+}
+
+func (client *Client) reportPanic(ctx context.Context, appErr error, message string, r *http.Request) {
+	go func() {
+		event := sentry.NewEvent()
+
+		event.Message = message
+		event.Exception = []sentry.Exception{
+			sentry.Exception{
+				Type:   "panic",
+				Value:  appErr.Error(),
+				Module: "backend",
+			},
+		}
+
+		info := FromContext(ctx)
+		if info != nil {
+			event.Breadcrumbs = info.breadcrumbs
+			
 			if info.rpcMethod != "" {
 				event.Extra["rpc_service"] = info.rpcService
 				event.Extra["rpc_method"] = info.rpcMethod
