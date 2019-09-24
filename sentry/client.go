@@ -134,7 +134,7 @@ func (client *Client) report(ctx context.Context, appErr error, r *http.Request)
 		}
 
 		eventID := client.hub.CaptureEvent(event)
-		log.WithField("eventID", eventID).Info("Error logged to sentry")
+		log.WithField("eventID", eventID).Info("Error sent to Sentry")
 	}()
 }
 
@@ -166,7 +166,7 @@ func (client *Client) reportPanic(ctx context.Context, appErr error, message str
 		}
 
 		eventID := client.hub.CaptureEvent(event)
-		log.WithField("eventID", eventID).Info("Error logged to sentry")
+		log.WithField("eventID", eventID).Info("Error sent to Sentry")
 	}()
 }
 
