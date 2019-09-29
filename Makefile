@@ -33,3 +33,7 @@ datetime-generator:
 	datetime-generator -locales en,es,fr,ru,de,it,ja,pt
 	@gofmt -w $(FILES)
 	@gofmt -r '&α{} -> new(α)' -w $(FILES)
+
+docs:
+	actools go install ./cmd/readme
+	actools run go readme

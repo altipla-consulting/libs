@@ -7,7 +7,7 @@
 
 [![GoDoc](https://godoc.org/libs.altipla.consulting/collections?status.svg)](https://godoc.org/libs.altipla.consulting/collections)
 
-Package `collections` is a set of functions that help us to work with slices and maps.
+Package `collections` is a set of functions that help us work with slices and maps.
 
 
 ### Install

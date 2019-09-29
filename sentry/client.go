@@ -4,8 +4,8 @@ import (
 	"context"
 	"net/http"
 	"os"
-	"time"
 	"runtime/debug"
+	"time"
 
 	"github.com/getsentry/sentry-go"
 	log "github.com/sirupsen/logrus"
@@ -154,7 +154,7 @@ func (client *Client) reportPanic(ctx context.Context, appErr error, message str
 		info := FromContext(ctx)
 		if info != nil {
 			event.Breadcrumbs = info.breadcrumbs
-			
+
 			if info.rpcMethod != "" {
 				event.Extra["rpc_service"] = info.rpcService
 				event.Extra["rpc_method"] = info.rpcMethod

@@ -16,6 +16,7 @@ require (
 	github.com/google/go-cmp v0.3.1 // indirect
 	github.com/google/pprof v0.0.0-20190908185732-236ed259b199 // indirect
 	github.com/gorilla/schema v1.1.0
+	github.com/gorilla/securecookie v1.1.1
 	github.com/julienschmidt/httprouter v1.2.0
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/mailgun/mailgun-go/v3 v3.6.0

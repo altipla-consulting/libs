@@ -3,14 +3,14 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"go/ast"
+	"go/parser"
+	"go/token"
 	"io/ioutil"
-	"text/template"
-	"strings"
 	"os"
 	"path/filepath"
-	"go/parser"
-	"go/ast"
-	"go/token"
+	"strings"
+	"text/template"
 
 	log "github.com/sirupsen/logrus"
 	"libs.altipla.consulting/errors"
@@ -60,17 +60,17 @@ func main() {
 }
 
 type readmeData struct {
-	Name string
-	Doc  string
-	Code string
+	Name  string
+	Doc   string
+	Code  string
 	Extra string
-	Logo string
+	Logo  string
 }
 
 func run() error {
 	dirs, err := ioutil.ReadDir(".")
 	if err != nil {
-	  return errors.Trace(err)
+		return errors.Trace(err)
 	}
 	for _, dir := range dirs {
 		if !dir.IsDir() {
@@ -92,49 +92,49 @@ func run() error {
 
 		extra, err := ioutil.ReadFile(filepath.Join(dir.Name(), "_readme.mdtmpl"))
 		if err != nil && !os.IsNotExist(err) {
-		  return errors.Trace(err)
+			return errors.Trace(err)
 		}
 		logo, err := ioutil.ReadFile(filepath.Join(dir.Name(), "_logo.mdtmpl"))
 		if err != nil && !os.IsNotExist(err) {
-		  return errors.Trace(err)
+			return errors.Trace(err)
 		}
 
 		data := &readmeData{
-			Name: dir.Name(),
-			Code: "```",
+			Name:  dir.Name(),
+			Code:  "```",
 			Extra: string(extra),
-			Logo: string(logo),
+			Logo:  string(logo),
 		}
 
 		fset := token.NewFileSet()
 		node, err := parser.ParseFile(fset, filepath.Join(dir.Name(), "doc.go"), nil, parser.ParseComments)
 		if err != nil {
-		  return errors.Trace(err)
+			return errors.Trace(err)
 		}
 		ast.Inspect(node, func(n ast.Node) bool {
-	    c, ok := n.(*ast.CommentGroup)
-	    if !ok {
-	    	return true
-	    }
+			c, ok := n.(*ast.CommentGroup)
+			if !ok {
+				return true
+			}
 
-	    var lines []string
-	    for _, l := range c.List {
-	    	if l.Text == "//" {
-	    		lines = append(lines, "")
-	    		continue
-	    	}
+			var lines []string
+			for _, l := range c.List {
+				if l.Text == "//" {
+					lines = append(lines, "")
+					continue
+				}
 
-	    	lines = append(lines, l.Text[3:])
-	    }
-	    content := strings.Join(lines, "\n")
+				lines = append(lines, l.Text[3:])
+			}
+			content := strings.Join(lines, "\n")
 
-	    prefix := fmt.Sprintf("Package %s ", dir.Name())
-	    if !strings.HasPrefix(content, prefix) {
-	    	return true
-	    }
-	    
-	    data.Doc = fmt.Sprintf("Package `%s` %s", dir.Name(), content[len(prefix):])
-	    return true
+			prefix := fmt.Sprintf("Package %s ", dir.Name())
+			if !strings.HasPrefix(content, prefix) {
+				return true
+			}
+
+			data.Doc = fmt.Sprintf("Package `%s` %s", dir.Name(), content[len(prefix):])
+			return true
 		})
 		if data.Doc == "" {
 			return errors.Errorf("no doc found for package %q", dir.Name())
@@ -146,7 +146,7 @@ func run() error {
 		}
 
 		if err := ioutil.WriteFile(filepath.Join(dir.Name(), "README.md"), buf.Bytes(), 0700); err != nil {
-		  return errors.Trace(err)
+			return errors.Trace(err)
 		}
 	}
 
