@@ -94,3 +94,15 @@ func TestIsZero(t *testing.T) {
 	money = money.Add(NewFromCents(1))
 	require.False(t, money.IsZero())
 }
+
+func TestDisplayEUR(t *testing.T) {
+	money := NewFromCents(12345)
+
+	require.Equal(t, money.Display("EUR"), "123.45 €")
+}
+
+func TestDisplayUSD(t *testing.T) {
+	money := NewFromCents(12345)
+
+	require.Equal(t, money.Display("USD"), "$123.45")
+}

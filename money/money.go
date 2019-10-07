@@ -9,6 +9,10 @@ import (
 	"libs.altipla.consulting/errors"
 )
 
+func init() {
+	money.AddCurrency("EUR", "\u20ac", "1 $", ".", ",", 2)
+}
+
 // Money represents a monetary value
 type Money struct {
 	value *money.Money
@@ -122,4 +126,9 @@ func (m *Money) AddTaxPercent(tax int64) *Money {
 // IsZero returns true if there is no money.
 func (m *Money) IsZero() bool {
 	return m.value.IsZero()
+}
+
+// Display formats the money value with a specific currency.
+func (m *Money) Display(currency string) string {
+	return money.GetCurrency(currency).Formatter().Format(m.value.Amount())
 }
