@@ -1,30 +1,27 @@
 package money
 
 import (
-	"fmt"
-	"math/big"
+	"math"
+	"strconv"
 	"strings"
 
+	"github.com/Rhymond/go-money"
 	"libs.altipla.consulting/errors"
 )
 
 // Money represents a monetary value
 type Money struct {
-	rat *big.Rat
-}
-
-// New creates a new instance with a zero value.
-func New() *Money {
-	return &Money{
-		rat: big.NewRat(0, 1),
-	}
+	value *money.Money
 }
 
 // NewFromCents creates a new instance with a cents value.
 func NewFromCents(cents int64) *Money {
-	return &Money{
-		rat: big.NewRat(cents, 100),
-	}
+	return &Money{money.New(cents, "")}
+}
+
+// New creates a new instance with a zero value.
+func New() *Money {
+	return NewFromCents(0)
 }
 
 // Parse a string to create a new money value. It can read `XX.YY` and `XX,YY`.
@@ -36,84 +33,93 @@ func Parse(s string) (*Money, error) {
 
 	s = strings.Replace(s, ",", ".", -1)
 
-	rat := new(big.Rat)
-	if _, err := fmt.Sscan(s, rat); err != nil {
+	amount, err := strconv.ParseFloat(s, 64)
+	if err != nil {
 		return nil, errors.Wrapf(err, "cannot scan value: %s", s)
 	}
 
-	return &Money{rat}, nil
+	return NewFromCents(int64(amount * 100)), nil
 }
 
 // Cents returns the value with cents precision (2 decimal places) as a number.
-func (money *Money) Cents() int64 {
-	cents := big.NewInt(100)
-
-	v := new(big.Int)
-	v.Mul(money.rat.Num(), cents)
-	v.Quo(v, money.rat.Denom())
-
-	return v.Int64()
+func (m *Money) Cents() int64 {
+	return m.value.Amount()
 }
 
 // Format the money value with a specific decimal precision.
-func (money *Money) Format(prec int) string {
-	return money.rat.FloatString(prec)
+func (m *Money) Format(prec int) string {
+	value := m.value.Amount()
+	switch {
+	case prec > 2:
+		value *= int64(math.Pow10(prec - 2))
+
+	case prec == 1:
+		if value%10 > 5 {
+			value = (value / 10) + 1
+		} else {
+			value = value / 10
+		}
+
+	case prec == 0:
+		value = value / 100
+	}
+
+	cur := money.GetCurrency("EUR")
+	f := money.NewFormatter(prec, cur.Decimal, cur.Thousand, cur.Grapheme, "1")
+	return f.Format(value)
 }
 
 // Mul multiplies the money value n times and returns the result.
-func (money *Money) Mul(n int64) *Money {
-	b := big.NewRat(n, 1)
-	result := New()
-	result.rat.Mul(money.rat, b)
-	return result
+func (m *Money) Mul(n int64) *Money {
+	return &Money{m.value.Multiply(n)}
 }
 
 // Add two money values together and returns the result.
-func (money *Money) Add(other *Money) *Money {
-	result := New()
-	result.rat.Add(money.rat, other.rat)
-	return result
+func (m *Money) Add(other *Money) *Money {
+	result, err := m.value.Add(other.value)
+	if err != nil {
+		panic(err)
+	}
+
+	return &Money{result}
 }
 
 // Sub subtracts two money values and returns the result.
-func (money *Money) Sub(other *Money) *Money {
-	result := New()
-	result.rat.Sub(money.rat, other.rat)
-	return result
+func (m *Money) Sub(other *Money) *Money {
+	result, err := m.value.Subtract(other.value)
+	if err != nil {
+		panic(err)
+	}
+
+	return &Money{result}
 }
 
 // Div divides two money values and returns the result.
-func (money *Money) Div(other *Money) *Money {
-	result := New()
-	result.rat.Quo(money.rat, other.rat)
-	return result
+func (m *Money) Div(other *Money) *Money {
+	return &Money{m.value.Divide(other.value.Amount())}
 }
 
 // LessThan returns true if a money value is less than the other.
-func (money *Money) LessThan(other *Money) bool {
-	return money.rat.Cmp(other.rat) == -1
+func (m *Money) LessThan(other *Money) bool {
+	result, err := m.value.LessThan(other.value)
+	if err != nil {
+		panic(err)
+	}
+
+	return result
 }
 
 // AddTaxPercent adds a percentage of the price to itself.
-func (money *Money) AddTaxPercent(tax int64) *Money {
-	result := New()
-	result.rat.Set(money.rat)
-	ratTax := big.NewRat(tax, 100)
-	result.rat.Add(result.rat, ratTax.Mul(ratTax, money.rat))
-	return result
+func (m *Money) AddTaxPercent(tax int64) *Money {
+	result, err := m.value.Multiply(tax).Divide(100).Add(m.value)
+	if err != nil {
+		panic(err)
+	}
+
+	return &Money{result}
 }
 
 // IsZero returns true if there is no money.
-func (money *Money) IsZero() bool {
-	return money.Cents() == 0
-}
-
-// Markup adds a percentage with decimals of the price to itself. The
-// percentage should be pre-multiplied by 100 to avoid floating point issues.
-func (money *Money) Markup(tax int64) *Money {
-	result := New()
-	result.rat.Set(money.rat)
-	ratTax := big.NewRat(tax, 10000)
-	result.rat.Add(result.rat, ratTax.Mul(ratTax, money.rat))
-	return result
+func (m *Money) IsZero() bool {
+	return m.value.IsZero()
 }
