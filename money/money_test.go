@@ -19,6 +19,20 @@ func TestParse(t *testing.T) {
 	require.EqualValues(t, money.Cents(), 12579)
 }
 
+func TestParseMultipleDecimals(t *testing.T) {
+	money, err := Parse("125.7923")
+	require.NoError(t, err)
+
+	require.EqualValues(t, money.Cents(), 12579)
+}
+
+func TestParseMultipleDecimalsNoRound(t *testing.T) {
+	money, err := Parse("125.7963")
+	require.NoError(t, err)
+
+	require.EqualValues(t, money.Cents(), 12579)
+}
+
 func TestFormatPrecisionFour(t *testing.T) {
 	money := NewFromCents(12345)
 

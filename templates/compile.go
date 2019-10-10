@@ -59,7 +59,7 @@ var (
 		"last":      funcs.Last,
 		"hasstring": collections.HasString,
 
-		"price":  funcs.Price,
+		"price": funcs.Price,
 		"money": funcs.Money,
 
 		"dateformat":      funcs.DateFormat,
