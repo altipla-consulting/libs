@@ -1,6 +1,7 @@
 package money
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -31,6 +32,27 @@ func TestParseMultipleDecimalsNoRound(t *testing.T) {
 	require.NoError(t, err)
 
 	require.EqualValues(t, money.Cents(), 12579)
+}
+
+func TestParseFloatError(t *testing.T) {
+	money, err := Parse("10.03")
+	require.NoError(t, err)
+
+	require.EqualValues(t, money.Cents(), 1003)
+}
+
+func TestParseFloatErrorIterative(t *testing.T) {
+	for i := 1000; i <= 9999; i++ {
+		var prefix string
+		if i%100 < 10 {
+			prefix = "0"
+		}
+		s := fmt.Sprintf("%v.%s%v", i/100, prefix, i%100)
+		money, err := Parse(s)
+		require.NoError(t, err)
+
+		require.EqualValues(t, money.Cents(), i, "i: %v; s: %v", i, s)
+	}
 }
 
 func TestFormatPrecisionFour(t *testing.T) {

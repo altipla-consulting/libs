@@ -37,12 +37,34 @@ func Parse(s string) (*Money, error) {
 
 	s = strings.Replace(s, ",", ".", -1)
 
-	amount, err := strconv.ParseFloat(s, 64)
-	if err != nil {
-		return nil, errors.Wrapf(err, "cannot scan value: %s", s)
+	var amount int64
+	switch parts := strings.Split(s, "."); len(parts) {
+	case 1:
+		var err error
+		amount, err = strconv.ParseInt(parts[0], 10, 64)
+		if err != nil {
+			return nil, errors.Trace(err)
+		}
+
+	case 2:
+		units, err := strconv.ParseInt(parts[0], 10, 64)
+		if err != nil {
+			return nil, errors.Trace(err)
+		}
+		if len(parts[1]) > 2 {
+			parts[1] = parts[1][:2]
+		}
+		decimals, err := strconv.ParseInt(parts[1], 10, 64)
+		if err != nil {
+			return nil, errors.Trace(err)
+		}
+		amount = units*100 + decimals
+
+	default:
+		return nil, errors.Errorf("cannot parse money value: %v", s)
 	}
 
-	return NewFromCents(int64(amount * 100)), nil
+	return NewFromCents(amount), nil
 }
 
 // Cents returns the value with cents precision (2 decimal places) as a number.
