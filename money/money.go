@@ -41,10 +41,11 @@ func Parse(s string) (*Money, error) {
 	switch parts := strings.Split(s, "."); len(parts) {
 	case 1:
 		var err error
-		amount, err = strconv.ParseInt(parts[0], 10, 64)
+		units, err := strconv.ParseInt(parts[0], 10, 64)
 		if err != nil {
 			return nil, errors.Trace(err)
 		}
+		amount = units * 100
 
 	case 2:
 		units, err := strconv.ParseInt(parts[0], 10, 64)

@@ -34,14 +34,14 @@ func TestParseMultipleDecimalsNoRound(t *testing.T) {
 	require.EqualValues(t, money.Cents(), 12579)
 }
 
-func TestParseFloatError(t *testing.T) {
+func TestParseError(t *testing.T) {
 	money, err := Parse("10.03")
 	require.NoError(t, err)
 
 	require.EqualValues(t, money.Cents(), 1003)
 }
 
-func TestParseFloatErrorIterative(t *testing.T) {
+func TestParseErrorIterative(t *testing.T) {
 	for i := 1000; i <= 9999; i++ {
 		var prefix string
 		if i%100 < 10 {
@@ -53,6 +53,13 @@ func TestParseFloatErrorIterative(t *testing.T) {
 
 		require.EqualValues(t, money.Cents(), i, "i: %v; s: %v", i, s)
 	}
+}
+
+func TestParseWithoutDecimals(t *testing.T) {
+	money, err := Parse("10")
+	require.NoError(t, err)
+
+	require.EqualValues(t, money.Cents(), 1000)
 }
 
 func TestFormatPrecisionFour(t *testing.T) {
