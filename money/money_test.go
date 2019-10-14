@@ -41,6 +41,20 @@ func TestParseFloatError(t *testing.T) {
 	require.EqualValues(t, money.Cents(), 1003)
 }
 
+func TestParseOneDecimal(t *testing.T) {
+	money, err := Parse("10.3")
+	require.NoError(t, err)
+
+	require.EqualValues(t, money.Cents(), 1030)
+}
+
+func TestParseOneDecimalWithZero(t *testing.T) {
+	money, err := Parse("10.30")
+	require.NoError(t, err)
+
+	require.EqualValues(t, money.Cents(), 1030)
+}
+
 func TestParseFloatErrorIterative(t *testing.T) {
 	for i := 1000; i <= 9999; i++ {
 		var prefix string

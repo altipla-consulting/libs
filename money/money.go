@@ -59,7 +59,11 @@ func Parse(s string) (*Money, error) {
 		if err != nil {
 			return nil, errors.Trace(err)
 		}
-		amount = units*100 + decimals
+		if len(parts[1]) == 1 {
+			amount = units*100 + decimals*10
+		} else {
+			amount = units*100 + decimals
+		}
 
 	default:
 		return nil, errors.Errorf("cannot parse money value: %v", s)
