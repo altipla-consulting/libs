@@ -150,3 +150,17 @@ func (amc *autoMetadataCredentials) GetRequestMetadata(ctx context.Context, uri 
 func (amc *autoMetadataCredentials) RequireTransportSecurity() bool {
 	return false
 }
+
+func WithContextClearAuto(ctx context.Context, headers ...string) context.Context {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return ctx
+	}
+	md = md.Copy()
+
+	for _, h := range headers {
+		delete(md, h)
+	}
+
+	return metadata.NewOutgoingContext(ctx, md)
+}
