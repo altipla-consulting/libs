@@ -2,6 +2,11 @@
 This changelog will list only breaking changes in our APIs.
 
 
+## v1.52.0
+
+- **money:** Replace all usages of the removed `Markup` method with `AddTaxPercent`, which has the same functionality and parameters.
+
+
 ## v1.49.0
 
 - **routing:** `NotFound`, `Unauthorized`, `BadRequest`, and `Internal` do not receive a format now. If you want to keep the functionality use the equivalent `NotFoundf`, `Unauthorizedf`, `BadRequestf` and `Internalf`.
