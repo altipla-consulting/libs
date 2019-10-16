@@ -106,6 +106,18 @@ func TestFormatPrecisionZero(t *testing.T) {
 	require.EqualValues(t, money.Format(0), "123")
 }
 
+func TestFormatWithoutThousandsSeparator(t *testing.T) {
+	money := NewFromCents(106400)
+
+	require.EqualValues(t, money.Format(2), "1064.00")
+}
+
+func TestFormatHuman(t *testing.T) {
+	money := NewFromCents(106400)
+
+	require.EqualValues(t, money.FormatHuman(2), "1,064.00")
+}
+
 func TestMul(t *testing.T) {
 	money := NewFromCents(1000)
 

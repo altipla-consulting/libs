@@ -77,8 +77,7 @@ func (m *Money) Cents() int64 {
 	return m.value.Amount()
 }
 
-// Format the money value with a specific decimal precision.
-func (m *Money) Format(prec int) string {
+func (m *Money) formatVal(prec int) int64 {
 	value := m.value.Amount()
 	switch {
 	case prec > 2:
@@ -95,9 +94,21 @@ func (m *Money) Format(prec int) string {
 		value = value / 100
 	}
 
+	return value
+}
+
+// Format the money value with a specific decimal precision.
+func (m *Money) Format(prec int) string {
+	cur := money.GetCurrency("EUR")
+	f := money.NewFormatter(prec, cur.Decimal, "", cur.Grapheme, "1")
+	return f.Format(m.formatVal(prec))
+}
+
+// Format the money value with a specific decimal precision and thousands separator.
+func (m *Money) FormatHuman(prec int) string {
 	cur := money.GetCurrency("EUR")
 	f := money.NewFormatter(prec, cur.Decimal, cur.Thousand, cur.Grapheme, "1")
-	return f.Format(value)
+	return f.Format(m.formatVal(prec))
 }
 
 // Mul multiplies the money value n times and returns the result.
