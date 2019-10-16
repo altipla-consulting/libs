@@ -162,5 +162,5 @@ func WithContextClearAuto(ctx context.Context, headers ...string) context.Contex
 		delete(md, h)
 	}
 
-	return metadata.NewOutgoingContext(ctx, md)
+	return metadata.NewIncomingContext(ctx, md)
 }
