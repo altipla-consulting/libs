@@ -162,6 +162,11 @@ func (e *altiplaError) writeStackTrace(w io.Writer) {
 	}
 }
 
+// Unwrap implements the standard for unwrappable errors.
+func (e *altiplaError) Unwrap() error {
+	return e.cause
+}
+
 func Details(err error) string {
 	e, ok := err.(*altiplaError)
 	if !ok {
