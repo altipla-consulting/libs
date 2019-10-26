@@ -10,6 +10,7 @@ import (
 	"golang.org/x/oauth2/clientcredentials"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/credentials/oauth"
 	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/metadata"
 
@@ -101,20 +102,10 @@ func Local(address, clientID, clientSecret string, opts ...grpc.DialOption) (*gr
 	return OAuthToken(address, clientID, clientSecret, opts...)
 }
 
-type bearerAccess struct {
-	bearer string
-}
-
-func (access bearerAccess) GetRequestMetadata(ctx context.Context, uri ...string) (map[string]string, error) {
-	return map[string]string{"authorization": "Bearer " + access.bearer}, nil
-}
-
-func (access bearerAccess) RequireTransportSecurity() bool {
-	return true
-}
-
-func WithBearer(bearer string) grpc.DialOption {
-	return grpc.WithPerRPCCredentials(bearerAccess{bearer})
+// WithBearer dials the remote server with a Bearer token in every request.
+func WithBearer(accessToken string) grpc.DialOption {
+	token := &oauth2.Token{AccessToken: accessToken}
+	return grpc.WithPerRPCCredentials(oauth.NewOauthAccess(token))
 }
 
 func Remote(address RemoteAddress, opts ...grpc.DialOption) (*grpc.ClientConn, error) {
