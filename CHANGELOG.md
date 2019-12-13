@@ -4,7 +4,7 @@ This changelog will list only breaking changes in our APIs.
 
 ## v1.54.0
 
-- **connect:** Deleted without possible replacement. It is recommended to copy externally.
+- **connect:** Deleted without possible replacement. It is recommended to copy it externally.
 
 
 ## v1.52.0
