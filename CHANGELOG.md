@@ -2,6 +2,11 @@
 This changelog will list only breaking changes in our APIs.
 
 
+## v1.54.0
+
+- **connect:** Deleted without possible replacement. It is recommended to copy externally.
+
+
 ## v1.52.0
 
 - **money:** Replace all usages of the removed `Markup` method with `AddTaxPercent`, which has the same functionality and parameters.
