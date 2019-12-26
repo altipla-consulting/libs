@@ -39,10 +39,9 @@ func DiffDays(a, b time.Time) int64 {
 	return int64((diff + 12*time.Hour) / (24 * time.Hour))
 }
 
-// TimeToDate returns the remaining time to reach the date.
+// TimeToDate returns only the date part of the time removing any hour, minutes or seconds.
 func TimeToDate(t time.Time) time.Time {
 	year, month, day := t.Date()
-
 	return time.Date(year, month, day, 0, 0, 0, 0, time.UTC)
 }
 
