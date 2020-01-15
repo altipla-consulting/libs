@@ -355,6 +355,12 @@ func Is(err, target error) bool {
 	return false
 }
 
+// As finds the first error in err's chain that matches target, and if so, sets
+// target to that error value and returns true.
+func As(err error, target interface{}) bool {
+	return errors.As(err, target)
+}
+
 // Recover recovers from a panic in a defer. If there is no panic, Recover()
 // returns nil. To use, call error.Recover(recover()) and compare the result to nil.
 func Recover(p interface{}) error {
