@@ -80,7 +80,7 @@ func (c *Collection) Get(ctx context.Context, instance Model) error {
 
 	for _, prop := range modelProps {
 		if prop.PrimaryKey {
-			b.conditions = append(b.conditions, Filter(prop.Name, prop.Value))
+			b.conditions = append(b.conditions, Filter(prop.UnescapedName, prop.Value))
 		}
 	}
 
@@ -134,7 +134,7 @@ func (c *Collection) Put(ctx context.Context, instance Model) error {
 
 		for _, prop := range modelProps {
 			if prop.PrimaryKey {
-				b.conditions = append(b.conditions, Filter(prop.Name, prop.Value))
+				b.conditions = append(b.conditions, Filter(prop.UnescapedName, prop.Value))
 				continue
 			}
 
@@ -314,7 +314,7 @@ func (c *Collection) Delete(ctx context.Context, instance Model) error {
 
 	for _, prop := range modelProps {
 		if prop.PrimaryKey {
-			b.conditions = append(b.conditions, Filter(prop.Name, prop.Value))
+			b.conditions = append(b.conditions, Filter(prop.UnescapedName, prop.Value))
 		}
 	}
 

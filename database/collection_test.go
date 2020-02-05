@@ -128,13 +128,13 @@ func TestInsertAuto(t *testing.T) {
 	other := &testingAutoModel{
 		ID: 1,
 	}
-	require.Nil(t, testingsAuto.Get(ctx, other))
+	require.NoError(t, testingsAuto.Get(ctx, other))
 	require.Equal(t, "foo", other.Name)
 
 	other = &testingAutoModel{
 		ID: 2,
 	}
-	require.Nil(t, testingsAuto.Get(ctx, other))
+	require.NoError(t, testingsAuto.Get(ctx, other))
 	require.Equal(t, "bar", other.Name)
 }
 
@@ -147,16 +147,16 @@ func TestUpdate(t *testing.T) {
 		Code: "foo",
 		Name: "bar",
 	}
-	require.Nil(t, testings.Put(ctx, m))
-	require.Nil(t, testings.Get(ctx, m))
+	require.NoError(t, testings.Put(ctx, m))
+	require.NoError(t, testings.Get(ctx, m))
 
 	m.Name = "qux"
-	require.Nil(t, testings.Put(ctx, m))
+	require.NoError(t, testings.Put(ctx, m))
 
 	other := &testingModel{
 		Code: "foo",
 	}
-	require.Nil(t, testings.Get(ctx, other))
+	require.NoError(t, testings.Get(ctx, other))
 	require.Equal(t, "qux", other.Name)
 	require.EqualValues(t, 1, other.Tracking().StoredRevision())
 }
@@ -170,14 +170,14 @@ func TestUpdateConcurrentTransaction(t *testing.T) {
 		Code: "foo",
 		Name: "bar",
 	}
-	require.Nil(t, testings.Put(ctx, m))
+	require.NoError(t, testings.Put(ctx, m))
 
 	other := &testingModel{
 		Code: "foo",
 	}
-	require.Nil(t, testings.Get(ctx, other))
+	require.NoError(t, testings.Get(ctx, other))
 	other.Name = "baz"
-	require.Nil(t, testings.Put(ctx, other))
+	require.NoError(t, testings.Put(ctx, other))
 
 	m.Name = "qux"
 	require.EqualError(t, testings.Put(ctx, m), ErrConcurrentTransaction.Error())

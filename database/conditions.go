@@ -26,7 +26,7 @@ type Condition interface {
 func Filter(sql string, value interface{}) Condition {
 	var queryValues []interface{}
 	if !strings.Contains(sql, " ") {
-		sql = fmt.Sprintf("%s = ?", sql)
+		sql = fmt.Sprintf("`%s` = ?", sql)
 		queryValues = []interface{}{value}
 	} else if strings.Contains(sql, " IN") {
 		v := reflect.ValueOf(value)
