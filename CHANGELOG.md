@@ -2,6 +2,11 @@
 This changelog will list only breaking changes in our APIs.
 
 
+## v1.55.0
+
+- **money:** `Format` now receives a `FormatConfig` object instead of a number. `Display` and `FormatHuman` are removed. If you want to keep the functionality use the equivalent `Format`. Money uses int32 for all operations now instead of int64.
+
+
 ## v1.54.0
 
 - **connect:** Deleted without possible replacement. It is recommended to copy it externally.
