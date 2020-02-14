@@ -1,6 +1,7 @@
 package crypt
 
 import (
+	"strings"
 	"time"
 
 	"github.com/golang/protobuf/proto"
@@ -45,7 +46,7 @@ func (s *Signer) SignMessage(msg proto.Message, opts ...SignOption) (string, err
 		return "", errors.Wrapf(err, "cannot encode crypt token")
 	}
 
-	return token, nil
+	return strings.TrimRight(token, "="), nil
 }
 
 func (s *Signer) ReadMessage(token string, msg proto.Message, opts ...SignOption) error {
@@ -53,6 +54,9 @@ func (s *Signer) ReadMessage(token string, msg proto.Message, opts ...SignOption
 
 	if token == "" {
 		return errors.Trace(ErrEmptyToken)
+	}
+	if i := len(token) % 4; i != 0 {
+		token += strings.Repeat("=", 4-i)
 	}
 
 	var encoded []byte
