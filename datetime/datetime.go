@@ -95,3 +95,33 @@ func ParseTimestamp(timestamp *pbtimestamp.Timestamp) time.Time {
 
 	return t
 }
+
+// DateIsAfter returns if date "a" is after date "b".
+func DateIsAfter(a, b *pbdatetime.Date) bool {
+	return !DateIsEqual(a, b) && !DateIsBefore(a, b)
+}
+
+// DateIsEqual returns if date "a" is equal to date "b".
+func DateIsEqual(a, b *pbdatetime.Date) bool {
+	return !DateIsBefore(a, b) && !DateIsBefore(b, a)
+}
+
+// DateIsAfter returns if date "a" is before date "b".
+func DateIsBefore(a, b *pbdatetime.Date) bool {
+	if a == nil {
+		return b != nil
+	}
+
+	switch {
+	case a.Year < b.Year:
+		return true
+
+	case a.Year == b.Year && a.Month < b.Month:
+		return true
+
+	case a.Year == b.Year && a.Month == b.Month && a.Day < b.Day:
+		return true
+	}
+
+	return false
+}

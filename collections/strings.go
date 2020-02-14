@@ -71,3 +71,14 @@ func ReverseString(list []string) []string {
 	}
 	return result
 }
+
+// IndexString returns the first position where search is found inside the list.
+// If there is no coincidence it returns -1.
+func IndexString(list []string, search string) int {
+	for i, item := range list {
+		if item == search {
+			return i
+		}
+	}
+	return -1
+}
