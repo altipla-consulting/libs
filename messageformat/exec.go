@@ -17,7 +17,7 @@ type state struct {
 
 // errorf records an error and terminates processing.
 func (s *state) errorf(format string, args ...interface{}) {
-	panic(fmt.Errorf(format, args...))
+	panic(fmt.Sprintf(format, args...))
 }
 
 // recover is the handler that turns panics into returns from the top

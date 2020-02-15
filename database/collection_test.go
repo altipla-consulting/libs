@@ -258,7 +258,7 @@ func TestTransactionalPutRollback(t *testing.T) {
 		require.NoError(t, err)
 		require.EqualValues(t, count, 1)
 
-		return errors.New("foo")
+		return errors.Errorf("foo")
 	}
 	require.EqualError(t, testDB.RunTransaction(ctx, fn), "foo")
 

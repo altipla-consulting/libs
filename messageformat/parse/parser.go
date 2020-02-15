@@ -85,7 +85,7 @@ func (t *Tree) peek() lexItem {
 // errorf formats the error and terminates processing.
 func (t *Tree) errorf(format string, args ...interface{}) {
 	t.Root = nil
-	panic(fmt.Errorf(format, args...))
+	panic(fmt.Sprintf(format, args...))
 }
 
 // expect consumes the next token and guarantees it has the required type.
