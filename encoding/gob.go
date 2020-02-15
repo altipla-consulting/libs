@@ -11,7 +11,7 @@ import (
 // it will differentiate between a nil pointer or a zero, which is not possible with
 // the stdlib.
 //
-// It helps us for example when transfering XML decoded data to a queue, where we need
+// It helps us for example when transferring XML decoded data to a queue, where we need
 // to encode the value but keep the information of which fields are present and which
 // ones are really zero value.
 type GobInt32 int32

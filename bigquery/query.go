@@ -22,7 +22,7 @@ type Query struct {
 type QueryOption func(q *Query)
 
 // WithPartitionRange controls the range of partitions we want to query in a
-// table to save money not processing unnecesary data.
+// table to save money not processing unnecessary data.
 //
 // The range is according to API standards, that is: [start, end)
 func WithPartitionRange(start, end time.Time) QueryOption {

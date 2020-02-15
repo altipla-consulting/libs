@@ -56,7 +56,7 @@ func TestFormat(t *testing.T) {
 		{"{0, plural, other {# personas}}", langs.ES, []interface{}{5}, "5 personas"},
 		{"{0, plural, =3 {# personas}}", langs.ES, []interface{}{3}, "3 personas"},
 
-		// Plurals withing plurals.
+		// Plurals within plurals.
 		{"{0, plural, one {{1, plural, one {foo}}}}", langs.ES, []interface{}{1, 1}, "foo"},
 		{"{0, plural, other {{1, plural, one {foo #}} #}}", langs.ES, []interface{}{2, 1}, "foo 1 2"},
 
