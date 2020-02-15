@@ -9,7 +9,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"libs.altipla.consulting/errors"
 
-	// Imports and registers the MySQL driver.
 	_ "github.com/go-sql-driver/mysql"
 )
 
