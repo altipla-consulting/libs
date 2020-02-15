@@ -31,6 +31,6 @@ func (ns *NullableString) Scan(value interface{}) error {
 }
 
 // Value implements the driver Valuer interface.
-func (s NullableString) Value() (driver.Value, error) {
-	return string(s), nil
+func (ns NullableString) Value() (driver.Value, error) {
+	return string(ns), nil
 }

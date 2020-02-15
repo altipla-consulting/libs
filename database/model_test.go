@@ -8,50 +8,50 @@ import (
 
 func TestInsertedAfterGet(t *testing.T) {
 	initDatabase(t)
-	defer closeDatabase()
+	defer closeDatabase(t)
 
 	m := new(testingModel)
 	tracking := m.Tracking()
 
 	require.False(t, tracking.IsInserted())
 
-	tracking.AfterGet(nil)
+	require.NoError(t, tracking.AfterGet(nil))
 
 	require.True(t, tracking.IsInserted())
 }
 
 func TestInsertedAfterPut(t *testing.T) {
 	initDatabase(t)
-	defer closeDatabase()
+	defer closeDatabase(t)
 
 	m := new(testingModel)
 	tracking := m.Tracking()
 
 	require.False(t, tracking.IsInserted())
 
-	tracking.AfterPut(nil)
+	require.NoError(t, tracking.AfterPut(nil))
 
 	require.True(t, tracking.IsInserted())
 }
 
 func TestInsertedAfterDelete(t *testing.T) {
 	initDatabase(t)
-	defer closeDatabase()
+	defer closeDatabase(t)
 
 	m := new(testingModel)
 	tracking := m.Tracking()
-	tracking.AfterGet(nil)
+	require.NoError(t, tracking.AfterGet(nil))
 
 	require.True(t, tracking.IsInserted())
 
-	tracking.AfterDelete(nil)
+	require.NoError(t, tracking.AfterDelete(nil))
 
 	require.False(t, tracking.IsInserted())
 }
 
 func TestIncrementRevisionAfterGet(t *testing.T) {
 	initDatabase(t)
-	defer closeDatabase()
+	defer closeDatabase(t)
 
 	m := new(testingModel)
 	tracking := m.Tracking()
@@ -59,7 +59,7 @@ func TestIncrementRevisionAfterGet(t *testing.T) {
 	require.EqualValues(t, -1, tracking.StoredRevision())
 	require.EqualValues(t, 0, tracking.Revision)
 
-	tracking.AfterGet(nil)
+	require.NoError(t, tracking.AfterGet(nil))
 
 	require.EqualValues(t, 0, tracking.StoredRevision())
 	require.EqualValues(t, 1, tracking.Revision)
@@ -67,7 +67,7 @@ func TestIncrementRevisionAfterGet(t *testing.T) {
 
 func TestIncrementRevisionAfterPut(t *testing.T) {
 	initDatabase(t)
-	defer closeDatabase()
+	defer closeDatabase(t)
 
 	m := new(testingModel)
 	tracking := m.Tracking()
@@ -75,7 +75,7 @@ func TestIncrementRevisionAfterPut(t *testing.T) {
 	require.EqualValues(t, -1, tracking.StoredRevision())
 	require.EqualValues(t, 0, tracking.Revision)
 
-	tracking.AfterPut(nil)
+	require.NoError(t, tracking.AfterPut(nil))
 
 	require.EqualValues(t, 0, tracking.StoredRevision())
 	require.EqualValues(t, 1, tracking.Revision)

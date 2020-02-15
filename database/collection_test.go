@@ -10,7 +10,7 @@ import (
 
 func TestGet(t *testing.T) {
 	initDatabase(t)
-	defer closeDatabase()
+	defer closeDatabase(t)
 	ctx := context.Background()
 
 	require.NoError(t, testDB.Exec(ctx, `INSERT INTO testing(code, name, revision) VALUES ("foo", "foov", 1), ("bar", "barv", 2)`))
@@ -26,7 +26,7 @@ func TestGet(t *testing.T) {
 
 func TestGetNotFound(t *testing.T) {
 	initDatabase(t)
-	defer closeDatabase()
+	defer closeDatabase(t)
 	ctx := context.Background()
 
 	m := &testingModel{
@@ -38,7 +38,7 @@ func TestGetNotFound(t *testing.T) {
 
 func TestGetNotTouchCols(t *testing.T) {
 	initDatabase(t)
-	defer closeDatabase()
+	defer closeDatabase(t)
 	ctx := context.Background()
 
 	m := &testingModel{
@@ -52,7 +52,7 @@ func TestGetNotTouchCols(t *testing.T) {
 
 func TestInsert(t *testing.T) {
 	initDatabase(t)
-	defer closeDatabase()
+	defer closeDatabase(t)
 	ctx := context.Background()
 
 	m := &testingModel{
@@ -71,7 +71,7 @@ func TestInsert(t *testing.T) {
 
 func TestInsertOnBeforePutHooker(t *testing.T) {
 	initDatabase(t)
-	defer closeDatabase()
+	defer closeDatabase(t)
 	ctx := context.Background()
 
 	m := &testingHooker{
@@ -90,7 +90,7 @@ func TestInsertOnBeforePutHooker(t *testing.T) {
 
 func TestInsertOnAfterPutHooker(t *testing.T) {
 	initDatabase(t)
-	defer closeDatabase()
+	defer closeDatabase(t)
 	ctx := context.Background()
 
 	m := &testingHooker{
@@ -110,7 +110,7 @@ func TestInsertOnAfterPutHooker(t *testing.T) {
 
 func TestInsertAuto(t *testing.T) {
 	initDatabase(t)
-	defer closeDatabase()
+	defer closeDatabase(t)
 	ctx := context.Background()
 
 	m := &testingAutoModel{
@@ -140,7 +140,7 @@ func TestInsertAuto(t *testing.T) {
 
 func TestUpdate(t *testing.T) {
 	initDatabase(t)
-	defer closeDatabase()
+	defer closeDatabase(t)
 	ctx := context.Background()
 
 	m := &testingModel{
@@ -163,7 +163,7 @@ func TestUpdate(t *testing.T) {
 
 func TestUpdateConcurrentTransaction(t *testing.T) {
 	initDatabase(t)
-	defer closeDatabase()
+	defer closeDatabase(t)
 	ctx := context.Background()
 
 	m := &testingModel{
@@ -191,7 +191,7 @@ func TestUpdateConcurrentTransaction(t *testing.T) {
 
 func TestInsertAndUpdate(t *testing.T) {
 	initDatabase(t)
-	defer closeDatabase()
+	defer closeDatabase(t)
 	ctx := context.Background()
 
 	m := &testingModel{
@@ -213,7 +213,7 @@ func TestInsertAndUpdate(t *testing.T) {
 
 func TestTransactionalPut(t *testing.T) {
 	initDatabase(t)
-	defer closeDatabase()
+	defer closeDatabase(t)
 	ctx := context.Background()
 
 	require.Nil(t, testings.Put(ctx, &testingModel{Code: "foo"}))
@@ -241,7 +241,7 @@ func TestTransactionalPut(t *testing.T) {
 
 func TestTransactionalPutRollback(t *testing.T) {
 	initDatabase(t)
-	defer closeDatabase()
+	defer closeDatabase(t)
 	ctx := context.Background()
 
 	require.Nil(t, testings.Put(ctx, &testingModel{Code: "foo"}))
@@ -269,7 +269,7 @@ func TestTransactionalPutRollback(t *testing.T) {
 
 func TestDelete(t *testing.T) {
 	initDatabase(t)
-	defer closeDatabase()
+	defer closeDatabase(t)
 	ctx := context.Background()
 
 	m := &testingModel{
@@ -291,7 +291,7 @@ func TestDelete(t *testing.T) {
 
 func TestGetAllEmpty(t *testing.T) {
 	initDatabase(t)
-	defer closeDatabase()
+	defer closeDatabase(t)
 	ctx := context.Background()
 
 	var models []*testingModel
@@ -302,7 +302,7 @@ func TestGetAllEmpty(t *testing.T) {
 
 func TestGetAll(t *testing.T) {
 	initDatabase(t)
-	defer closeDatabase()
+	defer closeDatabase(t)
 	ctx := context.Background()
 
 	m := &testingModel{
@@ -333,7 +333,7 @@ func TestGetAll(t *testing.T) {
 
 func TestGetAllFiltering(t *testing.T) {
 	initDatabase(t)
-	defer closeDatabase()
+	defer closeDatabase(t)
 	ctx := context.Background()
 
 	m := &testingModel{
@@ -367,7 +367,7 @@ func TestGetAllFiltering(t *testing.T) {
 
 func TestGetAllOperator(t *testing.T) {
 	initDatabase(t)
-	defer closeDatabase()
+	defer closeDatabase(t)
 	ctx := context.Background()
 
 	m := &testingAutoModel{
@@ -396,7 +396,7 @@ func TestGetAllOperator(t *testing.T) {
 
 func TestGetAllOperatorAndPlaceholder(t *testing.T) {
 	initDatabase(t)
-	defer closeDatabase()
+	defer closeDatabase(t)
 	ctx := context.Background()
 
 	m := &testingAutoModel{
@@ -425,7 +425,7 @@ func TestGetAllOperatorAndPlaceholder(t *testing.T) {
 
 func TestGetAllOperatorIN(t *testing.T) {
 	initDatabase(t)
-	defer closeDatabase()
+	defer closeDatabase(t)
 	ctx := context.Background()
 
 	m := &testingModel{
@@ -457,7 +457,7 @@ func TestGetAllOperatorIN(t *testing.T) {
 
 func TestGetOrder(t *testing.T) {
 	initDatabase(t)
-	defer closeDatabase()
+	defer closeDatabase(t)
 	ctx := context.Background()
 
 	m := &testingModel{
@@ -499,7 +499,7 @@ func TestDescOrderPanics(t *testing.T) {
 
 func TestMultipleFilters(t *testing.T) {
 	initDatabase(t)
-	defer closeDatabase()
+	defer closeDatabase(t)
 	ctx := context.Background()
 
 	m := &testingAutoModel{
@@ -527,7 +527,7 @@ func TestMultipleFilters(t *testing.T) {
 
 func TestCount(t *testing.T) {
 	initDatabase(t)
-	defer closeDatabase()
+	defer closeDatabase(t)
 	ctx := context.Background()
 
 	m := new(testingAutoModel)
@@ -546,7 +546,7 @@ func TestCount(t *testing.T) {
 
 func TestCountFilter(t *testing.T) {
 	initDatabase(t)
-	defer closeDatabase()
+	defer closeDatabase(t)
 	ctx := context.Background()
 
 	m := new(testingAutoModel)
@@ -565,7 +565,7 @@ func TestCountFilter(t *testing.T) {
 
 func TestLimit(t *testing.T) {
 	initDatabase(t)
-	defer closeDatabase()
+	defer closeDatabase(t)
 	ctx := context.Background()
 
 	m := &testingAutoModel{
@@ -593,7 +593,7 @@ func TestLimit(t *testing.T) {
 
 func TestGetMultiStrings(t *testing.T) {
 	initDatabase(t)
-	defer closeDatabase()
+	defer closeDatabase(t)
 	ctx := context.Background()
 
 	m := &testingModel{
@@ -625,7 +625,7 @@ func TestGetMultiStrings(t *testing.T) {
 
 func TestGetMultiIntegers(t *testing.T) {
 	initDatabase(t)
-	defer closeDatabase()
+	defer closeDatabase(t)
 	ctx := context.Background()
 
 	m := &testingAutoModel{
@@ -654,7 +654,7 @@ func TestGetMultiIntegers(t *testing.T) {
 
 func TestGetMultiError(t *testing.T) {
 	initDatabase(t)
-	defer closeDatabase()
+	defer closeDatabase(t)
 	ctx := context.Background()
 
 	m := &testingAutoModel{
@@ -679,7 +679,7 @@ func TestGetMultiError(t *testing.T) {
 
 func TestGetMultiEmpty(t *testing.T) {
 	initDatabase(t)
-	defer closeDatabase()
+	defer closeDatabase(t)
 	ctx := context.Background()
 
 	var models []*testingModel
@@ -688,7 +688,7 @@ func TestGetMultiEmpty(t *testing.T) {
 
 func TestFirst(t *testing.T) {
 	initDatabase(t)
-	defer closeDatabase()
+	defer closeDatabase(t)
 	ctx := context.Background()
 
 	require.Nil(t, testDB.Exec(ctx, `INSERT INTO testing(code, name, revision) VALUES ("foo", "foov", 1), ("bar", "barv", 2)`))
@@ -702,7 +702,7 @@ func TestFirst(t *testing.T) {
 
 func TestFirstNotFound(t *testing.T) {
 	initDatabase(t)
-	defer closeDatabase()
+	defer closeDatabase(t)
 	ctx := context.Background()
 
 	m := new(testingModel)
@@ -711,7 +711,7 @@ func TestFirstNotFound(t *testing.T) {
 
 func TestFirstNotTouchCols(t *testing.T) {
 	initDatabase(t)
-	defer closeDatabase()
+	defer closeDatabase(t)
 	ctx := context.Background()
 
 	m := &testingModel{
@@ -724,7 +724,7 @@ func TestFirstNotTouchCols(t *testing.T) {
 
 func TestTruncate(t *testing.T) {
 	initDatabase(t)
-	defer closeDatabase()
+	defer closeDatabase(t)
 	ctx := context.Background()
 
 	m := &testingModel{
@@ -752,7 +752,7 @@ func TestTruncate(t *testing.T) {
 
 func TestTruncateResetAutoIncrement(t *testing.T) {
 	initDatabase(t)
-	defer closeDatabase()
+	defer closeDatabase(t)
 	ctx := context.Background()
 
 	m := &testingAutoModel{
@@ -782,7 +782,7 @@ func TestTruncateResetAutoIncrement(t *testing.T) {
 
 func TestFilterExists(t *testing.T) {
 	initDatabase(t)
-	defer closeDatabase()
+	defer closeDatabase(t)
 	ctx := context.Background()
 
 	parent := new(testingRelParent)
@@ -807,7 +807,7 @@ func TestFilterExists(t *testing.T) {
 
 func TestFilterExistsDoesNotAffectSubquery(t *testing.T) {
 	initDatabase(t)
-	defer closeDatabase()
+	defer closeDatabase(t)
 	ctx := context.Background()
 
 	parent := new(testingRelParent)
@@ -833,7 +833,7 @@ func TestFilterExistsDoesNotAffectSubquery(t *testing.T) {
 
 func TestFilterExistsAliases(t *testing.T) {
 	initDatabase(t)
-	defer closeDatabase()
+	defer closeDatabase(t)
 	ctx := context.Background()
 
 	parent := new(testingRelParent)
@@ -858,7 +858,7 @@ func TestFilterExistsAliases(t *testing.T) {
 
 func TestFilterExistsAliasesAfterTheFilter(t *testing.T) {
 	initDatabase(t)
-	defer closeDatabase()
+	defer closeDatabase(t)
 	ctx := context.Background()
 
 	parent := new(testingRelParent)
@@ -883,7 +883,7 @@ func TestFilterExistsAliasesAfterTheFilter(t *testing.T) {
 
 func TestFilterNotExists(t *testing.T) {
 	initDatabase(t)
-	defer closeDatabase()
+	defer closeDatabase(t)
 	ctx := context.Background()
 
 	parent := new(testingRelParent)
@@ -908,7 +908,7 @@ func TestFilterNotExists(t *testing.T) {
 
 func TestFilterNotExistsDoesNotAffectSubquery(t *testing.T) {
 	initDatabase(t)
-	defer closeDatabase()
+	defer closeDatabase(t)
 	ctx := context.Background()
 
 	parent := new(testingRelParent)
@@ -934,7 +934,7 @@ func TestFilterNotExistsDoesNotAffectSubquery(t *testing.T) {
 
 func TestFilterNotExistsAliases(t *testing.T) {
 	initDatabase(t)
-	defer closeDatabase()
+	defer closeDatabase(t)
 	ctx := context.Background()
 
 	parent := new(testingRelParent)
@@ -960,7 +960,7 @@ func TestFilterNotExistsAliases(t *testing.T) {
 
 func TestFilterNotExistsAliasesAfterTheFilter(t *testing.T) {
 	initDatabase(t)
-	defer closeDatabase()
+	defer closeDatabase(t)
 	ctx := context.Background()
 
 	parent := new(testingRelParent)

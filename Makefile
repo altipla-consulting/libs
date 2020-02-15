@@ -12,7 +12,7 @@ test: lint
 
 lint:
 	@./infra/lint-errors.sh
-# 	revive -formatter friendly -config revive.toml ./...
+	revive -formatter stylish -config revive.toml ./...
 
 update-deps:
 	actools go get -u
@@ -30,6 +30,6 @@ data:
 datetime-generator: _datetime-generator gofmt
 
 _datetime-generator:
-	go install ./cmd/datetime-generator
 	wget http://www.unicode.org/Public/cldr/27.0.1/core.zip -O /tmp/core.zip
+	go install ./cmd/datetime-generator
 	datetime-generator -locales en,es,fr,ru,de,it,ja,pt

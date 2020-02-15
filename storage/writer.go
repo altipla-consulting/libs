@@ -28,7 +28,8 @@ func NewWriter(bucketName string) (Writer, error) {
 	}, nil
 }
 
-func (w *productionWriter) WriteFile(ctx context.Context, path string, content []byte) (err error) {
+func (w *productionWriter) WriteFile(ctx context.Context, path string, content []byte) error {
+	var err error
 	for i := 0; i < 3; i++ {
 		err = w.writeFileSafe(ctx, path, content)
 		if err == nil {
@@ -36,7 +37,7 @@ func (w *productionWriter) WriteFile(ctx context.Context, path string, content [
 		}
 		time.Sleep(1 * time.Second)
 	}
-	return
+	return errors.Trace(err)
 }
 
 func (w *productionWriter) writeFileSafe(ctx context.Context, path string, content []byte) error {

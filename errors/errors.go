@@ -2,7 +2,7 @@ package errors
 
 import (
 	"bytes"
-	"errors"
+	"errors" // revive:disable-line:imports-blacklist
 	"fmt"
 	"io"
 	"runtime"
@@ -205,7 +205,7 @@ func isPrefix(a []uintptr, b []uintptr) bool {
 	return true
 }
 
-func wrapf(err error, reason string) error {
+func internalWrapf(err error, reason string) error {
 	var cause error
 	var previous *altiplaError
 
@@ -255,7 +255,6 @@ func wrapf(err error, reason string) error {
 			}
 			index++
 		}
-
 	} else {
 		cause = err
 	}
@@ -290,7 +289,7 @@ func wrapf(err error, reason string) error {
 // that Errorf is not suitable for storing in global variables. For
 // such errors, keep using errors.New.
 func Errorf(format string, a ...interface{}) error {
-	return wrapf(fmt.Errorf(format, a...), "")
+	return internalWrapf(fmt.Errorf(format, a...), "")
 }
 
 // New creates a new error without stacktrace.
@@ -311,7 +310,7 @@ func Wrapf(err error, format string, a ...interface{}) error {
 	if err == nil {
 		return nil
 	}
-	return wrapf(err, fmt.Sprintf(format, a...))
+	return internalWrapf(err, fmt.Sprintf(format, a...))
 }
 
 // Trace annotates an error with a stacktrace.
@@ -326,7 +325,7 @@ func Trace(err error) error {
 	if err == nil {
 		return nil
 	}
-	return wrapf(err, "")
+	return internalWrapf(err, "")
 }
 
 // Cause extracts the cause error of an altipla error. If err is not an altipla
@@ -368,9 +367,9 @@ func Recover(p interface{}) error {
 		return nil
 	}
 	if err, ok := p.(error); ok {
-		return wrapf(err, "recovered panic")
+		return internalWrapf(err, "recovered panic")
 	}
-	return wrapf(fmt.Errorf("recovered panic: %v", p), "")
+	return internalWrapf(fmt.Errorf("recovered panic: %v", p), "")
 }
 
 func LogFields(err error) log.Fields {

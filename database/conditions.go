@@ -37,7 +37,6 @@ func Filter(sql string, value interface{}) Condition {
 			queryValues = append(queryValues, v.Index(i).Interface())
 		}
 		sql = fmt.Sprintf("%s (%s)", sql, strings.Join(placeholders, ", "))
-
 	} else if !strings.Contains(sql, "?") {
 		sql = fmt.Sprintf("%s ?", sql)
 		queryValues = []interface{}{value}

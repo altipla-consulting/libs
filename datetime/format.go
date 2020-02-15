@@ -194,10 +194,10 @@ func Format(t time.Time, locale, layout string) string {
 	var b []byte
 
 	var (
-		year  int = -1
+		year  = -1
 		month time.Month
 		day   int
-		hour  int = -1
+		hour  = -1
 		min   int
 		sec   int
 	)

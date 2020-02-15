@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"cloud.google.com/go/bigquery"
-	log "github.com/sirupsen/logrus"
+	"libs.altipla.consulting/errors"
 )
 
 // Dataset represents a BigQuery dataset name.
@@ -26,16 +26,16 @@ type Client struct {
 }
 
 // NewClient opens a new connection to the BigQuery service.
-func NewClient(googleProject string, dataset Dataset) *Client {
+func NewClient(googleProject string, dataset Dataset) (*Client, error) {
 	bq, err := bigquery.NewClient(context.Background(), googleProject)
 	if err != nil {
-		log.Fatal(err)
+		return nil, errors.Trace(err)
 	}
 
 	return &Client{
 		bq:      bq,
 		dataset: dataset,
-	}
+	}, nil
 }
 
 // Query prepares a new paginator for the query.

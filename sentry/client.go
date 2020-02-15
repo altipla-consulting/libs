@@ -55,19 +55,19 @@ func (client *Client) ReportInternal(ctx context.Context, appErr error) {
 
 // Report reports an error to Sentry.
 func (client *Client) Report(ctx context.Context, appErr error) {
-	client.report(ctx, appErr, nil)
+	client.sendReport(ctx, appErr, nil)
 }
 
 // ReportRequest reports an error linked to a HTTP request.
 func (client *Client) ReportRequest(appErr error, r *http.Request) {
-	client.report(r.Context(), appErr, r)
+	client.sendReport(r.Context(), appErr, r)
 }
 
 // ReportPanics detects panics in the body of the function and reports them.
 func (client *Client) ReportPanics(ctx context.Context) {
 	if rec := recover(); rec != nil {
 		appErr := rec.(error)
-		client.reportPanic(ctx, appErr, string(debug.Stack()), nil)
+		client.sendReportPanic(ctx, appErr, string(debug.Stack()), nil)
 	}
 }
 
@@ -76,11 +76,11 @@ func (client *Client) ReportPanics(ctx context.Context) {
 func (client *Client) ReportPanicsRequest(r *http.Request) {
 	if rec := recover(); rec != nil {
 		appErr := rec.(error)
-		client.reportPanic(r.Context(), appErr, string(debug.Stack()), r)
+		client.sendReportPanic(r.Context(), appErr, string(debug.Stack()), r)
 	}
 }
 
-func (client *Client) report(ctx context.Context, appErr error, r *http.Request) {
+func (client *Client) sendReport(ctx context.Context, appErr error, r *http.Request) {
 	go func() {
 		stacktrace := new(sentry.Stacktrace)
 		for i, stack := range errors.Frames(appErr) {
@@ -138,7 +138,7 @@ func (client *Client) report(ctx context.Context, appErr error, r *http.Request)
 	}()
 }
 
-func (client *Client) reportPanic(ctx context.Context, appErr error, message string, r *http.Request) {
+func (client *Client) sendReportPanic(ctx context.Context, appErr error, message string, r *http.Request) {
 	go func() {
 		event := sentry.NewEvent()
 

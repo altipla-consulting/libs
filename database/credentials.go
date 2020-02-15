@@ -15,8 +15,9 @@ type Credentials struct {
 // String returns the credentials with the exact format the Go MySQL driver needs
 // to connect to it.
 func (c Credentials) String() string {
-	if c.Protocol == "" {
-		c.Protocol = "tcp"
+	protocol := c.Protocol
+	if protocol == "" {
+		protocol = "tcp"
 	}
 
 	var charset string
@@ -28,5 +29,5 @@ func (c Credentials) String() string {
 		collation = fmt.Sprintf("&collation=%s", c.Collation)
 	}
 
-	return fmt.Sprintf("%s:%s@%s(%s)/%s?parseTime=true%s%s", c.User, c.Password, c.Protocol, c.Address, c.Database, charset, collation)
+	return fmt.Sprintf("%s:%s@%s(%s)/%s?parseTime=true%s%s", c.User, c.Password, protocol, c.Address, c.Database, charset, collation)
 }

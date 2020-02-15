@@ -13,8 +13,8 @@ type Iterator struct {
 }
 
 // Close finishes the iteration. Do not use the iterator after closing it.
-func (it *Iterator) Close() {
-	it.rows.Close()
+func (it *Iterator) Close() error {
+	return errors.Trace(it.rows.Close())
 }
 
 // Next retrieves the next model of the list. It may or may communicate with the
@@ -31,7 +31,9 @@ func (it *Iterator) Next(model Model) error {
 			return errors.Trace(err)
 		}
 
-		it.Close()
+		if err := it.Close(); err != nil {
+			return errors.Trace(err)
+		}
 
 		return ErrDone
 	}

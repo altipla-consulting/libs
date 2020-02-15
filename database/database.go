@@ -9,7 +9,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"libs.altipla.consulting/errors"
 
-	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/go-sql-driver/mysql" // MySQL driver
 )
 
 // Database represents a reusable connection to a remote MySQL database.
@@ -57,8 +57,8 @@ func (db *Database) Collection(model Model, opts ...CollectionOption) *Collectio
 
 // Close the connection. You should not use a database after closing it, nor any
 // of its generated collections.
-func (db *Database) Close() {
-	db.sess.Close()
+func (db *Database) Close() error {
+	return errors.Trace(db.sess.Close())
 }
 
 // Exec runs a raw SQL query in the database and returns nothing. It is

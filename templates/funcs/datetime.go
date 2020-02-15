@@ -53,8 +53,7 @@ func Now() time.Time {
 }
 
 func Timezone(timezone string, t time.Time) (time.Time, error) {
-	switch timezone {
-	case "Europe/Madrid":
+	if timezone == "Europe/Madrid" {
 		return t.In(EuropeMadrid), nil
 	}
 

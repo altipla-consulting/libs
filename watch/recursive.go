@@ -62,8 +62,7 @@ func Files(ctx context.Context, changes chan string, paths ...string) error {
 			return errors.Trace(err)
 
 		case ev := <-watcher.Events:
-			switch ev.Op {
-			case fsnotify.Create:
+			if ev.Op == fsnotify.Create {
 				info, err := os.Stat(ev.Name)
 				if err != nil {
 					return errors.Trace(err)

@@ -20,7 +20,7 @@ func (model *testingModelNullString) TableName() string {
 
 func TestNullableStringDefaultsValid(t *testing.T) {
 	initDatabase(t)
-	defer closeDatabase()
+	defer closeDatabase(t)
 	ctx := context.Background()
 
 	c := testDB.Collection(new(testingModelNullString))
@@ -40,7 +40,7 @@ func TestNullableStringDefaultsValid(t *testing.T) {
 
 func TestNullableStringStoresValue(t *testing.T) {
 	initDatabase(t)
-	defer closeDatabase()
+	defer closeDatabase(t)
 	ctx := context.Background()
 
 	c := testDB.Collection(new(testingModelNullString))
@@ -72,7 +72,7 @@ func (model *testingModelText) TableName() string {
 
 func TestNullableStringText(t *testing.T) {
 	initDatabase(t)
-	defer closeDatabase()
+	defer closeDatabase(t)
 	ctx := context.Background()
 
 	require.Nil(t, testDB.Exec(ctx, `DROP TABLE IF EXISTS testing_text`))

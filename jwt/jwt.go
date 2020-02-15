@@ -140,8 +140,7 @@ func (g *Generator) Extract(token string, expected Expected, claims *Claims, cus
 
 	webSignature, err := jose.ParseSigned(token)
 	if err != nil {
-		switch err.Error() {
-		case "square/go-jose: compact JWS format must have three parts":
+		if err.Error() == "square/go-jose: compact JWS format must have three parts" {
 			return &InvalidTokenError{
 				Reason: fmt.Sprintf("invalid parts"),
 			}

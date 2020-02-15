@@ -9,7 +9,7 @@ import (
 
 func TestIteratorNextCallHooks(t *testing.T) {
 	initDatabase(t)
-	defer closeDatabase()
+	defer closeDatabase(t)
 	ctx := context.Background()
 
 	m := new(testingAutoModel)

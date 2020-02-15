@@ -72,20 +72,22 @@ func (p Point) Value() (driver.Value, error) {
 
 	// MySQL bug, it returns the internal representation with 4 zero bytes before
 	// the value: https://bugs.mysql.com/bug.php?id=69798
-	w.Write([]byte{0, 0, 0, 0})
+	if _, err := w.Write([]byte{0, 0, 0, 0}); err != nil {
+		return nil, errors.Trace(err)
+	}
 
 	var wkbByteOrder uint8 = 1
 	if err := binary.Write(w, binary.LittleEndian, wkbByteOrder); err != nil {
-		return nil, err
+		return nil, errors.Trace(err)
 	}
 
 	var wkbGeometryType uint32 = 1
 	if err := binary.Write(w, binary.LittleEndian, wkbGeometryType); err != nil {
-		return nil, err
+		return nil, errors.Trace(err)
 	}
 
 	if err := binary.Write(w, binary.LittleEndian, p); err != nil {
-		return nil, err
+		return nil, errors.Trace(err)
 	}
 
 	return w.Bytes(), nil

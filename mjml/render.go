@@ -26,10 +26,9 @@ func Render(ctx context.Context, content string) (string, error) {
 			lastErr = err.Error()
 			if ctx.Err() != nil {
 				return "", errors.Trace(ctx.Err())
-			} else {
-				time.Sleep(500 * time.Millisecond)
-				continue
 			}
+			time.Sleep(500 * time.Millisecond)
+			continue
 		}
 
 		return result, nil

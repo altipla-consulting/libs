@@ -11,7 +11,7 @@ var db *Database
 
 func initDB(t *testing.T) {
 	db = Open("redis:6379", "test")
-	db.FlushAllKeysFromDatabase()
+	require.NoError(t, db.FlushAllKeysFromDatabase())
 }
 
 func closeDB(t *testing.T) {

@@ -170,13 +170,13 @@ func initDatabase(t *testing.T) {
 	testingsRelChild = testDB.Collection(new(testingRelChild))
 }
 
-func closeDatabase() {
-	testDB.Close()
+func closeDatabase(t *testing.T) {
+	require.NoError(t, testDB.Close())
 }
 
 func TestQueryRow(t *testing.T) {
 	initDatabase(t)
-	defer closeDatabase()
+	defer closeDatabase(t)
 
 	model := &testingModel{
 		Code: "Test",
@@ -198,7 +198,7 @@ type testingModelSelect struct {
 
 func TestSelect(t *testing.T) {
 	initDatabase(t)
-	defer closeDatabase()
+	defer closeDatabase(t)
 
 	model := &testingModel{
 		Code: "foo",
@@ -215,7 +215,7 @@ func TestSelect(t *testing.T) {
 
 func TestSelectAll(t *testing.T) {
 	initDatabase(t)
-	defer closeDatabase()
+	defer closeDatabase(t)
 
 	model := &testingModel{
 		Code: "foo",

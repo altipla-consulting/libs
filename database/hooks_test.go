@@ -9,7 +9,7 @@ import (
 
 func TestWithAfterPut(t *testing.T) {
 	initDatabase(t)
-	defer closeDatabase()
+	defer closeDatabase(t)
 	ctx := context.Background()
 
 	var called int

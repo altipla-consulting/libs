@@ -97,8 +97,7 @@ func (client *Client) SendReturnID(ctx context.Context, domain string, email *Em
 		if mgerr, ok := err.(*mailgun.UnexpectedResponseError); ok {
 			errdata := new(sendError)
 			if err := json.Unmarshal(mgerr.Data, errdata); err == nil {
-				switch errdata.Message {
-				case "'to' parameter is not a valid address. please check documentation":
+				if errdata.Message == "'to' parameter is not a valid address. please check documentation" {
 					return "", errors.Wrapf(ErrInvalidAddress, "email: %s", email.To.String())
 				}
 			}

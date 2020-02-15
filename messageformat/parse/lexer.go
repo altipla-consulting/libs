@@ -52,7 +52,7 @@ type lexer struct {
 }
 
 func (l *lexer) run() {
-	for state := lexText; state != nil; state = state(l) {
+	for state := lexText; state != nil; state = state(l) { // revive:disable-line:empty-block
 	}
 }
 
@@ -98,7 +98,7 @@ func (l *lexer) accept(valid string) bool {
 
 // acceptRun consumes a run of runes from the valid set.
 func (l *lexer) acceptRun(valid string) {
-	for strings.ContainsRune(valid, l.next()) {
+	for strings.ContainsRune(valid, l.next()) { // revive:disable-line:empty-block
 	}
 	l.backup()
 }

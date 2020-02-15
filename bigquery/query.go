@@ -122,11 +122,11 @@ func ConditionOr() *Condition {
 }
 
 // Clone returns a copy of the condition.
-func (cond *Condition) Clone() *Condition {
+func (c *Condition) Clone() *Condition {
 	return &Condition{
-		operator: cond.operator,
-		filters:  cond.filters,
-		children: cond.children,
+		operator: c.operator,
+		filters:  c.filters,
+		children: c.children,
 	}
 }
 
@@ -135,7 +135,7 @@ func (cond *Condition) Clone() *Condition {
 //   .Filter("foo", 3)
 //   .Filter("foo >", 3)
 //   .Filter("foo BETWEEN ? AND ?", 3, 4)
-func (cond *Condition) Filter(filter string, values ...interface{}) *Condition {
+func (c *Condition) Filter(filter string, values ...interface{}) *Condition {
 	if len(values) == 1 {
 		if !strings.Contains(filter, " ") {
 			filter = filter + " = ?"
@@ -144,12 +144,12 @@ func (cond *Condition) Filter(filter string, values ...interface{}) *Condition {
 		}
 	}
 
-	cond = cond.Clone()
-	cond.filters = append(cond.filters, sqlFilter{
+	c = c.Clone()
+	c.filters = append(c.filters, sqlFilter{
 		filter: filter,
 		values: values,
 	})
-	return cond
+	return c
 }
 
 // FilterCond builds a new condition adding the new child condition we specify here. Examples:
@@ -158,10 +158,10 @@ func (cond *Condition) Filter(filter string, values ...interface{}) *Condition {
 //   cond = cond.Filter("foo", 3)
 //   cond = cond.Filter("bar", 4)
 //   .FilterCond(cond)
-func (cond *Condition) FilterCond(child *Condition) *Condition {
-	cond = cond.Clone()
-	cond.children = append(cond.children, child)
-	return cond
+func (c *Condition) FilterCond(child *Condition) *Condition {
+	c = c.Clone()
+	c.children = append(c.children, child)
+	return c
 }
 
 func (c *Condition) buildSQL(b *sqlBuilder) string {

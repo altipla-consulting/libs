@@ -219,8 +219,8 @@ func (c *Collection) Put(ctx context.Context, instance Model) error {
 
 // Filter applies a new simple filter to the collection. See the global Filter
 // function for documentation.
-func (c *Collection) Filter(sql string, value interface{}) *Collection {
-	return c.FilterCond(Filter(sql, value))
+func (c *Collection) Filter(sqlStmt string, value interface{}) *Collection {
+	return c.FilterCond(Filter(sqlStmt, value))
 }
 
 // FilterIsNil applies a new NULL filter to the collection. See the global FilterIsNil
@@ -343,12 +343,12 @@ func (c *Collection) Iterator(ctx context.Context) (*Iterator, error) {
 		alias:      c.alias,
 	}
 
-	sql, values := b.SelectSQL()
+	sqlStmt, values := b.SelectSQL()
 	if c.db.debug {
-		log.Println("database [Iterator]:", sql)
+		log.Println("database [Iterator]:", sqlStmt)
 	}
 
-	rows, err := c.db.executor(ctx).QueryContext(ctx, sql, values...)
+	rows, err := c.db.executor(ctx).QueryContext(ctx, sqlStmt, values...)
 	if err != nil {
 		return nil, err
 	}
@@ -449,13 +449,13 @@ func (c *Collection) Count(ctx context.Context) (int64, error) {
 		alias:      c.alias,
 	}
 
-	sql, values := b.SelectSQLCols("COUNT(*)")
+	sqlStmt, values := b.SelectSQLCols("COUNT(*)")
 	if c.db.debug {
-		log.Println("database [Count]:", sql)
+		log.Println("database [Count]:", sqlStmt)
 	}
 
 	var n int64
-	if err := c.db.executor(ctx).QueryRowContext(ctx, sql, values...).Scan(&n); err != nil {
+	if err := c.db.executor(ctx).QueryRowContext(ctx, sqlStmt, values...).Scan(&n); err != nil {
 		return 0, err
 	}
 
