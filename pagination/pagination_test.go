@@ -23,7 +23,7 @@ type testingModel struct {
 }
 
 func (model *testingModel) TableName() string {
-	return "testing"
+	return "testing_pagination"
 }
 
 func initDatabase(t *testing.T) {
@@ -40,9 +40,9 @@ func initDatabase(t *testing.T) {
 	}, database.WithDebug(os.Getenv("DEBUG") == "true"))
 	require.Nil(t, err)
 
-	require.Nil(t, testDB.Exec(ctx, `DROP TABLE IF EXISTS testing`))
+	require.Nil(t, testDB.Exec(ctx, `DROP TABLE IF EXISTS testing_pagination`))
 	err = testDB.Exec(ctx, `
-    CREATE TABLE testing (
+    CREATE TABLE testing_pagination (
       code VARCHAR(191),
       revision INT(11) NOT NULL,
 
