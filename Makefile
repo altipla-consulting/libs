@@ -7,12 +7,12 @@ gofmt:
 	@gofmt -s -w $(FILES)
 	@gofmt -r '&α{} -> new(α)' -w $(FILES)
 
-test: gofmt lint
-	revive -formatter friendly
+test: lint
 	actools go test ./...
 
 lint:
 	@./infra/lint-errors.sh
+# 	revive -formatter friendly -config revive.toml ./...
 
 update-deps:
 	actools go get -u
@@ -27,9 +27,9 @@ data:
 	actools start database redis
 	bash -c "until actools mysql -h database -u dev-user -pdev-password -e ';' 2> /dev/null ; do sleep 1; done"
 
-datetime-generator:
+datetime-generator: _datetime-generator gofmt
+
+_datetime-generator:
 	go install ./cmd/datetime-generator
 	wget http://www.unicode.org/Public/cldr/27.0.1/core.zip -O /tmp/core.zip
 	datetime-generator -locales en,es,fr,ru,de,it,ja,pt
-	@gofmt -w $(FILES)
-	@gofmt -r '&α{} -> new(α)' -w $(FILES)
