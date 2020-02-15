@@ -2,6 +2,7 @@
 # libs
 
 [![GoDoc](https://img.shields.io/badge/go.dev-reference-007d9c?logo=go&logoColor=white&style=flat-square)](https://pkg.go.dev/libs.altipla.consulting?tab=subdirectories)
+[![Go Report Card](https://goreportcard.com/badge/libs.altipla.consulting?style=flat-square)](https://goreportcard.com/report/libs.altipla.consulting)
 
 List of Go utils and shared code for [Altipla Consulting](https://www.altiplaconsulting.com/) projects.
 
