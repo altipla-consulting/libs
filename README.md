@@ -1,7 +1,7 @@
 
 # libs
 
-[![GoDoc](https://godoc.org/libs.altipla.consulting?status.svg)](https://godoc.org/libs.altipla.consulting)
+[![GoDoc](https://img.shields.io/badge/go.dev-reference-007d9c?logo=go&logoColor=white&style=flat-square)](https://pkg.go.dev/libs.altipla.consulting?tab=subdirectories)
 
 List of Go utils and shared code for [Altipla Consulting](https://www.altiplaconsulting.com/) projects.
 
