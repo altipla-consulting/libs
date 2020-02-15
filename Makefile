@@ -4,7 +4,7 @@ FILES = $(shell find . -type f -name '*.go' -not -path './vendor/*')
 .PHONY: protos
 
 gofmt:
-	@gofmt -w $(FILES)
+	@gofmt -s -w $(FILES)
 	@gofmt -r '&α{} -> new(α)' -w $(FILES)
 
 test: gofmt lint

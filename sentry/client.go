@@ -144,7 +144,7 @@ func (client *Client) reportPanic(ctx context.Context, appErr error, message str
 
 		event.Message = message
 		event.Exception = []sentry.Exception{
-			sentry.Exception{
+			{
 				Type:   "panic",
 				Value:  appErr.Error(),
 				Module: "backend",
