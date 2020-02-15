@@ -1,0 +1,10 @@
+
+syntax = "proto3";
+
+package libs.bigquery;
+
+message Token {
+  string job_id = 1;
+  string page_token = 2;
+  int64 checksum = 3;
+}
