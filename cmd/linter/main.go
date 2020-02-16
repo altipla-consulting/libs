@@ -95,6 +95,7 @@ var allRules = []ruleConfig{
 	{new(rule.VarNamingRule), nil},
 	{new(rule.WaitGroupByValueRule), nil},
 	{new(customrules.ImportShadowingRule), nil},
+	{new(customrules.MultilineIfRule), nil},
 }
 
 func main() {

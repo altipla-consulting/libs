@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"go/ast"
 	"go/token"
-	"strings"
 
 	"github.com/mgechev/revive/lint"
 )
@@ -33,22 +32,6 @@ func (r *ImportShadowingRule) Apply(file *lint.File, _ lint.Arguments) []lint.Fa
 // Name returns the rule name.
 func (r *ImportShadowingRule) Name() string {
 	return "import-shadowing"
-}
-
-func getName(imp *ast.ImportSpec) string {
-	const pathSep = "/"
-	const strDelim = `"`
-	if imp.Name != nil {
-		return imp.Name.Name
-	}
-
-	path := imp.Path.Value
-	i := strings.LastIndex(path, pathSep)
-	if i == -1 {
-		return strings.Trim(path, strDelim)
-	}
-
-	return strings.Trim(path[i+1:], strDelim)
 }
 
 type importShadowing struct {
