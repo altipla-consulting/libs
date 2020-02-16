@@ -1,0 +1,13 @@
+#!/bin/bash
+
+set -eu
+
+ROOT=$(pwd)
+
+export GOBIN=/tmp/libs.tools
+
+cd cmd/linter
+go install .
+
+cd $ROOT
+$GOBIN/linter "$@"

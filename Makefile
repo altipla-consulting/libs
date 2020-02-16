@@ -12,7 +12,7 @@ test: lint
 
 lint:
 	@./infra/lint-errors.sh
-	revive -formatter stylish -config revive.toml ./...
+	tool/linter ./...
 
 update-deps:
 	actools go get -u
