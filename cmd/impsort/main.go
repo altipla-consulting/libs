@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strconv"
+	"regexp"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -18,7 +18,8 @@ import (
 )
 
 var (
-	std = make(map[string]bool)
+	std      = make(map[string]bool)
+	reImport = regexp.MustCompile(`^\s+(([a-z0-9_]+)\s+)?"([^"]+)"(\s+// (.+))?$`)
 )
 
 func main() {
@@ -96,7 +97,7 @@ func isEnd(lines []string, line int) bool {
 }
 
 type importSpec struct {
-	name, path string
+	name, path, comment string
 }
 
 func groupImports(flagLocalPrefix, filename string, w io.Writer, lines []string) (bool, error) {
@@ -123,30 +124,19 @@ func groupImports(flagLocalPrefix, filename string, w io.Writer, lines []string)
 			break
 		}
 
-		trimmed := strings.TrimSpace(lines[line])
-		if trimmed == "" {
+		if strings.TrimSpace(lines[line]) == "" {
 			continue
 		}
-		if strings.Contains(trimmed, " ") {
-			parts := strings.Split(trimmed, " ")
-			if len(parts) != 2 {
-				return false, errors.Errorf("unparsable line(%s, %d): %s", filename, line, lines[line])
-			}
-			path, err := strconv.Unquote(parts[1])
-			if err != nil {
-				return false, errors.Trace(err)
-			}
-			imports = append(imports, importSpec{
-				name: parts[0],
-				path: path,
-			})
-		} else {
-			path, err := strconv.Unquote(trimmed)
-			if err != nil {
-				return false, errors.Wrapf(err, "line(%d): %s", line, lines[line])
-			}
-			imports = append(imports, importSpec{path: path})
+		match := reImport.FindStringSubmatch(lines[line])
+		if match == nil {
+			return false, errors.Errorf("unparsable line(%s, %d): %s", filename, line, strings.TrimSpace(lines[line]))
 		}
+
+		imports = append(imports, importSpec{
+			name:    match[2],
+			path:    match[3],
+			comment: match[5],
+		})
 	}
 	if isEnd(lines, line) {
 		return true, nil
@@ -192,10 +182,14 @@ func printImports(w io.Writer, imports []importSpec, separator bool) {
 		fmt.Fprintln(w, "")
 	}
 	for _, imp := range imports {
+		fmt.Fprint(w, "\t")
 		if imp.name != "" {
-			fmt.Fprintln(w, "\t"+imp.name+` "`+imp.path+`"`)
-		} else {
-			fmt.Fprintln(w, "\t"+`"`+imp.path+`"`)
+			fmt.Fprintf(w, "%s ", imp.name)
 		}
+		fmt.Fprintf(w, `"%s"`, imp.path)
+		if imp.comment != "" {
+			fmt.Fprintf(w, " // %s", imp.comment)
+		}
+		fmt.Fprint(w, "\n")
 	}
 }
