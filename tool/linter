@@ -2,12 +2,18 @@
 
 set -eu
 
-ROOT=$(pwd)
 
-export GOBIN=/tmp/libs.tools
+function rungo() {
+  if hash go 2>/dev/null; then
+    go "$@"
+  else
+    actools go "$@"
+  fi
+}
 
-cd cmd/linter
-go install .
 
-cd $ROOT
-$GOBIN/linter "$@"
+mkdir -p bin
+
+rungo build -o bin/linter ./cmd/linter
+
+bin/linter "$@"

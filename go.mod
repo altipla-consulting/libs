@@ -21,6 +21,8 @@ require (
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/mailgun/mailgun-go/v3 v3.6.0
 	github.com/mailru/easyjson v0.7.0 // indirect
+	github.com/mgechev/dots v0.0.0-20190921121421-c36f7dcfbb81
+	github.com/mgechev/revive v1.0.1
 	github.com/sirupsen/logrus v1.4.2
 	github.com/speps/go-hashids v2.0.0+incompatible
 	github.com/spf13/pflag v1.0.5
@@ -28,9 +30,8 @@ require (
 	go.opencensus.io v0.22.1 // indirect
 	golang.org/x/net v0.0.0-20190909003024-a7b16738d86b // indirect
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
-	golang.org/x/sys v0.0.0-20190911201528-7ad0cfa0b7b5 // indirect
 	golang.org/x/text v0.3.2
-	golang.org/x/tools v0.0.0-20190628153133-6cdbf07be9d0
+	golang.org/x/tools v0.0.0-20200107184032-11e9d9cc0042
 	google.golang.org/api v0.10.0
 	google.golang.org/appengine v1.6.2 // indirect
 	google.golang.org/genproto v0.0.0-20190911173649-1774047e7e51 // indirect
