@@ -7,9 +7,9 @@ import (
 
 	jose "gopkg.in/square/go-jose.v2"
 	"gopkg.in/square/go-jose.v2/jwt"
-	"libs.altipla.consulting/errors"
 
 	"libs.altipla.consulting/clock"
+	"libs.altipla.consulting/errors"
 )
 
 type InvalidTokenError struct {

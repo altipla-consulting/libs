@@ -9,6 +9,7 @@ import (
 
 	"github.com/golang/protobuf/proto"
 	"gopkg.in/yaml.v2"
+
 	"libs.altipla.consulting/errors"
 )
 

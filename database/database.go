@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"reflect"
 
-	log "github.com/sirupsen/logrus"
-	"libs.altipla.consulting/errors"
-
 	_ "github.com/go-sql-driver/mysql" // MySQL driver
+	log "github.com/sirupsen/logrus"
+
+	"libs.altipla.consulting/errors"
 )
 
 // Database represents a reusable connection to a remote MySQL database.

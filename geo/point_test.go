@@ -4,9 +4,8 @@ import (
 	"database/sql"
 	"testing"
 
-	"github.com/stretchr/testify/require"
-
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/stretchr/testify/require"
 )
 
 var (

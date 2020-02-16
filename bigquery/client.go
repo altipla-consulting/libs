@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"cloud.google.com/go/bigquery"
+
 	"libs.altipla.consulting/errors"
 )
 

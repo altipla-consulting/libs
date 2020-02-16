@@ -6,9 +6,9 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
-	"libs.altipla.consulting/errors"
 
 	"libs.altipla.consulting/clock"
+	"libs.altipla.consulting/errors"
 )
 
 func TestSign(t *testing.T) {

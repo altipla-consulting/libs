@@ -1,0 +1,19 @@
+#!/bin/bash
+
+set -eu
+
+
+function rungo() {
+  if hash go 2>/dev/null; then
+    go "$@"
+  else
+    actools go "$@"
+  fi
+}
+
+
+export GOBIN=/tmp/libs.tools
+
+rungo install ./cmd/impsort
+
+$GOBIN/impsort "$@"

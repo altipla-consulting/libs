@@ -10,6 +10,7 @@ import (
 	"github.com/mgechev/revive/rule"
 	log "github.com/sirupsen/logrus"
 	flag "github.com/spf13/pflag"
+
 	"libs.altipla.consulting/cmd/linter/customrules"
 	"libs.altipla.consulting/errors"
 )
