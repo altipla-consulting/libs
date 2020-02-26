@@ -206,24 +206,26 @@ func (s *Server) decorate(lang string, handler Handler) httprouter.Handle {
 				}
 			}
 
-			if s.logging {
-				log.WithFields(errors.LogFields(err)).Error("Handler failed")
-			}
-
+			// Si el contexto se cancela simplemente mandamos el error al cliente ignorando
+			// la respuesta desde el handler.
 			if ctx.Err() == context.Canceled {
 				s.emitError(w, r, http.StatusRequestTimeout)
 				return
 			}
 
+			// Mandamos logging del error a la consola y/o Sentry.
+			if s.logging {
+				log.WithFields(errors.LogFields(err)).Error("Handler failed")
+			}
 			if s.sentryClient != nil {
 				s.sentryClient.ReportRequest(err, r)
 			}
 
+			// Responde según el tipo de error por timeout u otro con un código HTTP adecuado.
 			if ctx.Err() == context.DeadlineExceeded {
 				s.emitError(w, r, http.StatusGatewayTimeout)
 				return
 			}
-
 			s.emitError(w, r, http.StatusInternalServerError)
 		}
 	}
