@@ -37,6 +37,10 @@ type Client struct {
 
 // NewClient opens a new connection to the Sentry report API.
 func NewClient(dsn string) *Client {
+	if dsn == "" {
+		return nil
+	}
+	
 	client, err := sentry.NewClient(sentry.ClientOptions{
 		Dsn:     dsn,
 		Release: os.Getenv("VERSION"),
