@@ -10,7 +10,6 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"libs.altipla.consulting/errors"
-	"libs.altipla.consulting/langs"
 	"libs.altipla.consulting/sentry"
 )
 
@@ -39,9 +38,7 @@ func WithLogrus() ServerOption {
 // WithSentry configures Sentry logging of issues in the handlers.
 func WithSentry(dsn string) ServerOption {
 	return func(server *Server) {
-		if dsn != "" {
-			server.sentryClient = sentry.NewClient(dsn)
-		}
+		server.sentryClient = sentry.NewClient(dsn)
 	}
 }
 
@@ -54,7 +51,8 @@ func WithCustom404(handler Handler) ServerOption {
 
 // Server configures the routing table.
 type Server struct {
-	router *httprouter.Router
+	domains       map[string]*httprouter.Router
+	defaultDomain *httprouter.Router
 
 	// Options
 	username, password string
@@ -63,10 +61,28 @@ type Server struct {
 	handler404         Handler
 }
 
+// // We need an object that implements the http.Handler interface.
+// // Therefore we need a type for which we implement the ServeHTTP method.
+// // We just use a map here, in which we map host names (with port) to http.Handlers
+// type HostSwitch map[string]http.Handler
+
+// // Implement the ServeHTTP method on our new type
+// func (hs HostSwitch) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+// 	// Check if a http.Handler is registered for the given host.
+// 	// If yes, use it to handle the request.
+// 	if handler := hs[r.Host]; handler != nil {
+// 		handler.ServeHTTP(w, r)
+// 	} else {
+// 		// Handle host names for which no handler is registered
+// 		http.Error(w, "Forbidden", 403) // Or Redirect?
+// 	}
+// }
+
 // NewServer configures a new router with the options.
 func NewServer(opts ...ServerOption) *Server {
 	s := &Server{
-		router: httprouter.New(),
+		defaultDomain: httprouter.New(),
+		domains:       make(map[string]*httprouter.Router),
 	}
 	for _, opt := range opts {
 		opt(s)
@@ -75,11 +91,19 @@ func NewServer(opts ...ServerOption) *Server {
 	if s.handler404 == nil {
 		s.handler404 = s.generic404Handler
 	}
-	s.router.NotFound = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		s.decorate(langs.ES, s.handler404)(w, r, nil)
+	s.defaultDomain.NotFound = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		s.decorate(s.handler404)(w, r, nil)
 	})
 
 	return s
+}
+
+func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if handler := s.domains[r.Host]; handler != nil {
+		handler.ServeHTTP(w, r)
+	} else {
+		s.defaultDomain.ServeHTTP(w, r)
+	}
 }
 
 func (s *Server) generic404Handler(w http.ResponseWriter, r *http.Request) error {
@@ -97,63 +121,86 @@ func (s *Server) generic404Handler(w http.ResponseWriter, r *http.Request) error
 	return nil
 }
 
-// Router returns the raw underlying router to make advanced modifications.
-// If you modify the NotFound handler remember to call routing.NotFoundHandler
-// as fallback if you don't want to process the request.
-func (s *Server) Router() *httprouter.Router {
-	return s.router
-}
+func (s *Server) Domain(host string) *Domain {
+	if s.domains[host] == nil {
+		s.domains[host] = httprouter.New()
+		s.domains[host].NotFound = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			s.decorate(s.handler404)(w, r, nil)
+		})
+	}
 
-// Get registers a new GET route in the router.
-func (s *Server) Get(lang, path string, handler Handler) {
-	s.router.GET(path, s.decorate(lang, handler))
-}
-
-// Post registers a new POST route in the router.
-func (s *Server) Post(lang, path string, handler Handler) {
-	s.router.POST(path, s.decorate(lang, handler))
-}
-
-// Put registers a new PUT route in the router.
-func (s *Server) Put(lang, path string, handler Handler) {
-	s.router.PUT(path, s.decorate(lang, handler))
-}
-
-// Delete registers a new DELETE route in the router.
-func (s *Server) Delete(lang, path string, handler Handler) {
-	s.router.DELETE(path, s.decorate(lang, handler))
-}
-
-// Options registers a new OPTIONS route in the router.
-func (s *Server) Options(lang, path string, handler Handler) {
-	s.router.OPTIONS(path, s.decorate(lang, handler))
-}
-
-// Group registers all the routes of the group in the router.
-func (s *Server) Group(g Group) {
-	for lang, url := range g.URL {
-		h := func(w http.ResponseWriter, r *http.Request) error {
-			r = r.WithContext(context.WithValue(r.Context(), groupKey, g))
-
-			return g.Handler(w, r)
-		}
-
-		switch g.Method {
-		case http.MethodGet:
-			s.Get(lang, url, h)
-		case http.MethodPost:
-			s.Post(lang, url, h)
-		case http.MethodDelete:
-			s.Delete(lang, url, h)
-		case http.MethodOptions:
-			s.Options(lang, url, h)
-		default:
-			s.Get(lang, url, h)
-		}
+	return &Domain{
+		s:      s,
+		router: s.domains[host],
 	}
 }
 
-func (s *Server) decorate(lang string, handler Handler) httprouter.Handle {
+type Domain struct {
+	s      *Server
+	router *httprouter.Router
+}
+
+// Get registers a new GET route in the domain.
+func (domain *Domain) Get(path string, handler Handler) {
+	domain.router.GET(path, domain.s.decorate(handler))
+}
+
+// Post registers a new POST route in the domain.
+func (domain *Domain) Post(path string, handler Handler) {
+	domain.router.POST(path, domain.s.decorate(handler))
+}
+
+// Put registers a new PUT route in the domain.
+func (domain *Domain) Put(path string, handler Handler) {
+	domain.router.PUT(path, domain.s.decorate(handler))
+}
+
+// Delete registers a new DELETE route in the domain.
+func (domain *Domain) Delete(path string, handler Handler) {
+	domain.router.DELETE(path, domain.s.decorate(handler))
+}
+
+// Options registers a new OPTIONS route in the domain.
+func (domain *Domain) Options(path string, handler Handler) {
+	domain.router.OPTIONS(path, domain.s.decorate(handler))
+}
+
+// ServeFiles register a raw net/http handler with no error checking that sends files.
+func (domain *Domain) ServeFiles(path string, root http.FileSystem) {
+	domain.router.ServeFiles(path, root)
+}
+
+// Get registers a new GET route in the router.
+func (s *Server) Get(path string, handler Handler) {
+	s.defaultDomain.GET(path, s.decorate(handler))
+}
+
+// Post registers a new POST route in the router.
+func (s *Server) Post(path string, handler Handler) {
+	s.defaultDomain.POST(path, s.decorate(handler))
+}
+
+// Put registers a new PUT route in the router.
+func (s *Server) Put(path string, handler Handler) {
+	s.defaultDomain.PUT(path, s.decorate(handler))
+}
+
+// Delete registers a new DELETE route in the router.
+func (s *Server) Delete(path string, handler Handler) {
+	s.defaultDomain.DELETE(path, s.decorate(handler))
+}
+
+// Options registers a new OPTIONS route in the router.
+func (s *Server) Options(path string, handler Handler) {
+	s.defaultDomain.OPTIONS(path, s.decorate(handler))
+}
+
+// ServeFiles register a raw net/http handler with no error checking that sends files.
+func (s *Server) ServeFiles(path string, root http.FileSystem) {
+	s.defaultDomain.ServeFiles(path, root)
+}
+
+func (s *Server) decorate(handler Handler) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		if s.sentryClient != nil {
 			defer s.sentryClient.ReportPanicsRequest(r)
@@ -162,14 +209,13 @@ func (s *Server) decorate(lang string, handler Handler) httprouter.Handle {
 		ctx := r.Context()
 		ctx = context.WithValue(ctx, requestKey, r)
 		ctx = context.WithValue(ctx, paramsKey, ps)
-		ctx = context.WithValue(ctx, langKey, lang)
 		ctx, cancel := context.WithTimeout(ctx, 29*time.Second)
 		defer cancel()
 		r = r.WithContext(ctx)
 
 		if s.username != "" && s.password != "" {
 			if _, err := r.Cookie("routing.beta"); err != nil && err != http.ErrNoCookie {
-				log.WithField("error", err.Error()).Error("Cannot read cookie")
+				log.WithField("error", err.Error()).Error("Cannot read beta auth cookie")
 				s.emitError(w, r, http.StatusInternalServerError)
 				return
 			} else if err == http.ErrNoCookie {
@@ -193,15 +239,16 @@ func (s *Server) decorate(lang string, handler Handler) httprouter.Handle {
 		}
 
 		if err := handler(w, r); err != nil {
-			if httperr, ok := errors.Cause(err).(Error); ok {
-				switch httperr.StatusCode {
+			var herr httpError
+			if errors.As(err, &herr) {
+				switch herr.StatusCode {
 				case http.StatusNotFound, http.StatusUnauthorized, http.StatusBadRequest:
 					log.WithFields(log.Fields{
-						"status": http.StatusText(httperr.StatusCode),
-						"reason": httperr.Message,
+						"status": http.StatusText(herr.StatusCode),
+						"reason": herr.Message,
 					}).Error("Handler failed")
 
-					s.emitError(w, r, httperr.StatusCode)
+					s.emitError(w, r, herr.StatusCode)
 					return
 				}
 			}
@@ -233,7 +280,7 @@ func (s *Server) decorate(lang string, handler Handler) httprouter.Handle {
 
 func (s *Server) emitError(w http.ResponseWriter, r *http.Request, status int) {
 	if status == http.StatusNotFound {
-		s.router.NotFound.ServeHTTP(w, r)
+		s.defaultDomain.NotFound.ServeHTTP(w, r)
 		return
 	}
 
