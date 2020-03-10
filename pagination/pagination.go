@@ -13,7 +13,8 @@ import (
 )
 
 const (
-	DefaultPageSize = 50
+	DefaultPageSize = 100
+	MaxPageSize = 1000
 
 	Alphabet = "abcdefghijklmnopqrstuvwxyz1234567890"
 )
@@ -37,8 +38,11 @@ func NewPager(c *database.Collection) *Pager {
 func (pager *Pager) SetInputs(pageToken string, pageSize int32) {
 	pager.pageToken = pageToken
 	pager.pageSize = pageSize
-	if pager.pageSize <= 0 || pager.pageSize > DefaultPageSize {
+	if pager.pageSize <= 0 {
 		pager.pageSize = DefaultPageSize
+	}
+	if pager.pageSize > MaxPageSize {
+		pager.pageSize = MaxPageSize
 	}
 }
 
