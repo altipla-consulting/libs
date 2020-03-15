@@ -14,7 +14,7 @@ import (
 
 const (
 	DefaultPageSize = 100
-	MaxPageSize = 1000
+	MaxPageSize     = 1000
 
 	Alphabet = "abcdefghijklmnopqrstuvwxyz1234567890"
 )

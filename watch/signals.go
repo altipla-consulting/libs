@@ -7,13 +7,14 @@ import (
 	"os/signal"
 )
 
-func Interrupt(cancel context.CancelFunc) {
+func Interrupt(ctx context.Context, cancel context.CancelFunc) {
 	c := make(chan os.Signal)
 	signal.Notify(c, os.Interrupt)
-	for range c {
+	select {
+	case <-ctx.Done():
+	case <-c:
 		// Print a newline to avoid messing the output before closing
 		fmt.Println()
 		cancel()
-		return
 	}
 }
