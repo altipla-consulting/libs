@@ -170,7 +170,7 @@ func (client *Client) sendReportPanic(ctx context.Context, appErr error, message
 		}
 
 		eventID := client.hub.CaptureEvent(event)
-		log.WithField("eventID", eventID).Info("Error sent to Sentry")
+		log.WithField("event-id", eventID).Info("Error sent to Sentry")
 	}()
 }
 
