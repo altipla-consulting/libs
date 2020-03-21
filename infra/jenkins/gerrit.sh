@@ -7,4 +7,4 @@ set -eu
 run "make lint"
 
 run "make data"
-run "actools go test -race ./..."
+run "go test -race ./..."

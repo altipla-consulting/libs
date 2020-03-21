@@ -1,0 +1,16 @@
+
+version: '3.7'
+
+services:
+  database:
+    image: eu.gcr.io/altipla-tools/mysql:latest
+    ports: ['3306:3306']
+    volumes: ['./infra/cloudsql:/docker-entrypoint-initdb.d']
+
+  redis:
+    image: redis:5
+    ports: ['6379:6379']
+
+  phpmyadmin:
+    image: eu.gcr.io/altipla-tools/phpmyadmin:latest
+    ports: ['5000:80']

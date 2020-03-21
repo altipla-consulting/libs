@@ -8,23 +8,25 @@ gofmt:
 	@gofmt -r '&α{} -> new(α)' -w $(FILES)
 
 test: lint
-	actools go test ./...
+	go test ./...
 
 lint:
 	@./infra/lint-errors.sh
 	tool/linter ./...
+	go vet ./...
+	go install ./...
 
 update-deps:
-	actools go get -u
-	actools go mod download
-	actools go mod tidy
+	go get -u
+	go mod download
+	go mod tidy
 
 protos:
 	actools protoc --go_out=paths=source_relative:. ./protos/datetime/datetime.proto
 
 data:
-	actools rm database redis
-	actools start database redis
+	docker-compose kill database redis
+	docker-compose up -d database redis
 	bash -c "until actools mysql -h database -u dev-user -pdev-password -e ';' 2> /dev/null ; do sleep 1; done"
 
 datetime-generator: _datetime-generator gofmt

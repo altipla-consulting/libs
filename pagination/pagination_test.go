@@ -33,7 +33,7 @@ func initDatabase(t *testing.T) {
 	testDB, err = database.Open(database.Credentials{
 		User:      "dev-user",
 		Password:  "dev-password",
-		Address:   "database:3306",
+		Address:   "localhost:3306",
 		Database:  "default",
 		Charset:   "utf8mb4",
 		Collation: "utf8mb4_bin",

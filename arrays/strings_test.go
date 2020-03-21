@@ -23,7 +23,7 @@ func initStringsDB(t *testing.T) {
 	cnf := &mysql.ConnectionURL{
 		User:     "dev-user",
 		Password: "dev-password",
-		Host:     "database:3306",
+		Host:     "localhost:3306",
 		Database: "default",
 		Options: map[string]string{
 			"charset":   "utf8mb4",
