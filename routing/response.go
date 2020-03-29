@@ -11,6 +11,7 @@ func JSON(w http.ResponseWriter, reply interface{}, opts ...ReplyOption) error {
 	for _, opt := range opts {
 		opt(w)
 	}
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	return errors.Trace(json.NewEncoder(w).Encode(reply))
 }
 
