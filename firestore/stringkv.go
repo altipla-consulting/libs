@@ -3,25 +3,35 @@ package firestore
 import (
 	"context"
 
-	"cloud.google.com/go/firestore"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"libs.altipla.consulting/errors"
 )
 
-type stringKVItem struct {
+type stringKVEntity struct {
 	Content string `firestore:"content"`
+
+	collection, key string
+}
+
+func (kv *stringKVEntity) Collection() string {
+	return kv.collection
+}
+
+func (kv *stringKVEntity) Key() string {
+	return kv.key
 }
 
 type StringKV struct {
-	c                *firestore.Client
-	collection, name string
+	ent             *EntityKV
+	collection, key string
 }
 
 func (kv *StringKV) Put(ctx context.Context, content string) error {
-	item := &stringKVItem{Content: content}
-	_, err := kv.c.Collection(kv.collection).Doc(kv.name).Set(ctx, item)
-	return errors.Trace(err)
+	item := &stringKVEntity{
+		Content:    content,
+		collection: kv.collection,
+		key:        kv.key,
+	}
+	return errors.Trace(kv.ent.Put(ctx, item))
 }
 
 func (kv *StringKV) Get(ctx context.Context, content *string) error {
@@ -29,21 +39,14 @@ func (kv *StringKV) Get(ctx context.Context, content *string) error {
 		return errors.Errorf("pass a pointer to the result to Get")
 	}
 
-	snapshot, err := kv.c.Collection(kv.collection).Doc(kv.name).Get(ctx)
-	if err != nil {
-		if status.Code(err) == codes.NotFound {
-			return errors.Trace(ErrNoSuchEntity)
-		}
-
-		return errors.Trace(err)
+	item := &stringKVEntity{
+		collection: kv.collection,
+		key:        kv.key,
 	}
-
-	item := new(stringKVItem)
-	if err := snapshot.DataTo(item); err != nil {
+	if err := kv.ent.Get(ctx, item); err != nil {
 		return errors.Trace(err)
 	}
 
 	*content = item.Content
-
 	return nil
 }

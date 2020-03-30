@@ -14,3 +14,7 @@ services:
   phpmyadmin:
     image: eu.gcr.io/altipla-tools/phpmyadmin:latest
     ports: ['5000:80']
+
+  firestore:
+    image: eu.gcr.io/altipla-tools/firestore:latest
+    ports: ['12000:12000']

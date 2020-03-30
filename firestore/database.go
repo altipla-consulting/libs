@@ -16,9 +16,10 @@ type Database struct {
 func Open(googleCloudProject string) (*Database, error) {
 	if env.IsLocal() {
 		googleCloudProject = "local"
-
-		if err := os.Setenv("FIRESTORE_EMULATOR_HOST", "firestore:12000"); err != nil {
-			return nil, errors.Trace(err)
+		if os.Getenv("FIRESTORE_EMULATOR_HOST") == "" {
+			if err := os.Setenv("FIRESTORE_EMULATOR_HOST", "localhost:12000"); err != nil {
+				return nil, errors.Trace(err)
+			}
 		}
 	}
 
@@ -30,18 +31,31 @@ func Open(googleCloudProject string) (*Database, error) {
 	return &Database{c: c}, nil
 }
 
-func (db *Database) StringKV(collection, name string) *StringKV {
+func (db *Database) StringKV(collection, key string) *StringKV {
 	return &StringKV{
-		c:          db.c,
+		ent: db.Entity(&stringKVEntity{
+			collection: collection,
+			key:        key,
+		}),
 		collection: collection,
-		name:       name,
+		key:        key,
 	}
 }
 
-func (db *Database) ProtoKV(collection, name string) *ProtoKV {
+func (db *Database) ProtoKV(collection, key string) *ProtoKV {
 	return &ProtoKV{
-		c:          db.c,
+		ent: db.Entity(&protoKVEntity{
+			collection: collection,
+			key:        key,
+		}),
 		collection: collection,
-		name:       name,
+		key:        key,
+	}
+}
+
+func (db *Database) Entity(gold Model) *EntityKV {
+	return &EntityKV{
+		c:    db.c,
+		gold: gold,
 	}
 }

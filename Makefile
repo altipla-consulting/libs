@@ -25,8 +25,8 @@ protos:
 	actools protoc --go_out=paths=source_relative:. ./protos/datetime/datetime.proto
 
 data:
-	docker-compose kill database redis
-	docker-compose up -d database redis
+	docker-compose kill database redis firestore
+	docker-compose up -d database redis firestore
 	bash -c "until actools mysql -h database -u dev-user -pdev-password -e ';' 2> /dev/null ; do sleep 1; done"
 
 datetime-generator: _datetime-generator gofmt

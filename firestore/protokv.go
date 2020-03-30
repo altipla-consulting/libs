@@ -3,20 +3,27 @@ package firestore
 import (
 	"context"
 
-	"cloud.google.com/go/firestore"
 	"github.com/golang/protobuf/proto"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"libs.altipla.consulting/errors"
 )
 
-type protoKVItem struct {
+type protoKVEntity struct {
 	Content []byte `firestore:"content"`
+
+	collection, key string
+}
+
+func (kv *protoKVEntity) Collection() string {
+	return kv.collection
+}
+
+func (kv *protoKVEntity) Key() string {
+	return kv.key
 }
 
 type ProtoKV struct {
-	c                *firestore.Client
-	collection, name string
+	ent             *EntityKV
+	collection, key string
 }
 
 func (kv *ProtoKV) Put(ctx context.Context, model proto.Message) error {
@@ -25,14 +32,25 @@ func (kv *ProtoKV) Put(ctx context.Context, model proto.Message) error {
 		return errors.Trace(err)
 	}
 
-	item := &protoKVItem{Content: encoded}
-	_, err = kv.c.Collection(kv.collection).Doc(kv.name).Set(ctx, item)
-	return errors.Trace(err)
+	item := &protoKVEntity{
+		Content:    encoded,
+		collection: kv.collection,
+		key:        kv.key,
+	}
+
+	if err := kv.ent.Put(ctx, item); err != nil {
+		return errors.Wrapf(err, "key: %s/%s", kv.collection, kv.key)
+	}
+
+	return nil
 }
 
 func (kv *ProtoKV) Delete(ctx context.Context) error {
-	_, err := kv.c.Collection(kv.collection).Doc(kv.name).Delete(ctx)
-	return errors.Trace(err)
+	item := &protoKVEntity{
+		collection: kv.collection,
+		key:        kv.key,
+	}
+	return errors.Trace(kv.ent.Delete(ctx, item))
 }
 
 func (kv *ProtoKV) Get(ctx context.Context, model proto.Message) error {
@@ -44,17 +62,11 @@ func (kv *ProtoKV) Get(ctx context.Context, model proto.Message) error {
 }
 
 func (kv *ProtoKV) GetBytes(ctx context.Context) ([]byte, error) {
-	snapshot, err := kv.c.Collection(kv.collection).Doc(kv.name).Get(ctx)
-	if err != nil {
-		if status.Code(err) == codes.NotFound {
-			return nil, errors.Wrapf(ErrNoSuchEntity, "key: %v/%v", kv.collection, kv.name)
-		}
-
-		return nil, errors.Trace(err)
+	item := &protoKVEntity{
+		collection: kv.collection,
+		key:        kv.key,
 	}
-
-	item := new(protoKVItem)
-	if err := snapshot.DataTo(item); err != nil {
+	if err := kv.ent.Get(ctx, item); err != nil {
 		return nil, errors.Trace(err)
 	}
 

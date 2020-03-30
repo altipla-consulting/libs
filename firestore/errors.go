@@ -4,4 +4,4 @@ import (
 	"libs.altipla.consulting/errors"
 )
 
-var ErrNoSuchEntity = errors.New("no such entity")
+var ErrNoSuchEntity = errors.New("firestore: no such entity")
