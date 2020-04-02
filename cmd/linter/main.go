@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 
 	"github.com/mgechev/dots"
 	"github.com/mgechev/revive/formatter"
@@ -147,12 +148,20 @@ func run() error {
 		}
 		doneCh <- errors.Trace(err)
 	}()
+
+	var exitCode int
 	for failure := range failures {
 		if failure.Confidence >= cnf.Confidence {
 			failureCh <- failure
+			exitCode = 1
 		}
 	}
 
 	close(failureCh)
-	return errors.Trace(<-doneCh)
+	if err := <-doneCh; err != nil {
+		return errors.Trace(err)
+	}
+
+	os.Exit(exitCode) // revive:disable-line:deep-exit
+	return nil
 }
