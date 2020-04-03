@@ -36,7 +36,7 @@ var allRules = []ruleConfig{
 	{new(rule.ContextAsArgumentRule), nil},
 	{new(rule.ContextKeysType), nil},
 	// {new(rule.CyclomaticRule)},
-	{new(rule.DeepExitRule), nil},
+	// {new(rule.DeepExitRule), nil},
 	{new(rule.DotImportsRule), nil},
 	{new(rule.DuplicatedImportsRule), nil},
 	{new(rule.EmptyBlockRule), nil},

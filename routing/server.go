@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"net/http/httputil"
+	"net/url"
 	"text/template"
 	"time"
 
@@ -155,6 +157,18 @@ func (domain *Domain) ServeFiles(path string, root http.FileSystem) {
 	domain.router.ServeFiles(path, root)
 }
 
+func (domain *Domain) ProxyLocalAssets(destAddress string) {
+	u, err := url.Parse(destAddress)
+	if err != nil {
+		log.Fatal(err)
+	}
+	proxy := httputil.NewSingleHostReverseProxy(u)
+	domain.Get("/static/*file", func(w http.ResponseWriter, r *http.Request) error {
+		proxy.ServeHTTP(w, r)
+		return nil
+	})
+}
+
 // Get registers a new GET route in the router.
 func (s *Server) Get(path string, handler Handler) {
 	s.defaultDomain.GET(path, s.decorate(handler))
@@ -183,6 +197,18 @@ func (s *Server) Options(path string, handler Handler) {
 // ServeFiles register a raw net/http handler with no error checking that sends files.
 func (s *Server) ServeFiles(path string, root http.FileSystem) {
 	s.defaultDomain.ServeFiles(path, root)
+}
+
+func (s *Server) ProxyLocalAssets(destAddress string) {
+	u, err := url.Parse(destAddress)
+	if err != nil {
+		log.Fatal(err)
+	}
+	proxy := httputil.NewSingleHostReverseProxy(u)
+	s.Get("/static/*file", func(w http.ResponseWriter, r *http.Request) error {
+		proxy.ServeHTTP(w, r)
+		return nil
+	})
 }
 
 func (s *Server) decorate(handler Handler) httprouter.Handle {
