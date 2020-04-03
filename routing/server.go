@@ -158,6 +158,10 @@ func (domain *Domain) ServeFiles(path string, root http.FileSystem) {
 }
 
 func (domain *Domain) ProxyLocalAssets(destAddress string) {
+	if !env.IsLocal() {
+		return
+	}
+	
 	u, err := url.Parse(destAddress)
 	if err != nil {
 		log.Fatal(err)
@@ -200,6 +204,10 @@ func (s *Server) ServeFiles(path string, root http.FileSystem) {
 }
 
 func (s *Server) ProxyLocalAssets(destAddress string) {
+	if !env.IsLocal() {
+		return
+	}
+	
 	u, err := url.Parse(destAddress)
 	if err != nil {
 		log.Fatal(err)
