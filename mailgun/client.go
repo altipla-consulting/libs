@@ -106,7 +106,7 @@ func (client *Client) SendReturnID(ctx context.Context, domain string, email *Em
 		return "", errors.Wrapf(err, "send failed")
 	}
 
-	log.WithFields(log.Fields{"id": id, "message": message}).Info("Mailgun email sent")
+	log.WithFields(log.Fields{"id": id, "message": message}).Debug("Mailgun email sent")
 
 	return id, nil
 }
