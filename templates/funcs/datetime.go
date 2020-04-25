@@ -28,6 +28,8 @@ func commonLayouts(layout string) string {
 		layout = "15:04:05"
 	case "datetime":
 		layout = "Mon 2 Jan 2006, 15:04:05"
+	case "rfc3339":
+		layout = time.RFC3339
 	}
 	return layout
 }
