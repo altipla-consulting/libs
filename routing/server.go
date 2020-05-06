@@ -161,7 +161,7 @@ func (domain *Domain) ProxyLocalAssets(destAddress string) {
 	if !env.IsLocal() {
 		return
 	}
-	
+
 	u, err := url.Parse(destAddress)
 	if err != nil {
 		log.Fatal(err)
@@ -207,7 +207,7 @@ func (s *Server) ProxyLocalAssets(destAddress string) {
 	if !env.IsLocal() {
 		return
 	}
-	
+
 	u, err := url.Parse(destAddress)
 	if err != nil {
 		log.Fatal(err)
