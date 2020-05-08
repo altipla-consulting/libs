@@ -134,7 +134,7 @@ func (client *Client) sendReport(ctx context.Context, appErr error, r *http.Requ
 		}
 
 		if r != nil {
-			event.Request = event.Request.FromHTTPRequest(r)
+			event.Request = sentry.NewRequest(r)
 		}
 
 		eventID := client.hub.CaptureEvent(event)
@@ -166,7 +166,7 @@ func (client *Client) sendReportPanic(ctx context.Context, appErr error, message
 		}
 
 		if r != nil {
-			event.Request = event.Request.FromHTTPRequest(r)
+			event.Request = sentry.NewRequest(r)
 		}
 
 		eventID := client.hub.CaptureEvent(event)
@@ -182,7 +182,7 @@ func LogBreadcrumb(ctx context.Context, level sentry.Level, category, message st
 	}
 
 	info.breadcrumbs = append(info.breadcrumbs, &sentry.Breadcrumb{
-		Timestamp: time.Now().Unix(),
+		Timestamp: time.Now(),
 		Type:      "default",
 		Message:   message,
 		Category:  category,

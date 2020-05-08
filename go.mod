@@ -8,13 +8,12 @@ require (
 	cloud.google.com/go/pubsub v1.0.1 // indirect
 	github.com/ernestoalejo/aeimagesflags v0.0.0-20150830225655-eed2909a7c2b
 	github.com/fsnotify/fsnotify v1.4.7
-	github.com/getsentry/sentry-go v0.3.0
+	github.com/getsentry/sentry-go v0.6.0
 	github.com/go-chi/chi v4.0.2+incompatible // indirect
 	github.com/go-redis/redis v6.15.5+incompatible
 	github.com/go-sql-driver/mysql v1.4.1
 	github.com/golang/protobuf v1.3.2
 	github.com/google/btree v1.0.0
-	github.com/google/go-cmp v0.3.1 // indirect
 	github.com/gorilla/schema v1.1.0
 	github.com/gorilla/securecookie v1.1.1
 	github.com/julienschmidt/httprouter v1.2.0
@@ -39,6 +38,6 @@ require (
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/mgo.v2 v2.0.0-20190816093944-a6b53ec6cb22 // indirect
 	gopkg.in/square/go-jose.v2 v2.4.1
-	gopkg.in/yaml.v2 v2.2.2
+	gopkg.in/yaml.v2 v2.2.4
 	upper.io/db.v3 v3.6.3+incompatible
 )
