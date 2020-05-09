@@ -284,7 +284,7 @@ func (s *Server) decorate(handler Handler) httprouter.Handle {
 				log.WithFields(errors.LogFields(err)).Error("Handler failed")
 			}
 			if s.sentryClient != nil {
-				s.sentryClient.ReportRequest(err, r)
+				s.sentryClient.ReportRequest(r, err)
 			}
 
 			// Responde según el tipo de error por timeout u otro con un código HTTP adecuado.

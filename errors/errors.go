@@ -361,9 +361,9 @@ func Recover(p interface{}) error {
 		return nil
 	}
 	if err, ok := p.(error); ok {
-		return internalWrapf(err, "recovered panic")
+		return internalWrapf(err, "panic")
 	}
-	return internalWrapf(fmt.Errorf("recovered panic: %v", p), "")
+	return internalWrapf(fmt.Errorf("panic: %v", p), "")
 }
 
 func LogFields(err error) log.Fields {

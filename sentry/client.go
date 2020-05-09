@@ -52,26 +52,21 @@ func NewClient(dsn string) *Client {
 	return &Client{hub: sentry.NewHub(client, sentry.NewScope())}
 }
 
-// ReportInternal reports an error not linked to a HTTP request.
-func (client *Client) ReportInternal(ctx context.Context, appErr error) {
-	client.Report(ctx, appErr)
-}
-
 // Report reports an error to Sentry.
 func (client *Client) Report(ctx context.Context, appErr error) {
 	client.sendReport(ctx, appErr, nil)
 }
 
 // ReportRequest reports an error linked to a HTTP request.
-func (client *Client) ReportRequest(appErr error, r *http.Request) {
+func (client *Client) ReportRequest(r *http.Request, appErr error) {
 	client.sendReport(r.Context(), appErr, r)
 }
 
 // ReportPanics detects panics in the body of the function and reports them.
 func (client *Client) ReportPanics(ctx context.Context) {
 	if rec := errors.Recover(recover()); rec != nil {
-		appErr := rec.(error)
-		client.sendReportPanic(ctx, appErr, string(debug.Stack()), nil)
+		log.WithField("error", rec.Error()).Error("Panic recovered")
+		client.sendReportPanic(ctx, rec, string(debug.Stack()), nil)
 	}
 }
 
@@ -79,8 +74,8 @@ func (client *Client) ReportPanics(ctx context.Context) {
 // linked to a HTTP request.
 func (client *Client) ReportPanicsRequest(r *http.Request) {
 	if rec := errors.Recover(recover()); rec != nil {
-		appErr := rec.(error)
-		client.sendReportPanic(r.Context(), appErr, string(debug.Stack()), r)
+		log.WithField("error", rec.Error()).Error("Panic recovered")
+		client.sendReportPanic(r.Context(), rec, string(debug.Stack()), r)
 	}
 }
 
