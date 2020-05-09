@@ -69,7 +69,7 @@ func (client *Client) ReportRequest(appErr error, r *http.Request) {
 
 // ReportPanics detects panics in the body of the function and reports them.
 func (client *Client) ReportPanics(ctx context.Context) {
-	if rec := recover(); rec != nil {
+	if rec := errors.Recover(recover()); rec != nil {
 		appErr := rec.(error)
 		client.sendReportPanic(ctx, appErr, string(debug.Stack()), nil)
 	}
@@ -78,7 +78,7 @@ func (client *Client) ReportPanics(ctx context.Context) {
 // ReportPanicsRequest detects pancis in the body of the function and reports them
 // linked to a HTTP request.
 func (client *Client) ReportPanicsRequest(r *http.Request) {
-	if rec := recover(); rec != nil {
+	if rec := errors.Recover(recover()); rec != nil {
 		appErr := rec.(error)
 		client.sendReportPanic(r.Context(), appErr, string(debug.Stack()), r)
 	}
@@ -149,8 +149,7 @@ func (client *Client) sendReportPanic(ctx context.Context, appErr error, message
 		event.Message = message
 		event.Exception = []sentry.Exception{
 			{
-				Type:   "panic",
-				Value:  appErr.Error(),
+				Type:   appErr.Error(),
 				Module: "backend",
 			},
 		}
