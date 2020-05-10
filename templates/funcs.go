@@ -537,13 +537,23 @@ func knownLayouts(layout string) string {
 	return layout
 }
 
-func fnDatetime(value interface{}, layout string, langSelector ...string) (string, error) {
+func fnDatetime(layout string, args ...interface{}) (string, error) {
 	lang := langs.ES
-	if len(langSelector) > 1 {
+	var value interface{}
+	switch len(args) {
+	case 0:
+		return "", errors.Errorf("value to format required as argument for datetime function")
+	case 1:
+		value = args[0]
+	case 2:
+		var ok bool
+		lang, ok = args[0].(string)
+		if !ok {
+			return "", errors.Errorf("unrecognized lang value: %#v", args[0])
+		}
+		value = args[1]
+	default:
 		return "", errors.Errorf("only one lang argument allowed in datetime function")
-	}
-	if len(langSelector) == 1 {
-		lang = langSelector[0]
 	}
 
 	t, err := readTime(value)
@@ -590,15 +600,15 @@ func fnMsgFormat(lang, format string, params ...interface{}) (string, error) {
 	return res, nil
 }
 
-func fnTranslate(lang, format string) string {
+func fnTranslate(lang, source string) string {
 	if lang == langs.ES {
-		return format
+		return source
 	}
 
-	msg, ok := messages[format]
+	msg, ok := messages[source]
 	if !ok {
 		msg = make(map[string]string)
-		msg[langs.ES] = format
+		msg[langs.ES] = source
 	}
 
 	// En producción se parte correctamente la descripción; pero en desarrollo
