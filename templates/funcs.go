@@ -527,6 +527,12 @@ func knownLayouts(layout string) string {
 		layout = "Mon 2 Jan 2006, 15:04:05"
 	case "rfc3339":
 		layout = time.RFC3339
+	case "date":
+		layout = "2 Jan 2006"
+	case "short-time":
+		layout = "15:04"
+	case "iso8601":
+		layout = "2006-01-02"
 	}
 	return layout
 }
