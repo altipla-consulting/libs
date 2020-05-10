@@ -2,6 +2,7 @@ package templates
 
 import (
 	"encoding/json"
+	"fmt"
 	"html/template"
 	"io/ioutil"
 	"math/rand"
@@ -68,6 +69,7 @@ var (
 		"times":      fnTimes,
 		"add":        fnAdd,
 		"percentage": fnPercentage,
+		"bytecount":  fnByteCount,
 
 		"development": fnLocal,
 		"local":       fnLocal,
@@ -426,6 +428,30 @@ func fnAdd(a, b interface{}) (int64, error) {
 
 func fnPercentage(old, current int64) int64 {
 	return int64(float64(old-current) / float64(old) * 100.)
+}
+
+func fnByteCount(b int64, maxUnit ...string) (string, error) {
+	if len(maxUnit) > 1 {
+		return "", errors.Errorf("only one max unit argument allowed in bytecount function")
+	}
+	if len(maxUnit) == 0 {
+		maxUnit = []string{"E"}
+	}
+
+	const unit = 1024
+	const units = "KMGTPE"
+	if b < unit {
+		return fmt.Sprintf("%d B", b), nil
+	}
+	div, exp := int64(unit), 0
+	for n := b / unit; n >= unit; n /= unit {
+		if units[exp] == maxUnit[0][0] {
+			break
+		}
+		div *= unit
+		exp++
+	}
+	return fmt.Sprintf("%.1f %ciB", float64(b)/float64(div), units[exp]), nil
 }
 
 func fnLocal() bool {
