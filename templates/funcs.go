@@ -561,7 +561,7 @@ func fnDatetime(layout string, args ...interface{}) (string, error) {
 		return "", errors.Trace(err)
 	}
 
-	return datetime.Format(t, lang, layout), nil
+	return datetime.Format(t, lang, knownLayouts(layout)), nil
 }
 
 func fnInclude(path string) (string, error) {
