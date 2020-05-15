@@ -18,5 +18,12 @@ func IsJenkins() bool {
 // Version returns the environment variable VERSION. In development it should be empty.
 // In production it should be set accordingly; it may be for example the container hash.
 func Version() string {
+	if e := os.Getenv("K_REVISION"); e != "" {
+		return e
+	}
 	return os.Getenv("VERSION")
+}
+
+func ServiceName() string {
+	return os.Getenv("K_SERVICE")
 }
