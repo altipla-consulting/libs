@@ -15,6 +15,10 @@ func IsJenkins() bool {
 	return os.Getenv("BUILD_ID") != ""
 }
 
+func IsCloudRun() bool {
+	return os.Getenv("K_CONFIGURATION") != ""
+}
+
 // Version returns the environment variable VERSION. In development it should be empty.
 // In production it should be set accordingly; it may be for example the container hash.
 func Version() string {
