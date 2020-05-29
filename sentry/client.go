@@ -3,13 +3,13 @@ package sentry
 import (
 	"context"
 	"net/http"
-	"os"
 	"runtime/debug"
 	"time"
 
 	"github.com/getsentry/sentry-go"
 	log "github.com/sirupsen/logrus"
 
+	"libs.altipla.consulting/env"
 	"libs.altipla.consulting/errors"
 )
 
@@ -43,7 +43,7 @@ func NewClient(dsn string) *Client {
 
 	client, err := sentry.NewClient(sentry.ClientOptions{
 		Dsn:     dsn,
-		Release: os.Getenv("VERSION"),
+		Release: env.Version(),
 	})
 	if err != nil {
 		panic(err)
