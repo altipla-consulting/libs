@@ -12,6 +12,8 @@ import (
 
 var Done = iterator.Done
 
+type Query = firestore.Query
+
 type EntityKV struct {
 	c    *firestore.Client
 	gold Model
@@ -55,6 +57,6 @@ func (kv *EntityKV) Get(ctx context.Context, model Model) error {
 	return nil
 }
 
-func (kv *EntityKV) Query() firestore.Query {
+func (kv *EntityKV) Query() Query {
 	return kv.c.Collection(kv.gold.Collection()).Query
 }
