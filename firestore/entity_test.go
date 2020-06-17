@@ -54,3 +54,31 @@ func TestEntityCycleDelete(t *testing.T) {
 
 	require.EqualError(t, c.Get(ctx, fake), ErrNoSuchEntity.Error())
 }
+
+func TestEntityCyclePutCollection(t *testing.T) {
+	db := initDatabase(t)
+	ctx := context.Background()
+	c := db.Entity(new(entityFake))
+
+	foo := &entityFake{
+		Name: "foo-name",
+		Foo:  "foo-value",
+	}
+	require.NoError(t, c.Put(ctx, foo))
+
+	bar := &entityFake{
+		Name: "bar-name",
+		Foo:  "bar-value",
+	}
+	require.NoError(t, c.Put(ctx, bar))
+
+	iter := c.Collection().Documents(ctx)
+	defer iter.Stop()
+	for {
+		_, err := iter.Next()
+		if err == Done {
+			break
+		}
+		require.NoError(t, err)
+	}
+}

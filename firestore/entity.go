@@ -4,10 +4,13 @@ import (
 	"context"
 
 	"cloud.google.com/go/firestore"
+	"google.golang.org/api/iterator"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"libs.altipla.consulting/errors"
 )
+
+var Done = iterator.Done
 
 type EntityKV struct {
 	c    *firestore.Client
@@ -50,4 +53,8 @@ func (kv *EntityKV) Get(ctx context.Context, model Model) error {
 	}
 
 	return nil
+}
+
+func (kv *EntityKV) Collection() firestore.Query {
+	return kv.c.Collection(kv.gold.Collection()).Query
 }
