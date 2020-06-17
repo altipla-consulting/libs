@@ -55,6 +55,6 @@ func (kv *EntityKV) Get(ctx context.Context, model Model) error {
 	return nil
 }
 
-func (kv *EntityKV) Collection() firestore.Query {
+func (kv *EntityKV) Query() firestore.Query {
 	return kv.c.Collection(kv.gold.Collection()).Query
 }

@@ -55,7 +55,7 @@ func TestEntityCycleDelete(t *testing.T) {
 	require.EqualError(t, c.Get(ctx, fake), ErrNoSuchEntity.Error())
 }
 
-func TestEntityCyclePutCollection(t *testing.T) {
+func TestEntityQuery(t *testing.T) {
 	db := initDatabase(t)
 	ctx := context.Background()
 	c := db.Entity(new(entityFake))
@@ -72,7 +72,7 @@ func TestEntityCyclePutCollection(t *testing.T) {
 	}
 	require.NoError(t, c.Put(ctx, bar))
 
-	iter := c.Collection().Documents(ctx)
+	iter := c.Query().Documents(ctx)
 	defer iter.Stop()
 	for {
 		_, err := iter.Next()
