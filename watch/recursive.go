@@ -76,7 +76,7 @@ func Files(ctx context.Context, changes chan string, paths ...string) error {
 			}
 
 			if timer == nil {
-				timer = time.NewTimer(1 * time.Second)
+				timer = time.NewTimer(100 * time.Millisecond)
 			}
 			pending = append(pending, ev.Name)
 
