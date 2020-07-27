@@ -288,6 +288,9 @@ func fnThumbnail(servingURL string, strFlags string) (string, error) {
 		case "original":
 			flags.Original = (strFlag[1] == "true")
 
+		case "webp":
+			flags.ForceWebP = (strFlag[1] == "true")
+
 		case "size":
 			n, err := strconv.ParseUint(strFlag[1], 10, 64)
 			if err != nil {
