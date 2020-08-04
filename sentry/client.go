@@ -62,16 +62,21 @@ func (client *Client) ReportRequest(r *http.Request, appErr error) {
 	client.sendReport(r.Context(), appErr, r)
 }
 
-// ReportPanics detects panics in the body of the function and reports them.
-func (client *Client) ReportPanics(ctx context.Context) bool {
-	if rec := errors.Recover(recover()); rec != nil {
-		log.WithField("error", rec.Error()).Error("Panic recovered")
-		client.sendReportPanic(ctx, rec, string(debug.Stack()), nil)
+// ReportPanics detects panics in the rest of the body of the function and
+// reports it if one occurs.
+func (client *Client) ReportPanics(ctx context.Context) {
+	client.ReportPanic(ctx, recover())
+}
 
-		return true
+// ReportPanic sends a panic correctly formated to the server if the argument
+// is not nil.
+func (client *Client) ReportPanic(ctx context.Context, panic interface{}) {
+	if panic == nil {
+		return
 	}
-
-	return false
+	rec := errors.Recover(panic)
+	log.WithField("error", rec.Error()).Error("Panic recovered")
+	client.sendReportPanic(ctx, rec, string(debug.Stack()), nil)
 }
 
 // ReportPanicsRequest detects pancis in the body of the function and reports them
