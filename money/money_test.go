@@ -143,6 +143,12 @@ func TestFormatCurrencyGBP(t *testing.T) {
 	require.EqualValues(t, money.Format(Currency("GBP")), "£1,234.56")
 }
 
+func TestFormatCurrencyMXN(t *testing.T) {
+	money := Money(123456)
+
+	require.EqualValues(t, money.Format(Currency("MXN")), "Mex$1,234.56")
+}
+
 func TestFormatEmptyCurrency(t *testing.T) {
 	money := Money(123456)
 

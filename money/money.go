@@ -27,7 +27,7 @@ var (
 	}
 
 	MXN = FormatConfig{
-		Symbol:   "$",
+		Symbol:   "Mex$",
 		Prefix:   true,
 		Thousand: ",",
 	}
