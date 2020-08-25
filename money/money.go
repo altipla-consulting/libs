@@ -25,6 +25,12 @@ var (
 		Prefix:   true,
 		Thousand: ",",
 	}
+
+	MXN = FormatConfig{
+		Symbol:   "$",
+		Prefix:   true,
+		Thousand: ",",
+	}
 )
 
 type FormatConfig struct {
@@ -41,6 +47,7 @@ func Currency(currency string) FormatConfig {
 		"EUR": EUR,
 		"USD": USD,
 		"GBP": GBP,
+		"MXN": MXN,
 	}
 
 	return currencies[currency]
