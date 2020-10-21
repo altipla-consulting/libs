@@ -1,10 +1,12 @@
 package jwt
 
 import (
+	"encoding/base64"
 	"fmt"
 	"strconv"
 	"time"
 
+	log "github.com/sirupsen/logrus"
 	jose "gopkg.in/square/go-jose.v2"
 	"gopkg.in/square/go-jose.v2/jwt"
 
@@ -21,11 +23,23 @@ func (err *InvalidTokenError) Error() string {
 }
 
 type Generator struct {
-	key   string
+	key   []byte
 	clock clock.Clock
 }
 
 func NewHS256(key string) *Generator {
+	return &Generator{
+		key:   []byte(key),
+		clock: clock.New(),
+	}
+}
+
+func NewHS256Base64(encodedKey string) *Generator {
+	key, err := base64.StdEncoding.DecodeString(encodedKey)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	return &Generator{
 		key:   key,
 		clock: clock.New(),
@@ -95,7 +109,7 @@ func (g *Generator) Sign(claims Claims, customs ...CustomClaimsImplementation) (
 
 	var opts = jose.SignerOptions{}
 	opts.WithType("JWT")
-	signer, err := jose.NewSigner(jose.SigningKey{Algorithm: jose.HS256, Key: []byte(g.key)}, &opts)
+	signer, err := jose.NewSigner(jose.SigningKey{Algorithm: jose.HS256, Key: g.key}, &opts)
 	if err != nil {
 		return "", errors.Trace(err)
 	}
@@ -148,7 +162,7 @@ func (g *Generator) Extract(token string, expected Expected, claims *Claims, cus
 
 		return errors.Trace(err)
 	}
-	if _, err := webSignature.Verify([]byte(g.key)); err != nil {
+	if _, err := webSignature.Verify(g.key); err != nil {
 		if errors.Is(err, jose.ErrCryptoFailure) {
 			return &InvalidTokenError{
 				Reason: fmt.Sprintf("invalid signature"),
@@ -169,7 +183,7 @@ func (g *Generator) Extract(token string, expected Expected, claims *Claims, cus
 	for _, custom := range customs {
 		extract = append(extract, custom)
 	}
-	if err := webToken.Claims([]byte(g.key), extract...); err != nil {
+	if err := webToken.Claims(g.key, extract...); err != nil {
 		return errors.Trace(err)
 	}
 
