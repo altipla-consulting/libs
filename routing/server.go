@@ -55,8 +55,8 @@ func WithCustom404(handler Handler) ServerOption {
 
 // Server configures the routing table.
 type Server struct {
-	domains       map[string]*httprouter.Router
-	defaultDomain *httprouter.Router
+	domains       map[string]*Domain
+	defaultDomain *Domain
 
 	// Options
 	username, password string
@@ -68,32 +68,36 @@ type Server struct {
 // NewServer configures a new router with the options.
 func NewServer(opts ...ServerOption) *Server {
 	s := &Server{
-		defaultDomain: httprouter.New(),
-		domains:       make(map[string]*httprouter.Router),
+		domains: make(map[string]*Domain),
 	}
 	for _, opt := range opts {
 		opt(s)
 	}
 
-	if s.handler404 == nil {
-		s.handler404 = s.generic404Handler
+	s.defaultDomain = &Domain{
+		s:      s,
+		router: httprouter.New(),
 	}
-	s.defaultDomain.NotFound = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		s.decorate(s.handler404)(w, r, nil)
+
+	if s.handler404 == nil {
+		s.handler404 = generic404Handler
+	}
+	s.defaultDomain.router.NotFound = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		s.decorate("NOTFOUND", "", s.handler404)(w, r, nil)
 	})
 
 	return s
 }
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if handler := s.domains[r.Host]; handler != nil {
-		handler.ServeHTTP(w, r)
+	if domain := s.domains[r.Host]; domain != nil {
+		domain.router.ServeHTTP(w, r)
 	} else {
-		s.defaultDomain.ServeHTTP(w, r)
+		s.defaultDomain.router.ServeHTTP(w, r)
 	}
 }
 
-func (s *Server) generic404Handler(w http.ResponseWriter, r *http.Request) error {
+func generic404Handler(w http.ResponseWriter, r *http.Request) error {
 	w.Header().Set("Content-Type", "text/html")
 	w.WriteHeader(http.StatusNotFound)
 
@@ -110,16 +114,16 @@ func (s *Server) generic404Handler(w http.ResponseWriter, r *http.Request) error
 
 func (s *Server) Domain(host string) *Domain {
 	if s.domains[host] == nil {
-		s.domains[host] = httprouter.New()
-		s.domains[host].NotFound = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			s.decorate(s.handler404)(w, r, nil)
+		s.domains[host] = &Domain{
+			s:      s,
+			router: httprouter.New(),
+		}
+		s.domains[host].router.NotFound = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			s.decorate("NOTFOUND", "", s.handler404)(w, r, nil)
 		})
 	}
 
-	return &Domain{
-		s:      s,
-		router: s.domains[host],
-	}
+	return s.domains[host]
 }
 
 type Domain struct {
@@ -129,27 +133,27 @@ type Domain struct {
 
 // Get registers a new GET route in the domain.
 func (domain *Domain) Get(path string, handler Handler) {
-	domain.router.GET(path, domain.s.decorate(handler))
+	domain.router.GET(path, domain.s.decorate(http.MethodGet, path, handler))
 }
 
 // Post registers a new POST route in the domain.
 func (domain *Domain) Post(path string, handler Handler) {
-	domain.router.POST(path, domain.s.decorate(handler))
+	domain.router.POST(path, domain.s.decorate(http.MethodPost, path, handler))
 }
 
 // Put registers a new PUT route in the domain.
 func (domain *Domain) Put(path string, handler Handler) {
-	domain.router.PUT(path, domain.s.decorate(handler))
+	domain.router.PUT(path, domain.s.decorate(http.MethodPut, path, handler))
 }
 
 // Delete registers a new DELETE route in the domain.
 func (domain *Domain) Delete(path string, handler Handler) {
-	domain.router.DELETE(path, domain.s.decorate(handler))
+	domain.router.DELETE(path, domain.s.decorate(http.MethodDelete, path, handler))
 }
 
 // Options registers a new OPTIONS route in the domain.
 func (domain *Domain) Options(path string, handler Handler) {
-	domain.router.OPTIONS(path, domain.s.decorate(handler))
+	domain.router.OPTIONS(path, domain.s.decorate(http.MethodOptions, path, handler))
 }
 
 // ServeFiles register a raw net/http handler with no error checking that sends files.
@@ -175,27 +179,27 @@ func (domain *Domain) ProxyLocalAssets(destAddress string) {
 
 // Get registers a new GET route in the router.
 func (s *Server) Get(path string, handler Handler) {
-	s.defaultDomain.GET(path, s.decorate(handler))
+	s.defaultDomain.Get(path, handler)
 }
 
 // Post registers a new POST route in the router.
 func (s *Server) Post(path string, handler Handler) {
-	s.defaultDomain.POST(path, s.decorate(handler))
+	s.defaultDomain.Post(path, handler)
 }
 
 // Put registers a new PUT route in the router.
 func (s *Server) Put(path string, handler Handler) {
-	s.defaultDomain.PUT(path, s.decorate(handler))
+	s.defaultDomain.Put(path, handler)
 }
 
 // Delete registers a new DELETE route in the router.
 func (s *Server) Delete(path string, handler Handler) {
-	s.defaultDomain.DELETE(path, s.decorate(handler))
+	s.defaultDomain.Delete(path, handler)
 }
 
 // Options registers a new OPTIONS route in the router.
 func (s *Server) Options(path string, handler Handler) {
-	s.defaultDomain.OPTIONS(path, s.decorate(handler))
+	s.defaultDomain.Options(path, handler)
 }
 
 // ServeFiles register a raw net/http handler with no error checking that sends files.
@@ -219,7 +223,7 @@ func (s *Server) ProxyLocalAssets(destAddress string) {
 	})
 }
 
-func (s *Server) decorate(handler Handler) httprouter.Handle {
+func (s *Server) decorate(method, path string, handler Handler) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		if s.sentryClient != nil {
 			defer s.sentryClient.ReportPanicsRequest(r)
@@ -303,7 +307,7 @@ func (s *Server) decorate(handler Handler) httprouter.Handle {
 
 func (s *Server) emitError(w http.ResponseWriter, r *http.Request, status int) {
 	if status == http.StatusNotFound {
-		s.defaultDomain.NotFound.ServeHTTP(w, r)
+		s.defaultDomain.router.NotFound.ServeHTTP(w, r)
 		return
 	}
 
