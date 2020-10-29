@@ -49,6 +49,38 @@ func (e *altiplaError) GRPCStatus() *status.Status {
 	return status.Convert(e.cause)
 }
 
+type errorClasser interface {
+	ErrorClass() string
+}
+
+// ErrorClass implements NewRelic helpers.
+func (e *altiplaError) ErrorClass() string {
+	if impl, ok := e.cause.(errorClasser); ok {
+		return impl.ErrorClass()
+	}
+	return e.cause.Error()
+}
+
+type errorAttributer interface {
+	ErrorAttributes() map[string]interface{}
+}
+
+// ErrorAttributes implements NewRelic helpers.
+func (e *altiplaError) ErrorAttributes() map[string]interface{} {
+	if impl, ok := e.cause.(errorAttributer); ok {
+		return impl.ErrorAttributes()
+	}
+	return nil
+}
+
+// StackTrace implements NewRelic helpers.
+func (e *altiplaError) StackTrace() []uintptr {
+	if e.previous != nil {
+		return e.previous.StackTrace()
+	}
+	return e.stack.frames
+}
+
 // A Frame represents a Frame in an altipla callstack. The Reason is the manual
 // annotation passed to altipla.Wrapf.
 type Frame struct {

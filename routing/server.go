@@ -6,10 +6,12 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"strings"
 	"text/template"
 	"time"
 
 	"github.com/julienschmidt/httprouter"
+	"github.com/newrelic/go-agent/v3/newrelic"
 	log "github.com/sirupsen/logrus"
 
 	"libs.altipla.consulting/env"
@@ -53,6 +55,13 @@ func WithCustom404(handler Handler) ServerOption {
 	}
 }
 
+// WithNewRelic configures APM monitoring through New Relic.
+func WithNewRelic(nrapp *newrelic.Application) ServerOption {
+	return func(server *Server) {
+		server.nrapp = nrapp
+	}
+}
+
 // Server configures the routing table.
 type Server struct {
 	domains       map[string]*Domain
@@ -63,6 +72,7 @@ type Server struct {
 	sentryClient       *sentry.Client
 	logging            bool
 	handler404         Handler
+	nrapp              *newrelic.Application
 }
 
 // NewServer configures a new router with the options.
@@ -83,7 +93,7 @@ func NewServer(opts ...ServerOption) *Server {
 		s.handler404 = generic404Handler
 	}
 	s.defaultDomain.router.NotFound = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		s.decorate("NOTFOUND", "", s.handler404)(w, r, nil)
+		s.decorate("NotFound", "", s.handler404)(w, r, nil)
 	})
 
 	return s
@@ -119,7 +129,7 @@ func (s *Server) Domain(host string) *Domain {
 			router: httprouter.New(),
 		}
 		s.domains[host].router.NotFound = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			s.decorate("NOTFOUND", "", s.handler404)(w, r, nil)
+			s.decorate("NotFound", "", s.handler404)(w, r, nil)
 		})
 	}
 
@@ -234,6 +244,17 @@ func (s *Server) decorate(method, path string, handler Handler) httprouter.Handl
 		ctx = context.WithValue(ctx, paramsKey, ps)
 		ctx, cancel := context.WithTimeout(ctx, 29*time.Second)
 		defer cancel()
+
+		if s.nrapp != nil {
+			txn := s.nrapp.StartTransaction(strings.TrimSpace(method + " " + path))
+			defer txn.End()
+
+			txn.SetWebRequestHTTP(r)
+			w = txn.SetWebResponse(w)
+
+			ctx = newrelic.NewContext(ctx, txn)
+		}
+
 		r = r.WithContext(ctx)
 
 		if s.username != "" && s.password != "" {
@@ -289,6 +310,10 @@ func (s *Server) decorate(method, path string, handler Handler) httprouter.Handl
 			}
 			if s.sentryClient != nil {
 				s.sentryClient.ReportRequest(r, err)
+			}
+			if s.nrapp != nil {
+				txn := newrelic.FromContext(ctx)
+				txn.NoticeError(err)
 			}
 
 			// Responde según el tipo de error por timeout u otro con un código HTTP adecuado.
