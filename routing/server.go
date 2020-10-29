@@ -322,6 +322,7 @@ func (s *Server) decorate(method, path string, handler Handler) httprouter.Handl
 				return
 			}
 			if env.IsLocal() {
+				w.WriteHeader(http.StatusInternalServerError)
 				fmt.Fprintln(w, errors.Stack(err))
 				return
 			}
