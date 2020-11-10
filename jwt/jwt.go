@@ -37,7 +37,7 @@ func NewHS256(key string) *Generator {
 func NewHS256Base64(encodedKey string) *Generator {
 	key, err := base64.StdEncoding.DecodeString(encodedKey)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("jwt key is not in base64 format: %s: %s", encodedKey, err.Error())
 	}
 
 	return &Generator{
