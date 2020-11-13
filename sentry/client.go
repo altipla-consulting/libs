@@ -70,11 +70,17 @@ func (client *Client) ReportPanics(ctx context.Context) {
 
 // ReportPanic sends a panic correctly formated to the server if the argument
 // is not nil.
-func (client *Client) ReportPanic(ctx context.Context, panic interface{}) {
-	if panic == nil {
+func (client *Client) ReportPanic(ctx context.Context, panicErr interface{}) {
+	if panicErr == nil {
 		return
 	}
-	rec := errors.Recover(panic)
+	rec := errors.Recover(panicErr)
+
+	// Ignoramos el error causado por abortar un handler.
+	if errors.Is(rec, http.ErrAbortHandler) {
+		panic(panicErr)
+	}
+
 	log.WithField("error", rec.Error()).Error("Panic recovered")
 	client.sendReportPanic(ctx, rec, string(debug.Stack()), nil)
 }
