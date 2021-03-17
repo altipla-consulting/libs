@@ -3,7 +3,8 @@ package firestore
 import (
 	"context"
 
-	"github.com/golang/protobuf/proto"
+	"google.golang.org/protobuf/proto"
+
 	"libs.altipla.consulting/errors"
 )
 

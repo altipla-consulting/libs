@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	pbtimestamp "github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/stretchr/testify/require"
+	pbtimestamp "google.golang.org/protobuf/types/known/timestamppb"
 
 	"libs.altipla.consulting/datetime"
 )

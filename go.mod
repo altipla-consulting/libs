@@ -39,6 +39,7 @@ require (
 	google.golang.org/api v0.32.0
 	google.golang.org/genproto v0.0.0-20200925023002-c2d885f95484 // indirect
 	google.golang.org/grpc v1.32.0
+	google.golang.org/protobuf v1.25.0
 	gopkg.in/check.v1 v1.0.0-20200902074654-038fdea0a05b // indirect
 	gopkg.in/mgo.v2 v2.0.0-20190816093944-a6b53ec6cb22 // indirect
 	gopkg.in/square/go-jose.v2 v2.5.1

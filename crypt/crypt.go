@@ -4,8 +4,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/golang/protobuf/proto"
 	"github.com/gorilla/securecookie"
+	"google.golang.org/protobuf/proto"
 
 	"libs.altipla.consulting/errors"
 )

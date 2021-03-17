@@ -5,8 +5,8 @@ import (
 	"reflect"
 
 	"github.com/go-redis/redis"
-	"github.com/golang/protobuf/jsonpb"
-	"github.com/golang/protobuf/proto"
+	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/proto"
 
 	"libs.altipla.consulting/errors"
 )
@@ -92,13 +92,12 @@ type ProtoHashInsert struct {
 }
 
 func (insert *ProtoHashInsert) Set(ctx context.Context, key string, value proto.Message) error {
-	m := new(jsonpb.Marshaler)
-	encoded, err := m.MarshalToString(value)
+	encoded, err := protojson.Marshal(value)
 	if err != nil {
 		return errors.Trace(err)
 	}
 
-	insert.fields[key] = encoded
+	insert.fields[key] = string(encoded)
 
 	return nil
 }

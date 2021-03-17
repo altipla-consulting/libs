@@ -7,7 +7,8 @@ import (
 	"io/ioutil"
 	"strings"
 
-	"github.com/golang/protobuf/proto"
+	"google.golang.org/protobuf/encoding/prototext"
+	"google.golang.org/protobuf/proto"
 	"gopkg.in/yaml.v2"
 
 	"libs.altipla.consulting/errors"
@@ -59,7 +60,7 @@ func Unmarshal(rd io.Reader, data interface{}) (string, error) {
 
 	msg, ok := data.(proto.Message)
 	if ok {
-		if err := proto.UnmarshalText(strings.Join(header, ""), msg); err != nil {
+		if err := prototext.Unmarshal([]byte(strings.Join(header, "")), msg); err != nil {
 			return "", errors.Wrapf(err, "cannot decode proto header")
 		}
 	} else {
@@ -78,7 +79,11 @@ func Marshal(w io.Writer, data interface{}, content string) error {
 	var header string
 	msg, ok := data.(proto.Message)
 	if ok {
-		header = proto.MarshalTextString(msg)
+		value, err := prototext.Marshal(msg)
+		if err != nil {
+			return errors.Wrapf(err, "cannot encode proto header")
+		}
+		header = string(value)
 	} else {
 		out, err := yaml.Marshal(data)
 		if err != nil {

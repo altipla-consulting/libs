@@ -6,10 +6,10 @@ import (
 	"reflect"
 
 	"cloud.google.com/go/bigquery"
-	"github.com/golang/protobuf/proto"
 	"google.golang.org/api/iterator"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/proto"
 
 	pb "libs.altipla.consulting/bigquery/proto"
 	"libs.altipla.consulting/errors"

@@ -4,8 +4,8 @@ import (
 	"context"
 	"reflect"
 
-	"github.com/golang/protobuf/jsonpb"
-	"github.com/golang/protobuf/proto"
+	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/proto"
 
 	"libs.altipla.consulting/errors"
 )
@@ -77,26 +77,24 @@ func (list *ProtoList) GetAll(ctx context.Context, result interface{}) error {
 }
 
 func (list *ProtoList) Add(ctx context.Context, values ...proto.Message) error {
-	m := new(jsonpb.Marshaler)
 	members := make([]interface{}, len(values))
 	for i, value := range values {
-		encoded, err := m.MarshalToString(value)
+		encoded, err := protojson.Marshal(value)
 		if err != nil {
 			return errors.Trace(err)
 		}
 
-		members[i] = encoded
+		members[i] = string(encoded)
 	}
 
 	return list.db.Cmdable(ctx).LPush(list.key, members...).Err()
 }
 
 func (list *ProtoList) Remove(ctx context.Context, value proto.Message) error {
-	m := new(jsonpb.Marshaler)
-	encoded, err := m.MarshalToString(value)
+	encoded, err := protojson.Marshal(value)
 	if err != nil {
 		return errors.Trace(err)
 	}
 
-	return list.db.Cmdable(ctx).LRem(list.key, 1, encoded).Err()
+	return list.db.Cmdable(ctx).LRem(list.key, 1, string(encoded)).Err()
 }

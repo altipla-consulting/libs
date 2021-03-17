@@ -14,10 +14,10 @@ import (
 	"time"
 
 	"github.com/ernestoalejo/aeimagesflags"
-	"github.com/golang/protobuf/jsonpb"
-	"github.com/golang/protobuf/proto"
-	pbtimestamp "github.com/golang/protobuf/ptypes/timestamp"
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/proto"
+	pbtimestamp "google.golang.org/protobuf/types/known/timestamppb"
 	pbdatetime "libs.altipla.consulting/protos/datetime"
 
 	"libs.altipla.consulting/collections"
@@ -361,11 +361,11 @@ func fnDict(values ...interface{}) (map[string]interface{}, error) {
 func fnJSON(obj interface{}) (string, error) {
 	msg, ok := obj.(proto.Message)
 	if ok {
-		m := jsonpb.Marshaler{
-			EmitDefaults: true,
+		m := protojson.MarshalOptions{
+			EmitUnpopulated: true,
 		}
-		b, err := m.MarshalToString(msg)
-		return b, errors.Trace(err)
+		b, err := m.Marshal(msg)
+		return string(b), errors.Trace(err)
 	}
 
 	b, err := json.Marshal(obj)

@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/go-redis/redis"
-	"github.com/golang/protobuf/jsonpb"
-	"github.com/golang/protobuf/proto"
+	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/proto"
 
 	"libs.altipla.consulting/errors"
 )
@@ -142,8 +142,7 @@ func (kv *ProtoKV) Set(ctx context.Context, value proto.Message) error {
 
 // SetTTL changes the value of the key with a Time-To-Live.
 func (kv *ProtoKV) SetTTL(ctx context.Context, value proto.Message, ttl time.Duration) error {
-	m := new(jsonpb.Marshaler)
-	encoded, err := m.MarshalToString(value)
+	encoded, err := protojson.Marshal(value)
 	if err != nil {
 		return errors.Trace(err)
 	}

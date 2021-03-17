@@ -5,8 +5,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/golang/protobuf/ptypes"
-	pbtimestamp "github.com/golang/protobuf/ptypes/timestamp"
+	pbtimestamp "google.golang.org/protobuf/types/known/timestamppb"
 
 	pbdatetime "libs.altipla.consulting/protos/datetime"
 )
@@ -74,12 +73,7 @@ func SerializeTimestamp(t time.Time) *pbtimestamp.Timestamp {
 		return nil
 	}
 
-	result, err := ptypes.TimestampProto(t)
-	if err != nil {
-		panic(err)
-	}
-
-	return result
+	return pbtimestamp.New(t)
 }
 
 // ParseTimestamp converts a proto to Go time.Time.
@@ -88,12 +82,7 @@ func ParseTimestamp(timestamp *pbtimestamp.Timestamp) time.Time {
 		return time.Time{}
 	}
 
-	t, err := ptypes.Timestamp(timestamp)
-	if err != nil {
-		panic(err)
-	}
-
-	return t
+	return timestamp.AsTime()
 }
 
 // DateIsAfter returns if date "a" is after date "b".
