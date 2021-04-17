@@ -23,13 +23,21 @@ func (err *InvalidTokenError) Error() string {
 }
 
 type Generator struct {
-	key   []byte
-	clock clock.Clock
+	crypto cryptoImpl
+	clock  clock.Clock
+}
+
+type cryptoImpl interface {
+	Signer() (jose.Signer, error)
+	Key(kid string) interface{}
+	Close()
 }
 
 func NewHS256(key string) *Generator {
 	return &Generator{
-		key:   []byte(key),
+		crypto: &hs256{
+			key: []byte(key),
+		},
 		clock: clock.New(),
 	}
 }
@@ -41,8 +49,26 @@ func NewHS256Base64(encodedKey string) *Generator {
 	}
 
 	return &Generator{
-		key:   key,
+		crypto: &hs256{
+			key: key,
+		},
 		clock: clock.New(),
+	}
+}
+
+// NewRS256FromWellKnown prepares a generator that only reads signed JWTs verifying
+// them with the cached keys obtained from the well known URL.
+//
+// The well known URL is something like this:
+//     https://{domain}/.well-known/jwks.json
+func NewRS256FromWellKnown(wkurl string) *Generator {
+	c := &rs256{
+		wkurl: wkurl,
+	}
+	c.backgroundGetKeys()
+	return &Generator{
+		crypto: c,
+		clock:  clock.New(),
 	}
 }
 
@@ -107,9 +133,7 @@ func (g *Generator) Sign(claims Claims, customs ...CustomClaimsImplementation) (
 		claims.IssuedAt = g.clock.Now()
 	}
 
-	var opts = jose.SignerOptions{}
-	opts.WithType("JWT")
-	signer, err := jose.NewSigner(jose.SigningKey{Algorithm: jose.HS256, Key: g.key}, &opts)
+	signer, err := g.crypto.Signer()
 	if err != nil {
 		return "", errors.Trace(err)
 	}
@@ -152,17 +176,31 @@ func (g *Generator) Extract(token string, expected Expected, claims *Claims, cus
 		return errors.Errorf("extract expected audience required")
 	}
 
-	webSignature, err := jose.ParseSigned(token)
+	// Verify the signature manually before reading the JWT token to detect
+	// signing problems with a custom error. Also retrieves the correct key depending
+	// on the signature of the token.
+	signature, err := jose.ParseSigned(token)
 	if err != nil {
 		if err.Error() == "square/go-jose: compact JWS format must have three parts" {
 			return &InvalidTokenError{
-				Reason: fmt.Sprintf("invalid parts"),
+				Reason: "invalid parts",
 			}
 		}
 
 		return errors.Trace(err)
 	}
-	if _, err := webSignature.Verify(g.key); err != nil {
+	if len(signature.Signatures) != 1 {
+		return &InvalidTokenError{
+			Reason: fmt.Sprintf("invalid number of signatures: %d", len(signature.Signatures)),
+		}
+	}
+	key := g.crypto.Key(signature.Signatures[0].Header.KeyID)
+	if key == nil {
+		return &InvalidTokenError{
+			Reason: fmt.Sprintf("invalid signature key id: %s", signature.Signatures[0].Header.KeyID),
+		}
+	}
+	if _, err := signature.Verify(key); err != nil {
 		if errors.Is(err, jose.ErrCryptoFailure) {
 			return &InvalidTokenError{
 				Reason: fmt.Sprintf("invalid signature"),
@@ -172,27 +210,28 @@ func (g *Generator) Extract(token string, expected Expected, claims *Claims, cus
 		return errors.Trace(err)
 	}
 
-	webToken, err := jwt.ParseSigned(token)
+	// Verify (again) and extract the claims from the JWT.
+	parsedToken, err := jwt.ParseSigned(token)
 	if err != nil {
 		return errors.Trace(err)
 	}
-
-	var webClaims jwt.Claims
 	var extract []interface{}
-	extract = append(extract, &webClaims)
+	var extractedClaims jwt.Claims
+	extract = append(extract, &extractedClaims)
 	for _, custom := range customs {
 		extract = append(extract, custom)
 	}
-	if err := webToken.Claims(g.key, extract...); err != nil {
+	if err := parsedToken.Claims(key, extract...); err != nil {
 		return errors.Trace(err)
 	}
 
+	// Check claims against the expected values.
 	exp := jwt.Expected{
 		Issuer:   expected.Issuer,
 		Audience: jwt.Audience{expected.Audience},
 		Time:     g.clock.Now(),
 	}
-	if err := webClaims.Validate(exp); err != nil {
+	if err := extractedClaims.Validate(exp); err != nil {
 		switch {
 		case errors.Is(err, jwt.ErrInvalidIssuer):
 			return &InvalidTokenError{
@@ -224,12 +263,17 @@ func (g *Generator) Extract(token string, expected Expected, claims *Claims, cus
 		}
 	}
 
-	claims.Issuer = webClaims.Issuer
-	claims.Subject = webClaims.Subject
-	claims.Audience = webClaims.Audience[0]
-	claims.Expiry = webClaims.Expiry.Time()
-	claims.NotBefore = webClaims.NotBefore.Time()
-	claims.IssuedAt = webClaims.IssuedAt.Time()
+	// Read the claims extracted from the token.
+	claims.Issuer = extractedClaims.Issuer
+	claims.Subject = extractedClaims.Subject
+	claims.Audience = extractedClaims.Audience[0]
+	claims.Expiry = extractedClaims.Expiry.Time()
+	claims.NotBefore = extractedClaims.NotBefore.Time()
+	claims.IssuedAt = extractedClaims.IssuedAt.Time()
 
 	return nil
+}
+
+func (g *Generator) Close() {
+	g.crypto.Close()
 }
