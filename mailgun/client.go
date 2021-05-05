@@ -48,6 +48,7 @@ type Email struct {
 	Tags          []string
 	ReplyTo       string
 	Attachments   []*Attachment
+	Inlines       []*Attachment
 	UserVariables map[string]string
 }
 
@@ -75,6 +76,9 @@ func (client *Client) SendReturnID(ctx context.Context, domain string, email *Em
 	}
 	for _, attachment := range email.Attachments {
 		msg.AddReaderAttachment(attachment.Filename, ioutil.NopCloser(bytes.NewReader(attachment.Content)))
+	}
+	for _, attachment := range email.Inlines {
+		msg.AddReaderInline(attachment.Filename, ioutil.NopCloser(bytes.NewReader(attachment.Content)))
 	}
 	for k, v := range email.UserVariables {
 		if err := msg.AddVariable(k, v); err != nil {
