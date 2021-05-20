@@ -2,12 +2,14 @@ package sentry
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"runtime/debug"
 	"time"
 
 	"github.com/getsentry/sentry-go"
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/grpc/status"
 
 	"libs.altipla.consulting/env"
 	"libs.altipla.consulting/errors"
@@ -145,6 +147,11 @@ func (client *Client) sendReport(ctx context.Context, appErr error, r *http.Requ
 
 		if r != nil {
 			event.Request = sentry.NewRequest(r)
+		}
+
+		if st, ok := status.FromError(appErr); ok {
+			event.Tags["grpc_code"] = fmt.Sprintf("%v", st.Code())
+			event.Extra["grpc_message"] = st.Message()
 		}
 
 		eventID := client.hub.CaptureEvent(event)
