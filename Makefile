@@ -23,6 +23,7 @@ update-deps:
 
 protos:
 	actools protoc --go_out=paths=source_relative:. ./protos/datetime/datetime.proto
+	actools protoc --go_out=paths=source_relative:. ./bigquery/proto/pagination.proto
 
 data:
 	docker-compose kill database redis firestore

@@ -3,6 +3,8 @@ syntax = "proto3";
 
 package libs.bigquery;
 
+option go_package = "libs.altipla.consulting/bigquery/proto";
+
 message Token {
   string job_id = 1;
   string page_token = 2;
