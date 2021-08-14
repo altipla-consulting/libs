@@ -18,8 +18,8 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 	pbtimestamp "google.golang.org/protobuf/types/known/timestamppb"
-	pbdatetime "libs.altipla.consulting/protos/datetime"
 
+	pbdatetime "libs.altipla.consulting/protos/datetime"
 	"libs.altipla.consulting/collections"
 	"libs.altipla.consulting/content"
 	"libs.altipla.consulting/datetime"

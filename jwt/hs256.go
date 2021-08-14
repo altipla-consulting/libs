@@ -2,6 +2,7 @@ package jwt
 
 import (
 	jose "gopkg.in/square/go-jose.v2"
+
 	"libs.altipla.consulting/errors"
 )
 
