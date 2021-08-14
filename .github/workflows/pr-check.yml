@@ -1,6 +1,13 @@
 
-on: [push, pull_request]
 name: PR check
+on:
+  push:
+    branches:
+    - main
+  pull_request:
+    branches:
+    - main
+
 jobs:
   pr-check:
     strategy:
