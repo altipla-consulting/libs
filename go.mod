@@ -18,6 +18,7 @@ require (
 	github.com/google/btree v1.0.1
 	github.com/gorilla/schema v1.2.0
 	github.com/gorilla/securecookie v1.1.1
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.5.0
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/kr/text v0.2.0 // indirect
 	github.com/logrusorgru/aurora v2.0.3+incompatible
@@ -27,7 +28,10 @@ require (
 	github.com/mgechev/dots v0.0.0-20190921121421-c36f7dcfbb81
 	github.com/mgechev/revive v1.0.9
 	github.com/newrelic/go-agent/v3 v3.14.1
+	github.com/rs/cors v1.8.0
+	github.com/sethvargo/go-signalcontext v0.1.0
 	github.com/sirupsen/logrus v1.8.1
+	github.com/soheilhy/cmux v0.1.5
 	github.com/speps/go-hashids v2.0.0+incompatible
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.7.0
