@@ -9,7 +9,7 @@ gofmt:
 	@impsort . -p libs.altipla.consulting
 
 test: lint
-	go test ./...
+	go test -race ./...
 
 lint:
 	@./infra/lint-errors.sh
