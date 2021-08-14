@@ -3,8 +3,10 @@ module libs.altipla.consulting
 go 1.13
 
 require (
+	cloud.google.com/go v0.90.0
 	cloud.google.com/go/bigquery v1.18.0
 	cloud.google.com/go/firestore v1.5.0
+	cloud.google.com/go/pubsub v1.15.0
 	cloud.google.com/go/storage v1.15.0
 	github.com/ernestoalejo/aeimagesflags v0.0.0-20150830225655-eed2909a7c2b
 	github.com/fsnotify/fsnotify v1.4.9
@@ -30,13 +32,12 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.7.0
 	golang.org/x/net v0.0.0-20210510120150-4163338589ed // indirect
-	golang.org/x/oauth2 v0.0.0-20210514164344-f6687ab2804c
+	golang.org/x/oauth2 v0.0.0-20210805134026-6f1e6394065a
 	golang.org/x/text v0.3.6
-	golang.org/x/tools v0.1.1
-	google.golang.org/api v0.47.0
-	google.golang.org/genproto v0.0.0-20210518161634-ec7691c0a37d // indirect
-	google.golang.org/grpc v1.38.0
-	google.golang.org/protobuf v1.26.0
+	golang.org/x/tools v0.1.5
+	google.golang.org/api v0.54.0
+	google.golang.org/grpc v1.39.1
+	google.golang.org/protobuf v1.27.1
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/mgo.v2 v2.0.0-20190816093944-a6b53ec6cb22 // indirect
 	gopkg.in/square/go-jose.v2 v2.5.1
