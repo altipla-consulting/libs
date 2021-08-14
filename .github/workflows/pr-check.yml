@@ -10,10 +10,10 @@ on:
 
 jobs:
   pr-check:
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         go-version: [1.14.x]
-    runs-on: ubuntu-latest
     steps:
     - name: Install Go
       uses: actions/setup-go@v2
@@ -32,8 +32,8 @@ jobs:
         path: |
           ~/go/pkg/mod
           ~/.cache/go-build
-        key: go-${{ runner.go-version }}-${{ hashFiles('**/go.sum') }}
-        restore-keys: go-${{ runner.go-version }}-
+        key: go-${{matrix.go-version}}-${{hashFiles('**/go.sum')}}
+        restore-keys: go-${{matrix.go-version}}-
 
     - name: Lint
       run: make lint
