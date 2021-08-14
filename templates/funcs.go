@@ -19,7 +19,6 @@ import (
 	"google.golang.org/protobuf/proto"
 	pbtimestamp "google.golang.org/protobuf/types/known/timestamppb"
 
-	pbdatetime "libs.altipla.consulting/protos/datetime"
 	"libs.altipla.consulting/collections"
 	"libs.altipla.consulting/content"
 	"libs.altipla.consulting/datetime"
@@ -28,6 +27,7 @@ import (
 	"libs.altipla.consulting/langs"
 	"libs.altipla.consulting/messageformat"
 	"libs.altipla.consulting/money"
+	pbdatetime "libs.altipla.consulting/protos/datetime"
 )
 
 var (
