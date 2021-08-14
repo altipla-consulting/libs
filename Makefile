@@ -27,8 +27,8 @@ protos:
 	actools protoc --go_out=paths=source_relative:. ./bigquery/proto/pagination.proto
 
 data:
-	docker-compose kill database redis firestore
-	docker-compose up -d database redis firestore
+	docker-compose kill database redis firestore ravendb
+	docker-compose up -d database redis firestore ravendb
 	bash -c "until actools mysql -h database -u dev-user -pdev-password -e ';' 2> /dev/null ; do sleep 1; done"
 
 datetime-generator: _datetime-generator gofmt

@@ -18,3 +18,12 @@ services:
   firestore:
     image: eu.gcr.io/altipla-tools/firestore:latest
     ports: ['12000:12000']
+
+  ravendb:
+    image: ravendb/ravendb:4.2.104-ubuntu.18.04-x64
+    ports: ['13000:8080']
+    stop_signal: SIGKILL
+    environment:
+      RAVEN_Setup_Mode: 'None'
+      RAVEN_License_Eula_Accepted: 'true'
+      RAVEN_Security_UnsecuredAccessAllowed: PrivateNetwork
