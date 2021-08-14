@@ -3,8 +3,8 @@ module libs.altipla.consulting
 go 1.13
 
 require (
-	cloud.google.com/go v0.90.0
-	cloud.google.com/go/bigquery v1.18.0
+	cloud.google.com/go v0.91.1
+	cloud.google.com/go/bigquery v1.20.1
 	cloud.google.com/go/firestore v1.5.0
 	cloud.google.com/go/pubsub v1.15.0
 	cloud.google.com/go/storage v1.15.0
@@ -26,7 +26,7 @@ require (
 	github.com/mattn/go-runewidth v0.0.12 // indirect
 	github.com/mgechev/dots v0.0.0-20190921121421-c36f7dcfbb81
 	github.com/mgechev/revive v1.0.6
-	github.com/newrelic/go-agent/v3 v3.12.0
+	github.com/newrelic/go-agent/v3 v3.14.1
 	github.com/sirupsen/logrus v1.8.1
 	github.com/speps/go-hashids v2.0.0+incompatible
 	github.com/spf13/pflag v1.0.5
