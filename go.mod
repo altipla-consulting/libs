@@ -7,7 +7,7 @@ require (
 	cloud.google.com/go/bigquery v1.20.1
 	cloud.google.com/go/firestore v1.5.0
 	cloud.google.com/go/pubsub v1.15.0
-	cloud.google.com/go/storage v1.15.0
+	cloud.google.com/go/storage v1.16.0
 	github.com/ernestoalejo/aeimagesflags v0.0.0-20150830225655-eed2909a7c2b
 	github.com/fsnotify/fsnotify v1.4.9
 	github.com/getsentry/sentry-go v0.11.0
