@@ -3,14 +3,14 @@ module libs.altipla.consulting
 go 1.13
 
 require (
-	cloud.google.com/go v0.87.0
-	cloud.google.com/go/bigquery v1.18.0
+	cloud.google.com/go v0.91.1
+	cloud.google.com/go/bigquery v1.20.1
 	cloud.google.com/go/firestore v1.5.0
-	cloud.google.com/go/pubsub v1.13.0
-	cloud.google.com/go/storage v1.15.0
+	cloud.google.com/go/pubsub v1.15.0
+	cloud.google.com/go/storage v1.16.0
 	github.com/ernestoalejo/aeimagesflags v0.0.0-20150830225655-eed2909a7c2b
 	github.com/fsnotify/fsnotify v1.4.9
-	github.com/getsentry/sentry-go v0.10.0
+	github.com/getsentry/sentry-go v0.11.0
 	github.com/go-chi/chi v4.1.2+incompatible // indirect
 	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/go-sql-driver/mysql v1.6.0
@@ -24,10 +24,10 @@ require (
 	github.com/logrusorgru/aurora v2.0.3+incompatible
 	github.com/mailgun/mailgun-go/v3 v3.6.4
 	github.com/mailru/easyjson v0.7.7 // indirect
-	github.com/mattn/go-runewidth v0.0.12 // indirect
+	github.com/mattn/go-runewidth v0.0.13 // indirect
 	github.com/mgechev/dots v0.0.0-20190921121421-c36f7dcfbb81
-	github.com/mgechev/revive v1.0.6
-	github.com/newrelic/go-agent/v3 v3.12.0
+	github.com/mgechev/revive v1.0.9
+	github.com/newrelic/go-agent/v3 v3.14.1
 	github.com/rs/cors v1.8.0
 	github.com/sethvargo/go-signalcontext v0.1.0
 	github.com/sirupsen/logrus v1.8.1
@@ -35,16 +35,16 @@ require (
 	github.com/speps/go-hashids v2.0.0+incompatible
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.7.0
-	golang.org/x/net v0.0.0-20210510120150-4163338589ed // indirect
-	golang.org/x/oauth2 v0.0.0-20210628180205-a41e5a781914
-	golang.org/x/text v0.3.6
-	golang.org/x/tools v0.1.4
-	google.golang.org/api v0.50.0
-	google.golang.org/grpc v1.39.0
+	golang.org/x/net v0.0.0-20210813160813-60bc85c4be6d // indirect
+	golang.org/x/oauth2 v0.0.0-20210810183815-faf39c7919d5
+	golang.org/x/text v0.3.7
+	golang.org/x/tools v0.1.5
+	google.golang.org/api v0.54.0
+	google.golang.org/grpc v1.40.0
 	google.golang.org/protobuf v1.27.1
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/mgo.v2 v2.0.0-20190816093944-a6b53ec6cb22 // indirect
-	gopkg.in/square/go-jose.v2 v2.5.1
+	gopkg.in/square/go-jose.v2 v2.6.0
 	gopkg.in/yaml.v2 v2.4.0
 	upper.io/db.v3 v3.8.0+incompatible
 )
