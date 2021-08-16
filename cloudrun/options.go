@@ -52,6 +52,7 @@ func WithAuth(auth Authorizer) Option {
 	}
 }
 
+// WithCORS configures valid CORS origins for grpc-gateway APIs. Only valid with the GRPC() constructor.
 func WithCORS(domains ...string) Option {
 	return func(cnf *config) {
 		cnf.cors = append(cnf.cors, domains...)
