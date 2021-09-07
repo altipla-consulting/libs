@@ -14,8 +14,8 @@ import (
 
 	"libs.altipla.consulting/env"
 	"libs.altipla.consulting/errors"
-	"libs.altipla.consulting/routing"
 	"libs.altipla.consulting/pubsub"
+	"libs.altipla.consulting/routing"
 )
 
 type WebServer struct {

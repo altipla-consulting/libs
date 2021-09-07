@@ -4,8 +4,11 @@ import (
 	"encoding/json"
 	"time"
 
+	"google.golang.org/protobuf/encoding/protojson"
+
 	"libs.altipla.consulting/datetime"
 	"libs.altipla.consulting/errors"
+	pb "libs.altipla.consulting/protos/datetime"
 )
 
 type Date struct {
@@ -21,7 +24,7 @@ func (value Date) String() string {
 		return ""
 	}
 	// Zeros for the nanoseconds is bad on purpose to avoid formatting them.
-	return value.Time.In(time.UTC).Format("2006-01-02T15:04:05.0000000Z")
+	return datetime.TimeToDate(value.Time).In(time.UTC).Format("2006-01-02T15:04:05.0000000Z")
 }
 
 func (value Date) MarshalJSON() ([]byte, error) {
@@ -36,7 +39,16 @@ func (value *Date) UnmarshalJSON(data []byte) error {
 		value.Time = time.Time{}
 		return nil
 	}
-	return errors.Trace(json.Unmarshal(data, &value.Time))
+	if err := json.Unmarshal(data, &value.Time); err != nil {
+		m := new(pb.Date)
+		if err := protojson.Unmarshal(data, m); err != nil {
+			return errors.Trace(err)
+		}
+		value.Time = datetime.ParseDate(m)
+	} else {
+		value.Time = datetime.TimeToDate(value.Time)
+	}
+	return nil
 }
 
 type DateTime struct {

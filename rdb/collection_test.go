@@ -27,7 +27,6 @@ func initCollectionTestbed(t *testing.T) *Database {
 	db := initTestbed(t)
 
 	require.NoError(t, db.Collection(new(FooCollectionModel)).DeleteEverything(ctx))
-	require.NoError(t, db.Collection(new(NullTimeModel)).DeleteEverything(ctx))
 
 	return db
 }
