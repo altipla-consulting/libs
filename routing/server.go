@@ -10,8 +10,7 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/julienschmidt/httprouter"
-	"github.com/newrelic/go-agent/v3/newrelic"
+	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 
 	"libs.altipla.consulting/env"
@@ -55,56 +54,37 @@ func WithCustom404(handler Handler) ServerOption {
 	}
 }
 
-// WithNewRelic configures APM monitoring through New Relic.
-func WithNewRelic(nrapp *newrelic.Application) ServerOption {
-	return func(server *Server) {
-		server.nrapp = nrapp
-	}
-}
-
 // Server configures the routing table.
 type Server struct {
-	domains       map[string]*Domain
-	defaultDomain *Domain
+	*Router
 
 	// Options
 	username, password string
 	sentryClient       *sentry.Client
 	logging            bool
 	handler404         Handler
-	nrapp              *newrelic.Application
 }
 
 // NewServer configures a new router with the options.
 func NewServer(opts ...ServerOption) *Server {
-	s := &Server{
-		domains: make(map[string]*Domain),
-	}
+	s := &Server{}
 	for _, opt := range opts {
 		opt(s)
 	}
-
-	s.defaultDomain = &Domain{
-		s:      s,
-		router: httprouter.New(),
-	}
-
 	if s.handler404 == nil {
 		s.handler404 = generic404Handler
 	}
-	s.defaultDomain.router.NotFound = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		s.decorate("NotFound", "", s.handler404)(w, r, nil)
-	})
+
+	s.Router = &Router{
+		s: s,
+		r: mux.NewRouter().StrictSlash(true),
+	}
 
 	return s
 }
 
-func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if domain := s.domains[r.Host]; domain != nil {
-		domain.router.ServeHTTP(w, r)
-	} else {
-		s.defaultDomain.router.ServeHTTP(w, r)
-	}
+func (s *Server) call404(w http.ResponseWriter, r *http.Request) {
+	s.decorate("NotFound", "", s.handler404)(w, r)
 }
 
 func generic404Handler(w http.ResponseWriter, r *http.Request) error {
@@ -122,138 +102,20 @@ func generic404Handler(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func (s *Server) Domain(host string) *Domain {
-	if s.domains[host] == nil {
-		s.domains[host] = &Domain{
-			s:      s,
-			router: httprouter.New(),
-		}
-		s.domains[host].router.NotFound = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			s.decorate("NotFound", "", s.handler404)(w, r, nil)
-		})
-	}
-
-	return s.domains[host]
+func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	s.Router.r.ServeHTTP(w, r)
 }
 
-type Domain struct {
-	s      *Server
-	router *httprouter.Router
-}
-
-// Get registers a new GET route in the domain.
-func (domain *Domain) Get(path string, handler Handler) {
-	domain.router.GET(path, domain.s.decorate(http.MethodGet, path, handler))
-}
-
-// Post registers a new POST route in the domain.
-func (domain *Domain) Post(path string, handler Handler) {
-	domain.router.POST(path, domain.s.decorate(http.MethodPost, path, handler))
-}
-
-// Put registers a new PUT route in the domain.
-func (domain *Domain) Put(path string, handler Handler) {
-	domain.router.PUT(path, domain.s.decorate(http.MethodPut, path, handler))
-}
-
-// Delete registers a new DELETE route in the domain.
-func (domain *Domain) Delete(path string, handler Handler) {
-	domain.router.DELETE(path, domain.s.decorate(http.MethodDelete, path, handler))
-}
-
-// Options registers a new OPTIONS route in the domain.
-func (domain *Domain) Options(path string, handler Handler) {
-	domain.router.OPTIONS(path, domain.s.decorate(http.MethodOptions, path, handler))
-}
-
-// ServeFiles register a raw net/http handler with no error checking that sends files.
-func (domain *Domain) ServeFiles(path string, root http.FileSystem) {
-	domain.router.ServeFiles(path, root)
-}
-
-func (domain *Domain) ProxyLocalAssets(destAddress string) {
-	if !env.IsLocal() {
-		return
-	}
-
-	u, err := url.Parse(destAddress)
-	if err != nil {
-		log.Fatal(err)
-	}
-	proxy := httputil.NewSingleHostReverseProxy(u)
-	domain.Get("/static/*file", func(w http.ResponseWriter, r *http.Request) error {
-		proxy.ServeHTTP(w, r)
-		return nil
-	})
-}
-
-// Get registers a new GET route in the router.
-func (s *Server) Get(path string, handler Handler) {
-	s.defaultDomain.Get(path, handler)
-}
-
-// Post registers a new POST route in the router.
-func (s *Server) Post(path string, handler Handler) {
-	s.defaultDomain.Post(path, handler)
-}
-
-// Put registers a new PUT route in the router.
-func (s *Server) Put(path string, handler Handler) {
-	s.defaultDomain.Put(path, handler)
-}
-
-// Delete registers a new DELETE route in the router.
-func (s *Server) Delete(path string, handler Handler) {
-	s.defaultDomain.Delete(path, handler)
-}
-
-// Options registers a new OPTIONS route in the router.
-func (s *Server) Options(path string, handler Handler) {
-	s.defaultDomain.Options(path, handler)
-}
-
-// ServeFiles register a raw net/http handler with no error checking that sends files.
-func (s *Server) ServeFiles(path string, root http.FileSystem) {
-	s.defaultDomain.ServeFiles(path, root)
-}
-
-func (s *Server) ProxyLocalAssets(destAddress string) {
-	if !env.IsLocal() {
-		return
-	}
-
-	u, err := url.Parse(destAddress)
-	if err != nil {
-		log.Fatal(err)
-	}
-	proxy := httputil.NewSingleHostReverseProxy(u)
-	s.Get("/static/*file", func(w http.ResponseWriter, r *http.Request) error {
-		proxy.ServeHTTP(w, r)
-		return nil
-	})
-}
-
-func (s *Server) decorate(method, path string, handler Handler) httprouter.Handle {
-	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func (s *Server) decorate(method, path string, handler Handler) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
 		if s.sentryClient != nil {
 			defer s.sentryClient.ReportPanicsRequest(r)
 		}
 
 		ctx := r.Context()
 		ctx = context.WithValue(ctx, requestKey, r)
-		ctx = context.WithValue(ctx, paramsKey, ps)
 		ctx, cancel := context.WithTimeout(ctx, 29*time.Second)
 		defer cancel()
-
-		if s.nrapp != nil {
-			txn := s.nrapp.StartTransaction(strings.TrimSpace(method + " " + path))
-			defer txn.End()
-
-			txn.SetWebRequestHTTP(r)
-			w = txn.SetWebResponse(w)
-
-			ctx = newrelic.NewContext(ctx, txn)
-		}
 
 		r = r.WithContext(ctx)
 
@@ -311,10 +173,6 @@ func (s *Server) decorate(method, path string, handler Handler) httprouter.Handl
 			if s.sentryClient != nil {
 				s.sentryClient.ReportRequest(r, err)
 			}
-			if s.nrapp != nil {
-				txn := newrelic.FromContext(ctx)
-				txn.NoticeError(err)
-			}
 
 			// Responde según el tipo de error por timeout u otro con un código HTTP adecuado.
 			if ctx.Err() == context.DeadlineExceeded {
@@ -333,7 +191,7 @@ func (s *Server) decorate(method, path string, handler Handler) httprouter.Handl
 
 func (s *Server) emitError(w http.ResponseWriter, r *http.Request, status int) {
 	if status == http.StatusNotFound {
-		s.defaultDomain.router.NotFound.ServeHTTP(w, r)
+		s.call404(w, r)
 		return
 	}
 
@@ -348,5 +206,79 @@ func (s *Server) emitError(w http.ResponseWriter, r *http.Request, status int) {
 	if err := tmpl.Execute(w, status); err != nil {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		log.WithField("error", err.Error()).Error("Cannot execute template")
+	}
+}
+
+type Router struct {
+	s *Server
+	r *mux.Router
+}
+
+// Get registers a new GET route.
+func (router *Router) Get(path string, handler Handler) {
+	router.r.HandleFunc(router.migratePath(path), router.s.decorate(http.MethodGet, path, handler)).Methods(http.MethodGet)
+}
+
+// Post registers a new POST route.
+func (router *Router) Post(path string, handler Handler) {
+	router.r.HandleFunc(router.migratePath(path), router.s.decorate(http.MethodPost, path, handler)).Methods(http.MethodPost)
+}
+
+// Put registers a new PUT route.
+func (router *Router) Put(path string, handler Handler) {
+	router.r.HandleFunc(router.migratePath(path), router.s.decorate(http.MethodPut, path, handler)).Methods(http.MethodPut)
+}
+
+// Delete registers a new DELETE route.
+func (router *Router) Delete(path string, handler Handler) {
+	router.r.HandleFunc(router.migratePath(path), router.s.decorate(http.MethodDelete, path, handler)).Methods(http.MethodDelete)
+}
+
+// Options registers a new OPTIONS route.
+func (router *Router) Options(path string, handler Handler) {
+	router.r.HandleFunc(router.migratePath(path), router.s.decorate(http.MethodOptions, path, handler)).Methods(http.MethodOptions)
+}
+
+func (router *Router) migratePath(path string) string {
+	parts := strings.Split(path, "/")
+	for i, part := range parts {
+		if strings.HasPrefix(part, ":") {
+			parts[i] = "{" + part[1:] + "}"
+		}
+	}
+	return strings.Join(parts, "/")
+}
+
+// ServeFiles register a raw net/http handler with no error checking that sends files.
+func (router *Router) ServeFiles(path string, root http.FileSystem) {
+	router.r.PathPrefix(path).Handler(http.StripPrefix(path, http.FileServer(root)))
+}
+
+func (router *Router) ProxyLocalAssets(destAddress string) {
+	if !env.IsLocal() {
+		return
+	}
+
+	u, err := url.Parse(destAddress)
+	if err != nil {
+		log.Fatal(err)
+	}
+	proxy := httputil.NewSingleHostReverseProxy(u)
+	router.r.PathPrefix("/static/").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		proxy.ServeHTTP(w, r)
+	})
+}
+
+func (router *Router) Domain(host string) *Router {
+	return &Router{
+		s: router.s,
+		r: router.r.Host(host).Subrouter(),
+	}
+}
+
+func (router *Router) PathPrefix(path string) *Router {
+	return &Router{
+		s: router.s,
+		r: router.r.PathPrefix(path).Subrouter(),
 	}
 }

@@ -4,19 +4,19 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/julienschmidt/httprouter"
+	"github.com/gorilla/mux"
 )
 
 type key int
 
 const (
 	requestKey key = 1
-	paramsKey  key = 2
 )
 
 // Param returns a request URL parameter value.
 func Param(r *http.Request, name string) string {
-	return r.Context().Value(paramsKey).(httprouter.Params).ByName(name)
+	vars := mux.Vars(r)
+	return vars["name"]
 }
 
 // RequestFromContext returns the HTTP request from a context. The context must
