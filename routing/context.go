@@ -16,7 +16,7 @@ const (
 // Param returns a request URL parameter value.
 func Param(r *http.Request, name string) string {
 	vars := mux.Vars(r)
-	return vars["name"]
+	return vars[name]
 }
 
 // RequestFromContext returns the HTTP request from a context. The context must
