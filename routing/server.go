@@ -149,10 +149,10 @@ func (s *Server) decorate(method, path string, handler Handler) http.HandlerFunc
 			if errors.As(err, &herr) {
 				switch herr.StatusCode {
 				case http.StatusNotFound, http.StatusUnauthorized, http.StatusBadRequest:
-					log.WithFields(log.Fields{
-						"status": http.StatusText(herr.StatusCode),
-						"reason": herr.Message,
-					}).Error("Handler failed")
+					fields := errors.LogFields(err)
+					fields["status"] = http.StatusText(herr.StatusCode)
+					fields["reason"] = herr.Message
+					log.WithFields(fields).Error("Handler failed")
 
 					s.emitError(w, r, herr.StatusCode)
 					return
