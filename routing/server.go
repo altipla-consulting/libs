@@ -84,7 +84,7 @@ func NewServer(opts ...ServerOption) *Server {
 }
 
 func (s *Server) call404(w http.ResponseWriter, r *http.Request) {
-	s.decorate("NotFound", "", s.handler404)(w, r)
+	s.decorate("NotFound", nil, "", s.handler404)(w, r)
 }
 
 func generic404Handler(w http.ResponseWriter, r *http.Request) error {
@@ -106,7 +106,11 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	s.Router.r.ServeHTTP(w, r)
 }
 
-func (s *Server) decorate(method, path string, handler Handler) http.HandlerFunc {
+func (s *Server) decorate(method string, middlewares []Middleware, path string, handler Handler) http.HandlerFunc {
+	for _, middleware := range middlewares {
+		handler = middleware(handler)
+	}
+
 	return func(w http.ResponseWriter, r *http.Request) {
 		if s.sentryClient != nil {
 			defer s.sentryClient.ReportPanicsRequest(r)
@@ -210,33 +214,36 @@ func (s *Server) emitError(w http.ResponseWriter, r *http.Request, status int) {
 }
 
 type Router struct {
-	s *Server
-	r *mux.Router
+	s           *Server
+	r           *mux.Router
+	middlewares []Middleware
 }
+
+type Middleware func(handler Handler) Handler
 
 // Get registers a new GET route.
 func (router *Router) Get(path string, handler Handler) {
-	router.r.HandleFunc(router.migratePath(path), router.s.decorate(http.MethodGet, path, handler)).Methods(http.MethodGet)
+	router.r.HandleFunc(router.migratePath(path), router.s.decorate(http.MethodGet, router.middlewares, path, handler)).Methods(http.MethodGet)
 }
 
 // Post registers a new POST route.
 func (router *Router) Post(path string, handler Handler) {
-	router.r.HandleFunc(router.migratePath(path), router.s.decorate(http.MethodPost, path, handler)).Methods(http.MethodPost)
+	router.r.HandleFunc(router.migratePath(path), router.s.decorate(http.MethodPost, router.middlewares, path, handler)).Methods(http.MethodPost)
 }
 
 // Put registers a new PUT route.
 func (router *Router) Put(path string, handler Handler) {
-	router.r.HandleFunc(router.migratePath(path), router.s.decorate(http.MethodPut, path, handler)).Methods(http.MethodPut)
+	router.r.HandleFunc(router.migratePath(path), router.s.decorate(http.MethodPut, router.middlewares, path, handler)).Methods(http.MethodPut)
 }
 
 // Delete registers a new DELETE route.
 func (router *Router) Delete(path string, handler Handler) {
-	router.r.HandleFunc(router.migratePath(path), router.s.decorate(http.MethodDelete, path, handler)).Methods(http.MethodDelete)
+	router.r.HandleFunc(router.migratePath(path), router.s.decorate(http.MethodDelete, router.middlewares, path, handler)).Methods(http.MethodDelete)
 }
 
 // Options registers a new OPTIONS route.
 func (router *Router) Options(path string, handler Handler) {
-	router.r.HandleFunc(router.migratePath(path), router.s.decorate(http.MethodOptions, path, handler)).Methods(http.MethodOptions)
+	router.r.HandleFunc(router.migratePath(path), router.s.decorate(http.MethodOptions, router.middlewares, path, handler)).Methods(http.MethodOptions)
 }
 
 func (router *Router) migratePath(path string) string {
@@ -269,16 +276,32 @@ func (router *Router) ProxyLocalAssets(destAddress string) {
 	})
 }
 
-func (router *Router) Domain(host string) *Router {
-	return &Router{
-		s: router.s,
-		r: router.r.Host(host).Subrouter(),
+type RouterOption func(router *Router)
+
+func WithMiddleware(middleware Middleware) RouterOption {
+	return func(router *Router) {
+		router.middlewares = append(router.middlewares, middleware)
 	}
 }
 
-func (router *Router) PathPrefix(path string) *Router {
-	return &Router{
+func (router *Router) Domain(host string, opts ...RouterOption) *Router {
+	sub := &Router{
+		s: router.s,
+		r: router.r.Host(host).Subrouter(),
+	}
+	for _, opt := range opts {
+		opt(sub)
+	}
+	return sub
+}
+
+func (router *Router) PathPrefix(path string, opts ...RouterOption) *Router {
+	sub := &Router{
 		s: router.s,
 		r: router.r.PathPrefix(path).Subrouter(),
 	}
+	for _, opt := range opts {
+		opt(sub)
+	}
+	return sub
 }
