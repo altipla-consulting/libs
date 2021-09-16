@@ -286,8 +286,9 @@ func WithMiddleware(middleware Middleware) RouterOption {
 
 func (router *Router) Domain(host string, opts ...RouterOption) *Router {
 	sub := &Router{
-		s: router.s,
-		r: router.r.Host(host).Subrouter(),
+		s:           router.s,
+		r:           router.r.Host(host).Subrouter(),
+		middlewares: router.middlewares,
 	}
 	for _, opt := range opts {
 		opt(sub)
@@ -297,8 +298,9 @@ func (router *Router) Domain(host string, opts ...RouterOption) *Router {
 
 func (router *Router) PathPrefix(path string, opts ...RouterOption) *Router {
 	sub := &Router{
-		s: router.s,
-		r: router.r.PathPrefix(path).Subrouter(),
+		s:           router.s,
+		r:           router.r.PathPrefix(path).Subrouter(),
+		middlewares: router.middlewares,
 	}
 	for _, opt := range opts {
 		opt(sub)
