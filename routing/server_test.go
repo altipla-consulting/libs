@@ -181,3 +181,26 @@ func TestPathPrefixWithHome(t *testing.T) {
 	resp, _ = fakeRequest(t, server, req)
 	require.Equal(t, resp.StatusCode, http.StatusNotFound)
 }
+
+func TestDomainSameRouteAsRoot(t *testing.T) {
+	server := NewServer(WithLogrus())
+	domain := server.Domain("www.foo.com")
+	domain.Get("/test", func(w http.ResponseWriter, r *http.Request) error {
+		fmt.Fprint(w, "domain")
+		return nil
+	})
+	server.Get("/test", func(w http.ResponseWriter, r *http.Request) error {
+		fmt.Fprint(w, "root")
+		return nil
+	})
+
+	req := httptest.NewRequest(http.MethodGet, "http://www.foo.com/test", nil)
+	resp, body := fakeRequest(t, server, req)
+	require.Equal(t, resp.StatusCode, http.StatusOK)
+	require.Equal(t, body, "domain")
+
+	req = httptest.NewRequest(http.MethodGet, "http://www.bar.com/test", nil)
+	resp, body = fakeRequest(t, server, req)
+	require.Equal(t, resp.StatusCode, http.StatusOK)
+	require.Equal(t, body, "root")
+}
