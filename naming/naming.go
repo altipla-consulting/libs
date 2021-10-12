@@ -30,7 +30,7 @@ func Read(name string, parts ...interface{}) error {
 
 	segments := strings.Split(name, "/")
 	if len(segments) != len(parts) {
-		return errors.Errorf("invalid number of segments: %v", len(segments))
+		return errors.Errorf("invalid number of segments: %v: %s", len(segments), name)
 	}
 
 	for i, part := range parts {
