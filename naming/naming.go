@@ -5,8 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	"libs.altipla.consulting/errors"
 )
 
 func Generate(parts ...interface{}) string {
@@ -31,14 +30,14 @@ func Read(name string, parts ...interface{}) error {
 
 	segments := strings.Split(name, "/")
 	if len(segments) != len(parts) {
-		return status.Errorf(codes.InvalidArgument, "invalid number of segments: %v", len(parts))
+		return errors.Errorf("invalid number of segments: %v", len(segments))
 	}
 
 	for i, part := range parts {
 		switch part := part.(type) {
 		case string:
 			if segments[i] != part {
-				return status.Errorf(codes.InvalidArgument, "mismatch in static segment: %s", part)
+				return errors.Errorf("mismatch in static segment: %s", part)
 			}
 
 		case *string:
@@ -47,7 +46,7 @@ func Read(name string, parts ...interface{}) error {
 		case *int64:
 			n, err := strconv.ParseInt(segments[i], 10, 64)
 			if err != nil {
-				return status.Errorf(codes.InvalidArgument, "invalid numeric id: %s", segments[i])
+				return errors.Errorf("invalid numeric id: %s", segments[i])
 			}
 			*part = n
 
