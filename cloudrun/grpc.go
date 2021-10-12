@@ -67,9 +67,6 @@ func GRPC(opts ...Option) *GRPCServer {
 		runtime.WithRoutingErrorHandler(fn),
 	)
 
-	if cnf.queues != nil {
-		cnf.queues(server.http)
-	}
 	return server
 }
 

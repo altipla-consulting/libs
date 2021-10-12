@@ -39,13 +39,6 @@ func WithProfiler() Option {
 	}
 }
 
-// WithQueues initializes and configures the queues.
-func WithQueues(fn func(*routing.Server)) Option {
-	return func(cnf *config) {
-		cnf.queues = fn
-	}
-}
-
 func WithAuth(auth Authorizer) Option {
 	return func(cnf *config) {
 		cnf.unaryInterceptors = append(cnf.unaryInterceptors, auth.GRPCInterceptor())

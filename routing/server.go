@@ -67,7 +67,7 @@ type Server struct {
 
 // NewServer configures a new router with the options.
 func NewServer(opts ...ServerOption) *Server {
-	s := &Server{}
+	s := new(Server)
 	for _, opt := range opts {
 		opt(s)
 	}

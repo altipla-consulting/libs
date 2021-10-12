@@ -14,7 +14,6 @@ import (
 
 	"libs.altipla.consulting/env"
 	"libs.altipla.consulting/errors"
-	"libs.altipla.consulting/pubsub"
 	"libs.altipla.consulting/routing"
 )
 
@@ -45,12 +44,6 @@ func (server *WebServer) port() string {
 		return port
 	}
 	return "8080"
-}
-
-type PubSubHandler func(ctx context.Context, message *pubsub.Message) error
-
-func (server *WebServer) PubSub(subscription string, handler PubSubHandler) {
-	server.Post("/_/pubsub/"+subscription, makePubSubHandler(handler))
 }
 
 func (server *WebServer) Serve() {
