@@ -84,8 +84,8 @@ func (s *Server) Subscribe(subscription string, handler Handler) {
 			if err != nil {
 				return routing.Unauthorizedf("pubsub invalid token: %s", err.Error())
 			}
-			if payload.Subject != s.serviceAccount {
-				return routing.Unauthorizedf("pubsub subject does not match, expected %s got: %s", s.serviceAccount, payload.Subject)
+			if email, ok := payload.Claims["email"].(string); !ok || email != s.serviceAccount {
+				return routing.Unauthorizedf("pubsub subject does not match, expected %s got: %s", s.serviceAccount, email)
 			}
 		}
 
