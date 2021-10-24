@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"libs.altipla.consulting/errors"
 	"libs.altipla.consulting/naming"
@@ -122,7 +123,7 @@ func (sess *Session) SaveChanges(ctx context.Context) error {
 				if err := json.NewDecoder(resp.Body).Decode(&metadata); err != nil {
 					return errors.Trace(err)
 				}
-				action.model.load(metadata.ChangeVector)
+				action.model.load(metadata)
 				return nil
 			case http.StatusConflict:
 				return errors.Trace(ErrConcurrentTransaction)
@@ -153,7 +154,7 @@ func (sess *Session) SaveChanges(ctx context.Context) error {
 
 			switch resp.StatusCode {
 			case http.StatusNoContent:
-				action.model.load("")
+				action.model.load(api.ModelMetadata{})
 				return nil
 			case http.StatusConflict:
 				return errors.Trace(ErrConcurrentTransaction)
@@ -210,7 +211,18 @@ func (sess *Session) SaveChanges(ctx context.Context) error {
 		}
 		for i, result := range results.Results {
 			if store, ok := sess.actions[i].(*storeModelAction); ok {
-				store.model.load(result.DirectMetadata("@change-vector"))
+				md := api.ModelMetadata{
+					ChangeVector: result.DirectMetadata("@change-vector"),
+				}
+				expires := result.DirectMetadata("@expires")
+				if expires != "" {
+					var err error
+					md.Expires, err = time.Parse(api.DateTimeFormat, expires)
+					if err != nil {
+						return errors.Trace(err)
+					}
+				}
+				store.model.load(md)
 			}
 		}
 	case http.StatusConflict:

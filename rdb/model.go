@@ -3,38 +3,68 @@ package rdb
 import (
 	"encoding/json"
 	"reflect"
+	"time"
 
 	"libs.altipla.consulting/errors"
 	"libs.altipla.consulting/rdb/api"
 )
 
 type Model interface {
-	// To be implemented by the model struct.
+	// To be implemented by the model struct. It should return the name of the
+	// collection like "Users" or "Sites".
 	Collection() string
 
-	// Automatically implemented with rdb.ModelTracking.
+	// Returns the change vector associated to the model when it was last
+	// retrieved from the server. Automatically implemented with rdb.ModelTracking.
+	// Deprecated: Use Tracking().ChangeVector() instead.
 	ChangeVector() string
-	load(changeVector string)
+
+	// Returns tracking info like expiration or change vector.
+	// Automatically implemented with rdb.ModelTracking.
+	Tracking() *ModelTracking
+
+	// Automatically implemented with rdb.ModelTracking. Internal method to initialize
+	// new models from scratch.
+	load(md api.ModelMetadata)
 }
 
 type ModelTracking struct {
 	changeVector string
+	expires      time.Time
 }
 
-func (tracking *ModelTracking) load(changeVector string) {
-	tracking.changeVector = changeVector
+func (tracking *ModelTracking) load(md api.ModelMetadata) {
+	tracking.changeVector = md.ChangeVector
+	tracking.expires = md.Expires
 }
 
 func (tracking *ModelTracking) ChangeVector() string {
 	return tracking.changeVector
 }
 
+func (tracking *ModelTracking) Expires() time.Time {
+	return tracking.expires
+}
+
+func (tracking *ModelTracking) Expire(t time.Time) {
+	tracking.expires = t
+}
+
+func (tracking *ModelTracking) NeverExpire() {
+	tracking.expires = time.Time{}
+}
+
+func (tracking *ModelTracking) Tracking() *ModelTracking {
+	return tracking
+}
+
 type IndexModel struct {
 }
 
-func (model *IndexModel) Collection() string       { return "" }
-func (model *IndexModel) ChangeVector() string     { return "" }
-func (model *IndexModel) load(changeVector string) {}
+func (model *IndexModel) Collection() string        { return "" }
+func (model *IndexModel) ChangeVector() string      { return "" }
+func (model *IndexModel) load(md api.ModelMetadata) {}
+func (model *IndexModel) Tracking() *ModelTracking  { return nil }
 
 func getModelID(model Model) (string, error) {
 	rv := reflect.ValueOf(model)
@@ -66,9 +96,14 @@ func serializeModel(model Model) (map[string]interface{}, error) {
 
 	delete(read, "ID")
 
-	read["@metadata"] = map[string]string{
+	md := map[string]string{
 		"@collection": model.Collection(),
 	}
+	tracking := model.Tracking()
+	if !tracking.Expires().IsZero() {
+		md["@expires"] = tracking.Expires().In(time.UTC).Format(api.DateTimeFormat)
+	}
+	read["@metadata"] = md
 
 	return read, nil
 }
@@ -119,13 +154,21 @@ func createModel(dest interface{}, result api.Result) (Model, error) {
 		ChangeVector: result.Metadata("@change-vector"),
 		ID:           result.Metadata("@id"),
 	}
+	expires := result.Metadata("@expires")
+	if expires != "" {
+		var err error
+		metadata.Expires, err = time.Parse(api.DateTimeFormat, expires)
+		if err != nil {
+			return nil, errors.Trace(err)
+		}
+	}
 	if err := setModelID(rv.Elem().Interface(), metadata); err != nil {
 		return nil, errors.Trace(err)
 	}
 
 	model, ok := rv.Elem().Interface().(Model)
 	if ok {
-		model.load(metadata.ChangeVector)
+		model.load(metadata)
 	}
 
 	encoded, err := json.Marshal(result)

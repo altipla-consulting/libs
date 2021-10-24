@@ -410,3 +410,23 @@ func (db *Database) RQLQuery(query *RQLQuery) *DirectQuery {
 		conn:  db.conn,
 	}
 }
+
+// Maintenance sends admin operations to the server one by one.
+func (db *Database) Maintenance(ctx context.Context, operations ...AdminOperation) error {
+	for _, op := range operations {
+		r, err := db.conn.buildPOST(db.conn.endpoint(strings.TrimLeft(op.URL(), "/")), nil, op.Body())
+		if err != nil {
+			return errors.Trace(err)
+		}
+		resp, err := db.conn.sendRequest(ctx, r)
+		if err != nil {
+			return errors.Trace(err)
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			return NewUnexpectedStatusError(r, resp)
+		}
+	}
+	return nil
+}

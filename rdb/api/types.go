@@ -1,5 +1,7 @@
 package api
 
+import "time"
+
 type Database struct {
 	DatabaseName  string
 	DatabaseState string `json:",omitempty"`
@@ -50,6 +52,7 @@ type RevisionConfig struct {
 type ModelMetadata struct {
 	ID           string `json:"Id"`
 	ChangeVector string
+	Expires      time.Time
 }
 
 type Results struct {
@@ -90,7 +93,8 @@ func (result Result) MetadataBool(key string) bool {
 }
 
 func (result Result) DirectMetadata(key string) string {
-	return result[key].(string)
+	val, _ := result[key].(string)
+	return val
 }
 
 type BulkCommands struct {

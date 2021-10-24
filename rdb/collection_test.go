@@ -3,6 +3,7 @@ package rdb
 import (
 	"context"
 	"errors"
+	"os"
 	"testing"
 	"time"
 
@@ -416,4 +417,51 @@ func TestCollectionConfigureRevisions(t *testing.T) {
 	desc, err = db.Descriptor(ctx)
 	require.NoError(t, err)
 	require.Empty(t, desc.Revisions.Collections)
+}
+
+func TestPutTTL(t *testing.T) {
+	db := initCollectionTestbed(t)
+	collection := db.Collection(new(FooCollectionModel))
+	ctx := context.Background()
+
+	foo := &FooCollectionModel{
+		ID: "foo-collections/ttl",
+	}
+	foo.Tracking().Expire(time.Now().Add(1 * time.Hour))
+	require.NoError(t, collection.Put(ctx, foo))
+
+	var other *FooCollectionModel
+	require.NoError(t, collection.Get(ctx, "foo-collections/ttl", &other))
+
+	require.Equal(t, other.ID, "foo-collections/ttl")
+	require.WithinDuration(t, other.Tracking().Expires(), time.Now().Add(1*time.Hour), 2*time.Second)
+}
+
+func TestPutTTLRealTimer(t *testing.T) {
+	if os.Getenv("RDB_TTL_REAL_TEST") != "true" {
+		t.Skip("Set RDB_TTL_REAL_TEST=true to run this test")
+	}
+
+	db := initCollectionTestbed(t)
+	collection := db.Collection(new(FooCollectionModel))
+	ctx := context.Background()
+
+	op := EnableExpiration()
+	op.SetFrequency(1)
+	require.NoError(t, db.Maintenance(ctx, op))
+
+	foo := &FooCollectionModel{
+		ID: "foo-collections/ttl",
+	}
+	foo.Tracking().Expire(time.Now().Add(2 * time.Second))
+	require.NoError(t, collection.Put(ctx, foo))
+
+	var other *FooCollectionModel
+	require.NoError(t, collection.Get(ctx, "foo-collections/ttl", &other))
+
+	time.Sleep(3 * time.Second)
+
+	require.EqualError(t, collection.Get(ctx, "foo-collections/ttl", &other), ErrNoSuchEntity.Error())
+
+	require.NoError(t, db.Maintenance(ctx, DisableExpiration()))
 }

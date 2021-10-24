@@ -9,6 +9,7 @@ import (
 	"libs.altipla.consulting/datetime"
 	"libs.altipla.consulting/errors"
 	pb "libs.altipla.consulting/protos/datetime"
+	"libs.altipla.consulting/rdb/api"
 )
 
 type Date struct {
@@ -24,7 +25,7 @@ func (value Date) String() string {
 		return ""
 	}
 	// Zeros for the nanoseconds is bad on purpose to avoid formatting them.
-	return datetime.TimeToDate(value.Time).In(time.UTC).Format("2006-01-02T15:04:05.0000000Z")
+	return datetime.TimeToDate(value.Time).In(time.UTC).Format(api.DateTimeFormat)
 }
 
 func (value Date) MarshalJSON() ([]byte, error) {
@@ -63,8 +64,7 @@ func (value DateTime) String() string {
 	if value.Time.IsZero() {
 		return ""
 	}
-	// Zeros for the nanoseconds is bad on purpose to avoid formatting them.
-	return value.Time.In(time.UTC).Format("2006-01-02T15:04:05.0000000Z")
+	return value.Time.In(time.UTC).Format(api.DateTimeFormat)
 }
 
 func (value DateTime) MarshalJSON() ([]byte, error) {
