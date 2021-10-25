@@ -428,7 +428,9 @@ func TestPutTTL(t *testing.T) {
 		ID: "foo-collections/ttl",
 	}
 	foo.Tracking().Expire(time.Now().Add(1 * time.Hour))
+	require.WithinDuration(t, foo.Tracking().Expires(), time.Now().Add(1*time.Hour), 2*time.Second)
 	require.NoError(t, collection.Put(ctx, foo))
+	require.WithinDuration(t, foo.Tracking().Expires(), time.Now().Add(1*time.Hour), 2*time.Second)
 
 	var other *FooCollectionModel
 	require.NoError(t, collection.Get(ctx, "foo-collections/ttl", &other))

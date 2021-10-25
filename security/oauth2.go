@@ -7,6 +7,7 @@ import (
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"gopkg.in/square/go-jose.v2/jwt"
+
 	"libs.altipla.consulting/errors"
 )
 

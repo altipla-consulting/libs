@@ -29,5 +29,5 @@ func DisableExpiration() *ConfigureExpirationOperation {
 }
 
 func EnableExpiration() *ConfigureExpirationOperation {
-	return &ConfigureExpirationOperation{}
+	return new(ConfigureExpirationOperation)
 }

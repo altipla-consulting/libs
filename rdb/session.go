@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
-	"time"
 
 	"libs.altipla.consulting/errors"
 	"libs.altipla.consulting/naming"
@@ -123,7 +122,7 @@ func (sess *Session) SaveChanges(ctx context.Context) error {
 				if err := json.NewDecoder(resp.Body).Decode(&metadata); err != nil {
 					return errors.Trace(err)
 				}
-				action.model.load(metadata)
+				action.model.Tracking().changeVector = metadata.ChangeVector
 				return nil
 			case http.StatusConflict:
 				return errors.Trace(ErrConcurrentTransaction)
@@ -211,18 +210,7 @@ func (sess *Session) SaveChanges(ctx context.Context) error {
 		}
 		for i, result := range results.Results {
 			if store, ok := sess.actions[i].(*storeModelAction); ok {
-				md := api.ModelMetadata{
-					ChangeVector: result.DirectMetadata("@change-vector"),
-				}
-				expires := result.DirectMetadata("@expires")
-				if expires != "" {
-					var err error
-					md.Expires, err = time.Parse(api.DateTimeFormat, expires)
-					if err != nil {
-						return errors.Trace(err)
-					}
-				}
-				store.model.load(md)
+				store.model.Tracking().changeVector = result.DirectMetadata("@change-vector")
 			}
 		}
 	case http.StatusConflict:
