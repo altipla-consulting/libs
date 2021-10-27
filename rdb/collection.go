@@ -179,10 +179,10 @@ func (collection *Collection) GetMulti(ctx context.Context, ids []string, dest i
 	}
 
 	params := map[string]interface{}{
-		"id":      ids,
 		"include": applyModelIncludes(opts...),
 	}
-	r, err := collection.conn.buildGET(collection.conn.endpoint("docs"), params)
+	body := &api.DocsRequest{IDs: ids}
+	r, err := collection.conn.buildPOST(collection.conn.endpoint("docs"), params, body)
 	if err != nil {
 		return errors.Trace(err)
 	}

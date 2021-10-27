@@ -180,13 +180,22 @@ func (conn *connection) buildPUT(path string, args map[string]string, body inter
 	return r, nil
 }
 
-func (conn *connection) buildPOST(path string, args map[string]string, body interface{}) (*http.Request, error) {
+func (conn *connection) buildPOST(path string, args map[string]interface{}, body interface{}) (*http.Request, error) {
 	conn.configmux.RLock()
 	defer conn.configmux.RUnlock()
 
 	q := make(url.Values)
 	for k, v := range args {
-		q.Set(k, v)
+		switch v := v.(type) {
+		case string:
+			q.Set(k, v)
+		case []string:
+			for _, item := range v {
+				q.Add(k, item)
+			}
+		default:
+			return nil, errors.Errorf("unrecognized get parameter: %T", v)
+		}
 	}
 	u := &url.URL{
 		Scheme:   conn.base.Scheme,

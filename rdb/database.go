@@ -347,7 +347,7 @@ func (db *Database) UpsertIdentity(ctx context.Context, name string, value int64
 		return errors.Errorf("identity name is required to assign it")
 	}
 
-	args := map[string]string{
+	args := map[string]interface{}{
 		"name":  name,
 		"value": strconv.FormatInt(value, 10),
 	}

@@ -337,7 +337,7 @@ func (q *Query) GetAll(ctx context.Context, dest interface{}, opts ...IncludeOpt
 }
 
 func (q *Query) Count(ctx context.Context) (int64, error) {
-	params := map[string]string{"metadataOnly": "true"}
+	params := map[string]interface{}{"metadataOnly": "true"}
 	q.statsOnly = true
 	r, err := q.conn.buildPOST(q.conn.endpoint("queries"), params, q.buildQuery())
 	if err != nil {
@@ -428,7 +428,7 @@ func (q *Query) buildQuery(opts ...IncludeOption) *api.Query {
 type ModelMetadata = api.ModelMetadata
 
 func (q *Query) GetAllMetadata(ctx context.Context) ([]ModelMetadata, error) {
-	params := map[string]string{"metadataOnly": "true"}
+	params := map[string]interface{}{"metadataOnly": "true"}
 	r, err := q.conn.buildPOST(q.conn.endpoint("queries"), params, q.buildQuery())
 	if err != nil {
 		return nil, errors.Trace(err)

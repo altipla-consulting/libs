@@ -210,3 +210,7 @@ type CounterOperation struct {
 	Delta       int64
 	Type        CounterOperationType
 }
+
+type DocsRequest struct {
+	IDs []string `json:"Ids"`
+}
