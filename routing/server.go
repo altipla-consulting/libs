@@ -223,27 +223,59 @@ type Middleware func(handler Handler) Handler
 
 // Get registers a new GET route.
 func (router *Router) Get(path string, handler Handler) {
-	router.r.HandleFunc(router.migratePath(path), router.s.decorate(http.MethodGet, router.middlewares, path, handler)).Methods(http.MethodGet)
+	fn := router.s.decorate(http.MethodGet, router.middlewares, path, handler)
+	if prefix := hasWildcard(path); prefix != "" {
+		router.r.PathPrefix(prefix).HandlerFunc(fn).Methods(http.MethodGet)
+		return
+	}
+	router.r.HandleFunc(router.migratePath(path), fn).Methods(http.MethodGet)
 }
 
 // Post registers a new POST route.
 func (router *Router) Post(path string, handler Handler) {
-	router.r.HandleFunc(router.migratePath(path), router.s.decorate(http.MethodPost, router.middlewares, path, handler)).Methods(http.MethodPost)
+	fn := router.s.decorate(http.MethodPost, router.middlewares, path, handler)
+	if prefix := hasWildcard(path); prefix != "" {
+		router.r.PathPrefix(prefix).HandlerFunc(fn).Methods(http.MethodPost)
+		return
+	}
+	router.r.HandleFunc(router.migratePath(path), fn).Methods(http.MethodPost)
 }
 
 // Put registers a new PUT route.
 func (router *Router) Put(path string, handler Handler) {
-	router.r.HandleFunc(router.migratePath(path), router.s.decorate(http.MethodPut, router.middlewares, path, handler)).Methods(http.MethodPut)
+	fn := router.s.decorate(http.MethodPut, router.middlewares, path, handler)
+	if prefix := hasWildcard(path); prefix != "" {
+		router.r.PathPrefix(prefix).HandlerFunc(fn).Methods(http.MethodPut)
+		return
+	}
+	router.r.HandleFunc(router.migratePath(path), fn).Methods(http.MethodPut)
 }
 
 // Delete registers a new DELETE route.
 func (router *Router) Delete(path string, handler Handler) {
-	router.r.HandleFunc(router.migratePath(path), router.s.decorate(http.MethodDelete, router.middlewares, path, handler)).Methods(http.MethodDelete)
+	fn := router.s.decorate(http.MethodDelete, router.middlewares, path, handler)
+	if prefix := hasWildcard(path); prefix != "" {
+		router.r.PathPrefix(prefix).HandlerFunc(fn).Methods(http.MethodDelete)
+		return
+	}
+	router.r.HandleFunc(router.migratePath(path), fn).Methods(http.MethodDelete)
 }
 
 // Options registers a new OPTIONS route.
 func (router *Router) Options(path string, handler Handler) {
-	router.r.HandleFunc(router.migratePath(path), router.s.decorate(http.MethodOptions, router.middlewares, path, handler)).Methods(http.MethodOptions)
+	fn := router.s.decorate(http.MethodOptions, router.middlewares, path, handler)
+	if prefix := hasWildcard(path); prefix != "" {
+		router.r.PathPrefix(prefix).HandlerFunc(fn).Methods(http.MethodOptions)
+		return
+	}
+	router.r.HandleFunc(router.migratePath(path), fn).Methods(http.MethodOptions)
+}
+
+func hasWildcard(path string) string {
+	if strings.Contains(path, "*filepath") {
+		return strings.TrimSuffix(path, "*filepath")
+	}
+	return ""
 }
 
 func (router *Router) migratePath(path string) string {
