@@ -40,6 +40,8 @@ func Version() string {
 		v, err := ioutil.ReadFile("../deployments/active")
 		if err == nil {
 			return string(v)
+		} else if !os.IsNotExist(err) {
+			panic(err)
 		}
 	}
 
