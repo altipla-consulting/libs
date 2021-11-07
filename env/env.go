@@ -38,8 +38,8 @@ func Version() string {
 	// Azure Function has a Kubu file one level up of the working directory.
 	if IsAzureFunction() {
 		v, err := ioutil.ReadFile("../deployments/active")
-		if err != nil {
-      return string(v)
+		if err == nil {
+			return string(v)
 		}
 	}
 
