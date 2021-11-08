@@ -87,6 +87,10 @@ func (server *GRPCServer) Gateway(fn func(context.Context, *runtime.ServeMux, st
 	}
 }
 
+func (server *GRPCServer) HTTPGateway(fn func(r *routing.Server)) {
+	fn(server.http)
+}
+
 func (server *GRPCServer) Serve() {
 	ctx, done := signalcontext.OnInterrupt()
 	defer done()
