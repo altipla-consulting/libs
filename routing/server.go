@@ -91,6 +91,9 @@ func NewServer(opts ...ServerOption) *Server {
 		s: s,
 		r: mux.NewRouter().StrictSlash(true),
 	}
+	s.r.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		s.decorate("NotFound", nil, "", s.handler404)(w, r)
+	})
 
 	return s
 }
