@@ -54,6 +54,15 @@ func WithCustom404(handler Handler) ServerOption {
 	}
 }
 
+// WithCustomTimeout changes the default timeout of 29 seconds to a custom one.
+// It's only recommended for environments where the limit is longer than 30-60 seconds. For example
+// background queues might have 10 minutes of activity in some setups.
+func WithCustomTimeout(timeout time.Duration) ServerOption {
+	return func(server *Server) {
+		server.timeout = timeout
+	}
+}
+
 // Server configures the routing table.
 type Server struct {
 	*Router
@@ -63,11 +72,14 @@ type Server struct {
 	sentryClient       *sentry.Client
 	logging            bool
 	handler404         Handler
+	timeout            time.Duration
 }
 
 // NewServer configures a new router with the options.
 func NewServer(opts ...ServerOption) *Server {
-	s := new(Server)
+	s := &Server{
+		timeout: 29 * time.Second,
+	}
 	for _, opt := range opts {
 		opt(s)
 	}
@@ -118,7 +130,7 @@ func (s *Server) decorate(method string, middlewares []Middleware, path string, 
 
 		ctx := r.Context()
 		ctx = context.WithValue(ctx, requestKey, r)
-		ctx, cancel := context.WithTimeout(ctx, 29*time.Second)
+		ctx, cancel := context.WithTimeout(ctx, s.timeout)
 		defer cancel()
 
 		r = r.WithContext(ctx)
