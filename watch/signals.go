@@ -8,7 +8,7 @@ import (
 )
 
 func Interrupt(ctx context.Context, cancel context.CancelFunc) {
-	c := make(chan os.Signal)
+	c := make(chan os.Signal, 10)
 	signal.Notify(c, os.Interrupt)
 	select {
 	case <-ctx.Done():
