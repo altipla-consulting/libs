@@ -98,10 +98,14 @@ func (client *Client) SendReturnID(ctx context.Context, domain string, email *Em
 			return "", errors.Trace(ErrTimeout)
 		}
 
-		if mgerr, ok := err.(*mailgun.UnexpectedResponseError); ok {
+		var mgerr *mailgun.UnexpectedResponseError
+		if errors.As(err, &mgerr) {
 			errdata := new(sendError)
 			if err := json.Unmarshal(mgerr.Data, errdata); err == nil {
 				if errdata.Message == "'to' parameter is not a valid address. please check documentation" {
+					return "", errors.Wrapf(ErrInvalidAddress, "email: %s", email.To.String())
+				}
+				if errdata.Message == "to parameter is not a valid address. please check documentation" {
 					return "", errors.Wrapf(ErrInvalidAddress, "email: %s", email.To.String())
 				}
 			}
