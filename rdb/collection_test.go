@@ -250,9 +250,13 @@ func TestGetMultiNoSuchEntityNone(t *testing.T) {
 	require.Len(t, merr, 2)
 	require.EqualError(t, merr[0], ErrNoSuchEntity.Error())
 	require.EqualError(t, merr[1], ErrNoSuchEntity.Error())
+
+	require.Len(t, results, 2)
+	require.Nil(t, results[0])
+	require.Nil(t, results[1])
 }
 
-func TestGetMultiNoSuchEntity(t *testing.T) {
+func TestGetMultiNoSuchEntitySome(t *testing.T) {
 	ctx := context.Background()
 	db := initCollectionTestbed(t)
 	collection := db.Collection(new(FooCollectionModel))
@@ -272,6 +276,11 @@ func TestGetMultiNoSuchEntity(t *testing.T) {
 	require.Len(t, merr, 2)
 	require.Nil(t, merr[0])
 	require.EqualError(t, merr[1], ErrNoSuchEntity.Error())
+
+	require.Len(t, results, 2)
+	require.NotNil(t, results[0])
+	require.Equal(t, results[0].ID, "foo-collections/1")
+	require.Nil(t, results[1])
 }
 
 func TestDelete(t *testing.T) {

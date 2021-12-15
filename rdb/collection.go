@@ -205,6 +205,7 @@ func (collection *Collection) GetMulti(ctx context.Context, ids []string, dest i
 		for i, result := range results.Results {
 			if result == nil {
 				merr[i] = errors.Wrapf(ErrNoSuchEntity, "id: %s", ids[i])
+				slice = reflect.Append(slice, reflect.Zero(rt.Elem().Elem()))
 				continue
 			}
 			item := reflect.New(reflect.PtrTo(rt.Elem().Elem().Elem()))
@@ -215,6 +216,7 @@ func (collection *Collection) GetMulti(ctx context.Context, ids []string, dest i
 			if model != nil {
 				if !collection.checkEnforcers(model) {
 					merr[i] = errors.Wrapf(ErrNoSuchEntity, "enforced id: %s", ids[i])
+					slice = reflect.Append(slice, reflect.Zero(rt.Elem().Elem()))
 					continue
 				}
 			} else if len(collection.enforcers) > 0 {
@@ -222,10 +224,10 @@ func (collection *Collection) GetMulti(ctx context.Context, ids []string, dest i
 			}
 			slice = reflect.Append(slice, item.Elem())
 		}
+		reflect.ValueOf(dest).Elem().Set(slice)
 		if merr.HasError() {
 			return errors.Trace(merr)
 		}
-		reflect.ValueOf(dest).Elem().Set(slice)
 
 		return nil
 	case http.StatusNotFound:
