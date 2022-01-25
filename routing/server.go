@@ -127,9 +127,7 @@ func (s *Server) decorate(method string, middlewares []Middleware, path string, 
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		if s.sentryClient != nil {
-			defer s.sentryClient.ReportPanicsRequest(r)
-		}
+		defer s.sentryClient.ReportPanicsRequest(r)
 
 		ctx := r.Context()
 		ctx = context.WithValue(ctx, requestKey, r)
@@ -189,9 +187,7 @@ func (s *Server) decorate(method string, middlewares []Middleware, path string, 
 			if s.logging {
 				log.WithFields(errors.LogFields(err)).Error("Handler failed")
 			}
-			if s.sentryClient != nil {
-				s.sentryClient.ReportRequest(r, err)
-			}
+			s.sentryClient.ReportRequest(r, err)
 
 			// Responde según el tipo de error por timeout u otro con un código HTTP adecuado.
 			if ctx.Err() == context.DeadlineExceeded {

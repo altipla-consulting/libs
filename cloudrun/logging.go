@@ -20,9 +20,7 @@ func grpcUnaryErrorLogger() grpc.UnaryServerInterceptor {
 	client := sentry.NewClient(os.Getenv("SENTRY_DSN"))
 
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-		if client != nil {
-			defer client.ReportPanics(ctx)
-		}
+		defer client.ReportPanics(ctx)
 
 		ctx = sentry.WithContextRPC(ctx, env.ServiceName(), info.FullMethod)
 
@@ -69,7 +67,5 @@ func logError(ctx context.Context, client *sentry.Client, method string, err err
 		return
 	}
 
-	if client != nil {
-		client.Report(ctx, err)
-	}
+	client.Report(ctx, err)
 }

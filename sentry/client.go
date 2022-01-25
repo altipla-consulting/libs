@@ -56,24 +56,33 @@ func NewClient(dsn string) *Client {
 
 // Report reports an error to Sentry.
 func (client *Client) Report(ctx context.Context, appErr error) {
+	if client == nil {
+		return
+	}
 	client.sendReport(ctx, appErr, nil)
 }
 
 // ReportRequest reports an error linked to a HTTP request.
 func (client *Client) ReportRequest(r *http.Request, appErr error) {
+	if client == nil {
+		return
+	}
 	client.sendReport(r.Context(), appErr, r)
 }
 
 // ReportPanics detects panics in the rest of the body of the function and
 // reports it if one occurs.
 func (client *Client) ReportPanics(ctx context.Context) {
+	if client == nil {
+		return
+	}
 	client.ReportPanic(ctx, recover())
 }
 
 // ReportPanic sends a panic correctly formated to the server if the argument
 // is not nil.
 func (client *Client) ReportPanic(ctx context.Context, panicErr interface{}) {
-	if panicErr == nil {
+	if client == nil || panicErr == nil {
 		return
 	}
 	rec := errors.Recover(panicErr)
@@ -90,6 +99,9 @@ func (client *Client) ReportPanic(ctx context.Context, panicErr interface{}) {
 // ReportPanicsRequest detects pancis in the body of the function and reports them
 // linked to a HTTP request.
 func (client *Client) ReportPanicsRequest(r *http.Request) {
+	if client == nil {
+		return
+	}
 	if rec := errors.Recover(recover()); rec != nil {
 		log.WithField("error", rec.Error()).Error("Panic recovered")
 		client.sendReportPanic(r.Context(), rec, string(debug.Stack()), r)
