@@ -8,10 +8,8 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
-	"google.golang.org/api/idtoken"
 	"google.golang.org/grpc"
 
-	"libs.altipla.consulting/env"
 	"libs.altipla.consulting/errors"
 )
 
@@ -60,20 +58,9 @@ func (creds *callCredentials) GetRequestMetadata(ctx context.Context, uri ...str
 		}, nil
 	}
 
-	var ts oauth2.TokenSource
-	switch {
-	case env.IsCloudRun():
-		ts = newCloudRunTokenSource(aud.String())
-	case env.IsLocal():
-		ts, err = newGcloudTokenSource(aud.String())
-		if err != nil {
-			return nil, errors.Trace(err)
-		}
-	default:
-		ts, err = idtoken.NewTokenSource(context.Background(), aud.String())
-		if err != nil {
-			return nil, errors.Trace(err)
-		}
+	ts, err := NewTokenSource(ctx, aud.String())
+	if err != nil {
+		return nil, errors.Trace(err)
 	}
 
 	creds.cachemu.Lock()

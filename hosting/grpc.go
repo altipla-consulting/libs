@@ -1,4 +1,4 @@
-package cloudrun
+package hosting
 
 import (
 	"context"
@@ -6,7 +6,6 @@ import (
 	"net"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 
 	"cloud.google.com/go/profiler"
@@ -17,22 +16,25 @@ import (
 	"github.com/soheilhy/cmux"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/encoding/protojson"
-	"google.golang.org/protobuf/proto"
-	"google.golang.org/protobuf/reflect/protoreflect"
 
 	"libs.altipla.consulting/env"
 	"libs.altipla.consulting/errors"
 	"libs.altipla.consulting/routing"
 )
 
-type GRPCServer struct {
-	*grpc.Server
-	http    *routing.Server
-	gateway *runtime.ServeMux
-	cnf     *config
+type Platform interface {
+	Init() error
 }
 
-func GRPC(opts ...Option) *GRPCServer {
+type GRPCServer struct {
+	*grpc.Server
+	http     *routing.Server
+	gateway  *runtime.ServeMux
+	cnf      *config
+	platform Platform
+}
+
+func GRPC(platform Platform, opts ...Option) *GRPCServer {
 	cnf := &config{
 		http: []routing.ServerOption{
 			routing.WithLogrus(),
@@ -51,9 +53,10 @@ func GRPC(opts ...Option) *GRPCServer {
 	cnf.grpc = append(cnf.grpc, grpc.ChainUnaryInterceptor(cnf.unaryInterceptors...))
 
 	server := &GRPCServer{
-		Server: grpc.NewServer(cnf.grpc...),
-		http:   routing.NewServer(cnf.http...),
-		cnf:    cnf,
+		Server:   grpc.NewServer(cnf.grpc...),
+		http:     routing.NewServer(cnf.http...),
+		cnf:      cnf,
+		platform: platform,
 	}
 	fn := func(ctx context.Context, mux *runtime.ServeMux, marshaler runtime.Marshaler, w http.ResponseWriter, r *http.Request, httpStatus int) {
 		if httpStatus == http.StatusNotFound {
@@ -160,6 +163,10 @@ func (server *GRPCServer) Serve() {
 		}
 	}()
 
+	if err := server.platform.Init(); err != nil {
+		log.Fatalf("cannot initialize platform: %s", err)
+	}
+
 	log.WithFields(log.Fields{
 		"port":    server.port(),
 		"version": env.Version(),
@@ -187,74 +194,4 @@ func (server *GRPCServer) Serve() {
 		log.Fatalf("failed to shutdown: %s", err)
 	default:
 	}
-}
-
-func grpcTrimStrings() grpc.UnaryServerInterceptor {
-	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
-		trimMessage(req.(proto.Message).ProtoReflect())
-		return handler(ctx, req)
-	}
-}
-
-func trimMessage(m protoreflect.Message) protoreflect.Message {
-	m.Range(func(fd protoreflect.FieldDescriptor, value protoreflect.Value) bool {
-		switch {
-		case fd.Kind() == protoreflect.StringKind && fd.IsList():
-			for list, i := value.List(), 0; i < list.Len(); i++ {
-				list.Set(i, trimString(list.Get(i)))
-			}
-
-		case fd.Kind() == protoreflect.StringKind:
-			m.Set(fd, trimString(value))
-
-		// We need to trim the keys too, so we build a new map and then replace
-		// the existing one once we ranged all the keys.
-		case fd.Kind() == protoreflect.MessageKind && fd.IsMap() && fd.MapKey().Kind() == protoreflect.StringKind:
-			trimmed := map[string]protoreflect.Value{}
-			value.Map().Range(func(mk protoreflect.MapKey, v protoreflect.Value) bool {
-				switch fd.MapValue().Kind() {
-				case protoreflect.StringKind:
-					v = trimString(v)
-				case protoreflect.MessageKind:
-					trimMessage(v.Message())
-				}
-
-				trimmed[trimString(mk.Value()).String()] = v
-				value.Map().Clear(mk)
-				return true
-			})
-			for k, sub := range trimmed {
-				value.Map().Set(protoreflect.ValueOfString(k).MapKey(), sub)
-			}
-
-		case fd.Kind() == protoreflect.MessageKind && fd.IsMap():
-			// Map has numeric keys, only process the values.
-			value.Map().Range(func(mk protoreflect.MapKey, v protoreflect.Value) bool {
-				switch fd.MapValue().Kind() {
-				case protoreflect.StringKind:
-					v.Map().Set(mk, trimString(v))
-				case protoreflect.MessageKind:
-					trimMessage(v.Message())
-				}
-
-				return true
-			})
-
-		case fd.Kind() == protoreflect.MessageKind && fd.IsList():
-			for list, i := value.List(), 0; i < list.Len(); i++ {
-				list.Set(i, protoreflect.ValueOfMessage(trimMessage(list.Get(i).Message())))
-			}
-
-		case fd.Kind() == protoreflect.MessageKind:
-			trimMessage(value.Message())
-		}
-
-		return true
-	})
-
-	return m
-}
-
-func trimString(v protoreflect.Value) protoreflect.Value {
-	return protoreflect.ValueOfString(strings.TrimSpace(v.String()))
 }

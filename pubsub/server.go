@@ -9,9 +9,9 @@ import (
 	"cloud.google.com/go/compute/metadata"
 	"google.golang.org/api/idtoken"
 
-	"libs.altipla.consulting/cloudrun"
 	"libs.altipla.consulting/env"
 	"libs.altipla.consulting/errors"
+	"libs.altipla.consulting/hosting"
 	"libs.altipla.consulting/routing"
 	"libs.altipla.consulting/security"
 )
@@ -20,7 +20,7 @@ type Server struct {
 	serviceAccount string
 	audience       string
 
-	r         *cloudrun.WebServer
+	r         *hosting.WebServer
 	validator *idtoken.Validator
 }
 
@@ -38,7 +38,7 @@ func WithAudience(audience string) ServerOption {
 	}
 }
 
-func NewServer(r *cloudrun.WebServer, opts ...ServerOption) (*Server, error) {
+func NewServer(r *hosting.WebServer, opts ...ServerOption) (*Server, error) {
 	s := &Server{
 		r: r,
 	}

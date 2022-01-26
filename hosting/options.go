@@ -1,4 +1,4 @@
-package cloudrun
+package hosting
 
 import (
 	"google.golang.org/grpc"
@@ -6,7 +6,7 @@ import (
 	"libs.altipla.consulting/routing"
 )
 
-// Option of a Cloud Run server.
+// Option of a server.
 type Option func(cnf *config)
 
 type config struct {

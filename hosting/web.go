@@ -1,4 +1,4 @@
-package cloudrun
+package hosting
 
 import (
 	"context"
@@ -19,10 +19,11 @@ import (
 
 type WebServer struct {
 	*routing.Server
-	cnf *config
+	cnf      *config
+	platform Platform
 }
 
-func Web(opts ...Option) *WebServer {
+func Web(platform Platform, opts ...Option) *WebServer {
 	cnf := &config{
 		http: []routing.ServerOption{
 			routing.WithLogrus(),
@@ -34,8 +35,9 @@ func Web(opts ...Option) *WebServer {
 	}
 
 	return &WebServer{
-		Server: routing.NewServer(cnf.http...),
-		cnf:    cnf,
+		Server:   routing.NewServer(cnf.http...),
+		cnf:      cnf,
+		platform: platform,
 	}
 }
 
@@ -95,6 +97,10 @@ func (server *WebServer) Serve() {
 			}
 		}
 	}()
+
+	if err := server.platform.Init(); err != nil {
+		log.Fatalf("cannot initialize platform: %s", err)
+	}
 
 	log.WithFields(log.Fields{
 		"port":    server.port(),

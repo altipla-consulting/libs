@@ -1,4 +1,4 @@
-package cloudrun
+package hosting
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	pb "libs.altipla.consulting/cloudrun/testdata"
+	pb "libs.altipla.consulting/hosting/testdata"
 )
 
 func TestTrimStrings(t *testing.T) {

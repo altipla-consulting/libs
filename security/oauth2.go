@@ -2,61 +2,34 @@ package security
 
 import (
 	"context"
+	"os"
 
-	"cloud.google.com/go/compute/metadata"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
-	"gopkg.in/square/go-jose.v2/jwt"
+	"google.golang.org/api/idtoken"
 
+	"libs.altipla.consulting/env"
 	"libs.altipla.consulting/errors"
 )
 
-type cloudRunTokenSource struct {
-	audience string
-}
-
-func newCloudRunTokenSource(audience string) oauth2.TokenSource {
-	return oauth2.ReuseTokenSource(nil, &cloudRunTokenSource{audience})
-}
-
-func (ts *cloudRunTokenSource) Token() (*oauth2.Token, error) {
-	idToken, err := metadata.Get("/instance/service-accounts/default/identity?audience=" + ts.audience)
-	if err != nil {
-		return nil, errors.Trace(err)
+func NewTokenSource(ctx context.Context, audience string) (oauth2.TokenSource, error) {
+	if audience == "" {
+		return nil, errors.Errorf("must supply a non-empty audience")
 	}
 
-	signed, err := jwt.ParseSigned(idToken)
-	if err != nil {
-		return nil, errors.Trace(err)
+	switch {
+	case env.IsCloudRun() || os.Getenv("GOOGLE_APPLICATION_CREDENTIALS") != "":
+		ts, err := idtoken.NewTokenSource(ctx, audience)
+		return ts, errors.Trace(err)
+
+	case env.IsLocal():
+		ts, err := google.DefaultTokenSource(ctx, audience)
+		if err != nil {
+			return nil, err
+		}
+		return oauth2.ReuseTokenSource(nil, ts), nil
+
+	default:
+		return nil, errors.Errorf("cannot detect the source to provide authentication")
 	}
-	var claims jwt.Claims
-	if err := signed.UnsafeClaimsWithoutVerification(&claims); err != nil {
-		return nil, errors.Trace(err)
-	}
-
-	token := &oauth2.Token{
-		Expiry: claims.Expiry.Time(),
-	}
-	token = token.WithExtra(map[string]interface{}{
-		"id_token": idToken,
-	})
-
-	return token, nil
-}
-
-type gcloudTokenSource struct {
-	ts oauth2.TokenSource
-}
-
-func newGcloudTokenSource(audience string) (oauth2.TokenSource, error) {
-	ts, err := google.DefaultTokenSource(context.Background(), audience)
-	if err != nil {
-		return nil, err
-	}
-	return oauth2.ReuseTokenSource(nil, &gcloudTokenSource{ts}), nil
-}
-
-func (s *gcloudTokenSource) Token() (*oauth2.Token, error) {
-	token, err := s.ts.Token()
-	return token, errors.Trace(err)
 }

@@ -1,7 +1,7 @@
 
 syntax = "proto3";
 
-package pkg.cloudrun.v2.testdata;
+package hosting.kubernetes.testdata;
 
 message TrimTest {
   string direct = 1;
