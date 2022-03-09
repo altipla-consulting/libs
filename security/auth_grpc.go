@@ -71,6 +71,9 @@ func (creds *callCredentials) GetRequestMetadata(ctx context.Context, uri ...str
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
+	if token.Extra("id_token") == nil {
+		return nil, errors.Errorf("unexpected nil id_token in google access token")
+	}
 	return map[string]string{
 		"Authorization": fmt.Sprintf("Bearer %s", token.Extra("id_token")),
 	}, nil
