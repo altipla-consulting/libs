@@ -10,23 +10,26 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"sync"
 	"testing"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 
 	"libs.altipla.consulting/env"
 	"libs.altipla.consulting/errors"
 	"libs.altipla.consulting/rdb/api"
+	"libs.altipla.consulting/secrets"
 )
 
 type Database struct {
+	mu   sync.RWMutex
 	conn *connection
 
 	strongConsistency bool
 	debug             bool
 	localCreate       bool
 	testingMode       bool
-
-	serverCertificatePEM, clientPrivateKeyPEM, clientCertificatePEM string
 }
 
 type OpenOption func(db *Database)
@@ -42,6 +45,7 @@ func WithStrongConsistency() OpenOption {
 	}
 }
 
+// WithDebug enables debug logging.
 func WithDebug() OpenOption {
 	if !env.IsLocal() {
 		panic("should not enable debug mode in production")
@@ -78,20 +82,24 @@ func WithTestingMode(t *testing.T) OpenOption {
 	}
 }
 
-// WithSecurity enables authentication with HTTPS certificates, both server side
-// and client side.
-func WithSecurity(serverCertificatePEM, clientPrivateKeyPEM, clientCertificatePEM string) OpenOption {
-	return func(db *Database) {
-		if serverCertificatePEM == "" || clientPrivateKeyPEM == "" || clientCertificatePEM == "" {
-			panic("do not enable security without certificates")
-		}
-		db.serverCertificatePEM = serverCertificatePEM
-		db.clientPrivateKeyPEM = clientPrivateKeyPEM
-		db.clientCertificatePEM = clientCertificatePEM
-	}
+func Open(address, dbname string, opts ...OpenOption) (*Database, error) {
+	return OpenCredentials(Credentials{Address: address}, dbname, opts...)
 }
 
-func Open(address, dbname string, opts ...OpenOption) (*Database, error) {
+func OpenSecret(secret *secrets.Value, dbname string, opts ...OpenOption) (*Database, error) {
+	var credentials Credentials
+	if err := secret.JSON(&credentials); err != nil {
+		return nil, errors.Trace(err)
+	}
+	db, err := OpenCredentials(credentials, dbname, opts...)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+	secret.OnChange(db.updateCredentials(dbname))
+	return db, nil
+}
+
+func OpenCredentials(credentials Credentials, dbname string, opts ...OpenOption) (*Database, error) {
 	db := new(Database)
 	for _, opt := range opts {
 		opt(db)
@@ -103,16 +111,8 @@ func Open(address, dbname string, opts ...OpenOption) (*Database, error) {
 		dbname += "_" + filepath.Base(filepath.Dir(os.Args[0])) + "_" + strings.Replace(filepath.Base(os.Args[0]), ".", "_", -1)
 	}
 
-	var err error
-	db.conn, err = newConnection(address, dbname, db.debug)
-	if err != nil {
+	if err := db.connect(dbname, credentials); err != nil {
 		return nil, errors.Trace(err)
-	}
-
-	if db.serverCertificatePEM != "" {
-		if err := db.conn.enableSecurity(db.serverCertificatePEM, db.clientPrivateKeyPEM, db.clientCertificatePEM); err != nil {
-			return nil, errors.Trace(err)
-		}
 	}
 
 	if db.localCreate {
@@ -132,7 +132,7 @@ func Open(address, dbname string, opts ...OpenOption) (*Database, error) {
 			return nil, errors.Trace(err)
 		}
 
-		connOriginal, err := newConnection(address, dbnameOriginal, db.debug)
+		connOriginal, err := newConnection(credentials.Address, dbnameOriginal, db.debug)
 		if err != nil {
 			return nil, errors.Trace(err)
 		}
@@ -155,19 +155,44 @@ func Open(address, dbname string, opts ...OpenOption) (*Database, error) {
 	return db, nil
 }
 
-// EnableSecurity enables the HTTPS certificates configured when opening a connection.
-// It helps transitioning from an insecure database to a secure one with feature flags.
-func (db *Database) EnableSecurity() error {
-	return errors.Trace(db.conn.enableSecurity(db.serverCertificatePEM, db.clientPrivateKeyPEM, db.clientCertificatePEM))
+func (db *Database) updateCredentials(dbname string) secrets.ChangeHook {
+	return func(secret *secrets.Value) {
+		var credentials Credentials
+		if err := secret.JSON(&credentials); err != nil {
+			log.WithFields(errors.LogFields(err)).Error("Cannot read the new RavenDB credentials")
+			return
+		}
+
+		if err := db.connect(dbname, credentials); err != nil {
+			log.WithFields(errors.LogFields(err)).Error("Cannot update RavenDB connection")
+		}
+	}
 }
 
-// DisableSecurity disables the HTTPS certificates configured in the connection.
-// It helps transitioning from an insecure database to a secure one with feature flags.
-func (db *Database) DisableSecurity() error {
-	return errors.Trace(db.conn.disableSecurity())
+func (db *Database) connect(dbname string, credentials Credentials) error {
+	db.mu.Lock()
+	defer db.mu.Unlock()
+
+	var err error
+	if credentials.Key == "" {
+		db.conn, err = newConnection(credentials.Address, dbname, db.debug)
+		if err != nil {
+			return errors.Trace(err)
+		}
+	} else {
+		db.conn, err = newSecureConnection(credentials, dbname, db.debug)
+		if err != nil {
+			return errors.Trace(err)
+		}
+	}
+
+	return nil
 }
 
 func (db *Database) Exists(ctx context.Context) (bool, error) {
+	db.mu.RLock()
+	defer db.mu.RUnlock()
+
 	if _, err := db.conn.descriptor(ctx); err != nil {
 		if errors.Is(err, ErrDatabaseDoesNotExists) {
 			return false, nil
@@ -179,6 +204,9 @@ func (db *Database) Exists(ctx context.Context) (bool, error) {
 }
 
 func (db *Database) Create(ctx context.Context, replicationFactor int64) error {
+	db.mu.RLock()
+	defer db.mu.RUnlock()
+
 	// TODO(ernesto): Probablemente la implementación de este método debería estar en connection
 	params := map[string]string{
 		"name":              db.conn.dbname,
@@ -201,6 +229,9 @@ func (db *Database) Create(ctx context.Context, replicationFactor int64) error {
 }
 
 func (db *Database) NewSession(ctx context.Context) (context.Context, *Session) {
+	db.mu.RLock()
+	defer db.mu.RUnlock()
+
 	sess := &Session{
 		conn: db.conn,
 	}
@@ -234,6 +265,9 @@ func checkFields(v reflect.Value) {
 }
 
 func (db *Database) Collection(golden Model) *Collection {
+	db.mu.RLock()
+	defer db.mu.RUnlock()
+
 	checkFields(reflect.ValueOf(golden))
 
 	return &Collection{
@@ -250,6 +284,9 @@ func (db *Database) Collection(golden Model) *Collection {
 }
 
 func (db *Database) QueryIndex(index string, golden Model) *Query {
+	db.mu.RLock()
+	defer db.mu.RUnlock()
+
 	return &Query{
 		db:     db,
 		conn:   db.conn,
@@ -275,6 +312,9 @@ const (
 )
 
 func (db *Database) CreateIndex(ctx context.Context, name string, index Index) error {
+	db.mu.RLock()
+	defer db.mu.RUnlock()
+
 	if name == "" {
 		return errors.Errorf("index name is required to create it")
 	}
@@ -311,6 +351,9 @@ func (db *Database) CreateIndex(ctx context.Context, name string, index Index) e
 }
 
 func (db *Database) Patch(ctx context.Context, query *RQLQuery) (*Operation, error) {
+	db.mu.RLock()
+	defer db.mu.RUnlock()
+
 	q := &api.Patch{
 		Query: &api.Query{
 			Query:           query.query,
@@ -343,6 +386,9 @@ func (db *Database) Patch(ctx context.Context, query *RQLQuery) (*Operation, err
 }
 
 func (db *Database) UpsertIdentity(ctx context.Context, name string, value int64) error {
+	db.mu.RLock()
+	defer db.mu.RUnlock()
+
 	if name == "" {
 		return errors.Errorf("identity name is required to assign it")
 	}
@@ -371,6 +417,9 @@ func (db *Database) UpsertIdentity(ctx context.Context, name string, value int64
 
 // ConfigureDefaultRevisions for all the collections of this database storing every change.
 func (db *Database) ConfigureDefaultRevisions(ctx context.Context, config *api.RevisionConfig) error {
+	db.mu.RLock()
+	defer db.mu.RUnlock()
+
 	desc, err := db.conn.descriptor(ctx)
 	if err != nil {
 		return errors.Trace(err)
@@ -400,10 +449,16 @@ func (db *Database) ConfigureDefaultRevisions(ctx context.Context, config *api.R
 }
 
 func (db *Database) Descriptor(ctx context.Context) (*api.Database, error) {
+	db.mu.RLock()
+	defer db.mu.RUnlock()
+
 	return db.conn.descriptor(ctx)
 }
 
 func (db *Database) RQLQuery(query *RQLQuery) *DirectQuery {
+	db.mu.RLock()
+	defer db.mu.RUnlock()
+
 	return &DirectQuery{
 		query: query,
 		db:    db,
@@ -413,6 +468,9 @@ func (db *Database) RQLQuery(query *RQLQuery) *DirectQuery {
 
 // Maintenance sends admin operations to the server one by one.
 func (db *Database) Maintenance(ctx context.Context, operations ...AdminOperation) error {
+	db.mu.RLock()
+	defer db.mu.RUnlock()
+
 	for _, op := range operations {
 		r, err := db.conn.buildPOST(db.conn.endpoint(strings.TrimLeft(op.URL(), "/")), nil, op.Body())
 		if err != nil {

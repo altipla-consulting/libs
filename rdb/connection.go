@@ -38,9 +38,39 @@ func newConnection(address, dbname string, debug bool) (*connection, error) {
 		base:   base,
 		dbname: dbname,
 		debug:  debug,
+		client: &http.Client{
+			Timeout:   60 * time.Second,
+			Transport: http.DefaultTransport,
+		},
 	}
-	if err := conn.disableSecurity(); err != nil {
+	if conn.debug {
+		conn.client.Transport = &debugTransport{conn.client.Transport}
+	}
+
+	return conn, nil
+}
+
+func newSecureConnection(credentials Credentials, dbname string, debug bool) (*connection, error) {
+	conn, err := newConnection(credentials.Address, dbname, debug)
+	if err != nil {
 		return nil, errors.Trace(err)
+	}
+
+	rootCAs := x509.NewCertPool()
+	rootCAs.AppendCertsFromPEM([]byte(credentials.CACert))
+	cert, err := tls.X509KeyPair([]byte(credentials.Cert), []byte(credentials.Key))
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+
+	conn.client.Transport = &http.Transport{
+		TLSClientConfig: &tls.Config{
+			Certificates: []tls.Certificate{cert},
+			RootCAs:      rootCAs,
+		},
+	}
+	if conn.debug {
+		conn.client.Transport = &debugTransport{conn.client.Transport}
 	}
 
 	return conn, nil
@@ -263,53 +293,6 @@ func (conn *connection) buildPATCH(path string, args map[string]string, body int
 
 func (conn *connection) endpoint(segment string) string {
 	return "/databases/" + conn.dbname + "/" + segment
-}
-
-func (conn *connection) enableSecurity(serverCertificatePEM, clientPrivateKeyPEM, clientCertificatePEM string) error {
-	conn.configmux.Lock()
-	defer conn.configmux.Unlock()
-
-	conn.base.Scheme = "https"
-
-	rootCAs := x509.NewCertPool()
-	rootCAs.AppendCertsFromPEM([]byte(serverCertificatePEM))
-
-	cert, err := tls.X509KeyPair([]byte(clientCertificatePEM), []byte(clientPrivateKeyPEM))
-	if err != nil {
-		return errors.Trace(err)
-	}
-
-	conn.client = &http.Client{
-		Timeout: 60 * time.Second,
-		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{
-				Certificates: []tls.Certificate{cert},
-				RootCAs:      rootCAs,
-			},
-		},
-	}
-	if conn.debug {
-		conn.client.Transport = &debugTransport{conn.client.Transport}
-	}
-
-	return nil
-}
-
-func (conn *connection) disableSecurity() error {
-	conn.configmux.Lock()
-	defer conn.configmux.Unlock()
-
-	conn.base.Scheme = "http"
-
-	conn.client = &http.Client{
-		Timeout:   60 * time.Second,
-		Transport: http.DefaultTransport,
-	}
-	if conn.debug {
-		conn.client.Transport = &debugTransport{conn.client.Transport}
-	}
-
-	return nil
 }
 
 func (conn *connection) descriptor(ctx context.Context) (*api.Database, error) {
