@@ -22,10 +22,6 @@ import (
 	"libs.altipla.consulting/routing"
 )
 
-type Platform interface {
-	Init() error
-}
-
 type GRPCServer struct {
 	*grpc.Server
 	http     *routing.Server
@@ -142,19 +138,24 @@ func (server *GRPCServer) Serve() {
 	go func() {
 		<-ctx.Done()
 
+		log.Info("Shutting down")
+
 		shutdownctx, done := context.WithTimeout(context.Background(), 7*time.Second)
 		defer done()
 
-		log.Info("Shutting down")
+		if err := server.platform.Shutdown(shutdownctx); err != nil {
+			select {
+			case errch <- err:
+			default:
+			}
+		}
 		if err := web.Shutdown(shutdownctx); err != nil {
 			select {
 			case errch <- err:
 			default:
 			}
 		}
-
 		server.Server.GracefulStop()
-
 		if err := lis.Close(); err != nil {
 			select {
 			case errch <- err:

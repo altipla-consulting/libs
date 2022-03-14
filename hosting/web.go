@@ -86,10 +86,17 @@ func (server *WebServer) Serve() {
 	go func() {
 		<-ctx.Done()
 
+		log.Info("Shutting down")
+
 		shutdownctx, done := context.WithTimeout(context.Background(), 7*time.Second)
 		defer done()
 
-		log.Info("Shutting down")
+		if err := server.platform.Shutdown(shutdownctx); err != nil {
+			select {
+			case errch <- err:
+			default:
+			}
+		}
 		if err := web.Shutdown(shutdownctx); err != nil {
 			select {
 			case errch <- err:
