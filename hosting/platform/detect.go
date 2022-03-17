@@ -7,7 +7,7 @@ import (
 	"libs.altipla.consulting/hosting/kubernetes"
 )
 
-func DetectPlatformFromEnv() hosting.Platform {
+func DetectFromEnv() hosting.Platform {
 	if env.IsCloudRun() {
 		return cloudrun.Platform()
 	}
