@@ -25,7 +25,7 @@ type Value struct {
 // ChangeHook is a function called when a secret changes.
 type ChangeHook func(val *Value)
 
-// NewValue creates a new secret accessor.
+// NewValue creates a new secret accessor that auto-updates in the background.
 func NewValue(ctx context.Context, name string) (*Value, error) {
 	log.WithField("name", name).Info("Read secret")
 	initial, err := readSecret(ctx, name)
@@ -38,6 +38,28 @@ func NewValue(ctx context.Context, name string) (*Value, error) {
 	}
 	go val.update()
 	return val, nil
+}
+
+// NewStaticValue creates a value from a static string that never updates.
+func NewStaticValue(ctx context.Context, name string, value string) *Value {
+	return NewStaticValueBytes(ctx, name, []byte(value))
+}
+
+// NewStaticValue creates a value from a static byte slice that never updates.
+func NewStaticValueBytes(ctx context.Context, name string, value []byte) *Value {
+	return &Value{
+		name:    name,
+		current: value,
+	}
+}
+
+// NewStaticValue creates a value from a static JSON serialized struct that never updates.
+func NewStaticValueJSON(ctx context.Context, name string, src interface{}) (*Value, error) {
+	value, err := json.Marshal(src)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+	return NewStaticValueBytes(ctx, name, value), nil
 }
 
 // String gets the current value of the secret as a string.
