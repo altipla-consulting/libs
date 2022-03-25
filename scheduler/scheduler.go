@@ -73,6 +73,17 @@ func NewServer(r *hosting.WebServer, opts ...ServerOption) (*Server, error) {
 type Handler func(ctx context.Context) error
 
 func (s *Server) Subscribe(subscription string, handler Handler) {
+	if env.IsLocal() {
+		s.r.Get("/_/scheduler/"+subscription, func(w http.ResponseWriter, r *http.Request) error {
+			if err := handler(r.Context()); err != nil {
+				return errors.Trace(err)
+			}
+
+			fmt.Fprintln(w, "ok")
+			return nil
+		})
+	}
+
 	s.r.Post("/_/scheduler/"+subscription, func(w http.ResponseWriter, r *http.Request) error {
 		if s.validator != nil {
 			bearer := security.ReadRequestAuthorization(r)
