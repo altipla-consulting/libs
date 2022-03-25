@@ -88,7 +88,7 @@ func (server *WebServer) Serve() {
 
 		log.Info("Shutting down")
 
-		shutdownctx, done := context.WithTimeout(context.Background(), 7*time.Second)
+		shutdownctx, done := context.WithTimeout(context.Background(), 25*time.Second)
 		defer done()
 
 		if err := server.platform.Shutdown(shutdownctx); err != nil {

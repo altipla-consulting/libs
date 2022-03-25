@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"time"
 
 	"libs.altipla.consulting/env"
 	"libs.altipla.consulting/errors"
@@ -36,5 +37,13 @@ func (platform *k8splatform) Init() error {
 }
 
 func (platform *k8splatform) Shutdown(ctx context.Context) error {
-	return errors.Trace(platform.internal.Shutdown(ctx))
+	if err := platform.internal.Shutdown(ctx); err != nil {
+		return errors.Trace(err)
+	}
+
+	// Wait 5 seconds before shutting down the rest of servers so Kubernetes has
+	// enough time to redirect traffic to other instances.
+	time.Sleep(5 * time.Second)
+
+	return nil
 }
