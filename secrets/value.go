@@ -8,18 +8,19 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"libs.altipla.consulting/env"
 	"libs.altipla.consulting/errors"
 )
 
 // Value is a secret accesor that will keep its own value updated in background.
 // When read it will return the latest available version of the secret.
 type Value struct {
-	name  string
-	hooks []ChangeHook
+	name   string
+	hooks  []ChangeHook
+	static bool
 
-	mu      sync.RWMutex
-	current []byte
+	mu         sync.RWMutex
+	lastUpdate time.Time
+	current    []byte
 }
 
 // ChangeHook is a function called when a secret changes.
@@ -32,12 +33,11 @@ func NewValue(ctx context.Context, name string) (*Value, error) {
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	val := &Value{
-		name:    name,
-		current: initial,
-	}
-	go val.update()
-	return val, nil
+	return &Value{
+		name:       name,
+		lastUpdate: time.Now(),
+		current:    initial,
+	}, nil
 }
 
 // NewStaticValue creates a value from a static string that never updates.
@@ -49,6 +49,7 @@ func NewStaticValue(ctx context.Context, name string, value string) *Value {
 func NewStaticValueBytes(ctx context.Context, name string, value []byte) *Value {
 	return &Value{
 		name:    name,
+		static:  true,
 		current: value,
 	}
 }
@@ -64,6 +65,8 @@ func NewStaticValueJSON(ctx context.Context, name string, src interface{}) (*Val
 
 // String gets the current value of the secret as a string.
 func (val *Value) String() string {
+	val.maybeUpdate()
+
 	val.mu.RLock()
 	defer val.mu.RUnlock()
 	return string(val.current)
@@ -71,6 +74,8 @@ func (val *Value) String() string {
 
 // String gets the current value of the secret as a slice of bytes.
 func (val *Value) Bytes() []byte {
+	val.maybeUpdate()
+
 	val.mu.RLock()
 	defer val.mu.RUnlock()
 	return append([]byte{}, val.current...)
@@ -78,6 +83,8 @@ func (val *Value) Bytes() []byte {
 
 // String gets the current value of the secret and fills a JSON structure.
 func (val *Value) JSON(dest interface{}) error {
+	val.maybeUpdate()
+
 	val.mu.RLock()
 	defer val.mu.RUnlock()
 	return errors.Trace(json.Unmarshal(val.current, dest))
@@ -89,23 +96,34 @@ func (val *Value) OnChange(hook ChangeHook) {
 	val.hooks = append(val.hooks, hook)
 }
 
-func (val *Value) update() {
-	if env.IsLocal() || env.IsCloudRun() {
+func (val *Value) shouldUpdate() bool {
+	val.mu.RLock()
+	defer val.mu.RUnlock()
+	return time.Now().After(val.lastUpdate.Add(1 * time.Hour))
+}
+
+func (val *Value) maybeUpdate() {
+	if val.static {
+		return
+	}
+	if !val.shouldUpdate() {
 		return
 	}
 
-	for {
-		time.Sleep(1 * time.Hour)
+	val.mu.Lock()
+	val.mu.RUnlock()
 
-		secret, err := readSecret(context.Background(), val.name)
-		if err != nil {
-			log.WithFields(errors.LogFields(err)).Warning("Cannot update secret. Will retry later.")
-			continue
-		}
-		if val.trySet(secret) {
-			for _, hook := range val.hooks {
-				hook(val)
-			}
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	secret, err := readSecret(ctx, val.name)
+	if err != nil {
+		log.WithFields(errors.LogFields(err)).Warning("Cannot update secret. Will retry later.")
+		return
+	}
+	if val.trySet(secret) {
+		for _, hook := range val.hooks {
+			hook(val)
 		}
 	}
 }
