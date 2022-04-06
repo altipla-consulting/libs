@@ -41,26 +41,25 @@ func NewValue(ctx context.Context, name string) (*Value, error) {
 }
 
 // NewStaticValue creates a value from a static string that never updates.
-func NewStaticValue(ctx context.Context, name string, value string) *Value {
-	return NewStaticValueBytes(ctx, name, []byte(value))
+func NewStaticValue(value string) *Value {
+	return NewStaticValueBytes([]byte(value))
 }
 
 // NewStaticValue creates a value from a static byte slice that never updates.
-func NewStaticValueBytes(ctx context.Context, name string, value []byte) *Value {
+func NewStaticValueBytes(value []byte) *Value {
 	return &Value{
-		name:    name,
 		static:  true,
 		current: value,
 	}
 }
 
 // NewStaticValue creates a value from a static JSON serialized struct that never updates.
-func NewStaticValueJSON(ctx context.Context, name string, src interface{}) (*Value, error) {
+func NewStaticValueJSON(src interface{}) (*Value, error) {
 	value, err := json.Marshal(src)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	return NewStaticValueBytes(ctx, name, value), nil
+	return NewStaticValueBytes(value), nil
 }
 
 // String gets the current value of the secret as a string.
