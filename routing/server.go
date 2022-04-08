@@ -286,10 +286,10 @@ func (router *Router) Options(path string, handler Handler) {
 func (router *Router) Head(path string, handler Handler) {
 	fn := router.s.decorate(http.MethodHead, router.middlewares, path, handler)
 	if prefix := hasWildcard(path); prefix != "" {
-		router.r.PathPrefix(prefix).HandlerFunc(fn).Methods(http.MethodOptions)
+		router.r.PathPrefix(prefix).HandlerFunc(fn).Methods(http.MethodHead)
 		return
 	}
-	router.r.HandleFunc(router.migratePath(path), fn).Methods(http.MethodOptions)
+	router.r.HandleFunc(router.migratePath(path), fn).Methods(http.MethodHead)
 }
 
 func hasWildcard(path string) string {
