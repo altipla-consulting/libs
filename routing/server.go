@@ -237,9 +237,11 @@ func (router *Router) Get(path string, handler Handler) {
 	fn := router.s.decorate(router.middlewares, path, handler)
 	if prefix := hasWildcard(path); prefix != "" {
 		router.r.PathPrefix(prefix).HandlerFunc(fn).Methods(http.MethodGet)
+		router.r.PathPrefix(prefix).HandlerFunc(fn).Methods(http.MethodHead)
 		return
 	}
 	router.r.HandleFunc(router.migratePath(path), fn).Methods(http.MethodGet)
+	router.r.HandleFunc(router.migratePath(path), fn).Methods(http.MethodHead)
 }
 
 // Post registers a new POST route.
