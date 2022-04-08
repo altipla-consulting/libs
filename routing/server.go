@@ -282,6 +282,16 @@ func (router *Router) Options(path string, handler Handler) {
 	router.r.HandleFunc(router.migratePath(path), fn).Methods(http.MethodOptions)
 }
 
+// Head registers a new HEAD route.
+func (router *Router) Head(path string, handler Handler) {
+	fn := router.s.decorate(http.MethodHead, router.middlewares, path, handler)
+	if prefix := hasWildcard(path); prefix != "" {
+		router.r.PathPrefix(prefix).HandlerFunc(fn).Methods(http.MethodOptions)
+		return
+	}
+	router.r.HandleFunc(router.migratePath(path), fn).Methods(http.MethodOptions)
+}
+
 func hasWildcard(path string) string {
 	if strings.Contains(path, "*filepath") {
 		return strings.TrimSuffix(path, "*filepath")
