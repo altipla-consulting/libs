@@ -10,7 +10,6 @@ import (
 
 	"libs.altipla.consulting/env"
 	"libs.altipla.consulting/errors"
-	"libs.altipla.consulting/hosting"
 	"libs.altipla.consulting/routing"
 	"libs.altipla.consulting/security"
 )
@@ -19,7 +18,7 @@ type Server struct {
 	serviceAccount string
 	audience       string
 
-	r         *hosting.WebServer
+	r         *routing.Router
 	validator *idtoken.Validator
 }
 
@@ -37,7 +36,7 @@ func WithAudience(audience string) ServerOption {
 	}
 }
 
-func NewServer(r *hosting.WebServer, opts ...ServerOption) (*Server, error) {
+func NewServer(r *routing.Router, opts ...ServerOption) (*Server, error) {
 	s := &Server{
 		r: r,
 	}
