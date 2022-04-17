@@ -43,7 +43,9 @@ func (platform *k8splatform) Shutdown(ctx context.Context) error {
 
 	// Wait 5 seconds before shutting down the rest of servers so Kubernetes has
 	// enough time to redirect traffic to other instances.
-	time.Sleep(5 * time.Second)
+	if !env.IsLocal() {
+		time.Sleep(5 * time.Second)
+	}
 
 	return nil
 }
