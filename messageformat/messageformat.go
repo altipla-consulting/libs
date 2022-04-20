@@ -35,7 +35,7 @@ func (msg *MessageFormat) Format(lang string, params []interface{}) (string, err
 		t:    msg.t,
 		wr:   &buf,
 		vars: make(map[string]interface{}),
-		lang: lang,
+		lang: langs.Lang(lang),
 	}
 	for i, param := range params {
 		pos := strconv.FormatInt(int64(i), 10)

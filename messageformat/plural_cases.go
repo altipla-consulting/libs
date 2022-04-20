@@ -8,7 +8,7 @@ import (
 // Extract language rules as needed from:
 // http://www.unicode.org/cldr/charts/latest/supplemental/language_plural_rules.html
 
-func matchesPlural(lang string, c *parse.PluralCase, n int64) bool {
+func matchesPlural(lang langs.Lang, c *parse.PluralCase, n int64) bool {
 	switch lang {
 	case langs.ES, langs.EN, langs.EU, langs.IT, langs.DE:
 		return matchesPluralCaseN1(c, n)

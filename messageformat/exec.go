@@ -5,6 +5,7 @@ import (
 	"io"
 	"runtime"
 
+	"libs.altipla.consulting/langs"
 	"libs.altipla.consulting/messageformat/parse"
 )
 
@@ -12,7 +13,7 @@ type state struct {
 	t    *parse.Tree
 	wr   io.Writer
 	vars map[string]interface{}
-	lang string
+	lang langs.Lang
 }
 
 // errorf records an error and terminates processing.

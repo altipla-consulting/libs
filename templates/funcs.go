@@ -541,7 +541,7 @@ func knownLayouts(layout string) string {
 }
 
 func fnDatetime(layout string, args ...interface{}) (string, error) {
-	lang := langs.ES
+	lang := langs.ES.String()
 	var value interface{}
 	switch len(args) {
 	case 0:
@@ -604,14 +604,14 @@ func fnMsgFormat(lang, format string, params ...interface{}) (string, error) {
 }
 
 func fnTranslate(lang, source string) string {
-	if lang == langs.ES {
+	if lang == langs.ES.String() {
 		return source
 	}
 
 	msg, ok := messages[source]
 	if !ok {
 		msg = make(map[string]string)
-		msg[langs.ES] = source
+		msg[langs.ES.String()] = source
 	}
 
 	// En producción se parte correctamente la descripción; pero en desarrollo

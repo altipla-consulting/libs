@@ -10,7 +10,7 @@ import (
 
 type testItem struct {
 	input  string
-	lang   string
+	lang   langs.Lang
 	params []interface{}
 	want   string
 }
@@ -76,7 +76,7 @@ func TestFormat(t *testing.T) {
 		mf, err := New(item.input)
 		require.NoError(t, err, item.input)
 
-		result, err := mf.Format(item.lang, item.params)
+		result, err := mf.Format(item.lang.String(), item.params)
 		require.NoError(t, err, item.input)
 		require.Equal(t, result, item.want)
 	}

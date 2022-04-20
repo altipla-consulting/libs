@@ -1,19 +1,25 @@
 package langs
 
+type Lang string
+
+func (lang Lang) String() string {
+	return string(lang)
+}
+
 const (
-	CA = "ca"
-	DE = "de"
-	EN = "en"
-	ES = "es"
-	EU = "eu"
-	FR = "fr"
-	IT = "it"
-	JA = "ja"
-	PT = "pt"
-	RU = "ru"
+	CA = Lang("ca")
+	DE = Lang("de")
+	EN = Lang("en")
+	ES = Lang("es")
+	EU = Lang("eu")
+	FR = Lang("fr")
+	IT = Lang("it")
+	JA = Lang("ja")
+	PT = Lang("pt")
+	RU = Lang("ru")
 )
 
-var All = []string{
+var All = []Lang{
 	CA,
 	DE,
 	EN,
@@ -26,7 +32,7 @@ var All = []string{
 	RU,
 }
 
-var native = map[string]string{
+var native = map[Lang]string{
 	"CA": "Català",
 	"DE": "Deutsch",
 	"EN": "English",
@@ -41,13 +47,13 @@ var native = map[string]string{
 
 func IsValid(lang string) bool {
 	for _, l := range All {
-		if l == lang {
+		if string(l) == lang {
 			return true
 		}
 	}
 	return false
 }
 
-func NativeName(lang string) string {
+func NativeName(lang Lang) string {
 	return native[lang]
 }
