@@ -64,29 +64,23 @@ func NewStaticValueJSON(src interface{}) (*Value, error) {
 
 // String gets the current value of the secret as a string.
 func (val *Value) String() string {
-	val.maybeUpdate()
-
-	val.mu.RLock()
-	defer val.mu.RUnlock()
-	return string(val.current)
+	return string(val.Bytes())
 }
 
 // String gets the current value of the secret as a slice of bytes.
 func (val *Value) Bytes() []byte {
-	val.maybeUpdate()
-
-	val.mu.RLock()
-	defer val.mu.RUnlock()
+	current := val.maybeUpdate()
+	if current == nil {
+		val.mu.RLock()
+		defer val.mu.RUnlock()
+		current = val.current
+	}
 	return append([]byte{}, val.current...)
 }
 
 // String gets the current value of the secret and fills a JSON structure.
 func (val *Value) JSON(dest interface{}) error {
-	val.maybeUpdate()
-
-	val.mu.RLock()
-	defer val.mu.RUnlock()
-	return errors.Trace(json.Unmarshal(val.current, dest))
+	return errors.Trace(json.Unmarshal(val.Bytes(), dest))
 }
 
 // OnChange registers a hook to be called when a value change is detected. In the hook
@@ -101,16 +95,16 @@ func (val *Value) shouldUpdate() bool {
 	return time.Now().After(val.lastUpdate.Add(1 * time.Hour))
 }
 
-func (val *Value) maybeUpdate() {
+func (val *Value) maybeUpdate() []byte {
 	if val.static {
-		return
+		return nil
 	}
 	if !val.shouldUpdate() {
-		return
+		return nil
 	}
 
 	val.mu.Lock()
-	val.mu.RUnlock()
+	defer val.mu.Unlock()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -118,24 +112,16 @@ func (val *Value) maybeUpdate() {
 	secret, err := readSecret(ctx, val.name)
 	if err != nil {
 		log.WithFields(errors.LogFields(err)).Warning("Cannot update secret. Will retry later.")
-		return
+		return nil
 	}
-	if val.trySet(secret) {
-		for _, hook := range val.hooks {
-			hook(val)
-		}
-	}
-}
-
-func (val *Value) trySet(secret []byte) bool {
-	val.mu.Lock()
-	defer val.mu.Unlock()
 
 	if string(secret) != string(val.current) {
 		log.WithField("name", val.name).Info("Read secret")
 		val.current = secret
-		return true
+		for _, hook := range val.hooks {
+			hook(val)
+		}
 	}
 
-	return false
+	return secret
 }

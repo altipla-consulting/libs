@@ -25,6 +25,11 @@ var (
 // ReadBytes reads a secret as a slice of bytes. Multiple reads of the same secret
 // will return a cached version.
 func ReadBytes(ctx context.Context, name string) ([]byte, error) {
+	log.WithField("name", name).Info("Read secret")
+	return readSecret(ctx, name)
+}
+
+func readSecret(ctx context.Context, name string) ([]byte, error) {
 	cacheLock.Lock()
 	defer cacheLock.Unlock()
 
@@ -32,11 +37,6 @@ func ReadBytes(ctx context.Context, name string) ([]byte, error) {
 		return v, nil
 	}
 
-	log.WithField("name", name).Info("Read secret")
-	return readSecret(ctx, name)
-}
-
-func readSecret(ctx context.Context, name string) ([]byte, error) {
 	if env.IsLocal() {
 		local, err := readLocalSecrets()
 		if err != nil {
