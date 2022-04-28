@@ -16,6 +16,11 @@ func IsJenkins() bool {
 	return os.Getenv("BUILD_ID") != ""
 }
 
+// IsCI detects CI environments like Jenkins or GitHub Actions.
+func IsCI() bool {
+	return IsJenkins() || os.Getenv("CI") != ""
+}
+
 // IsCloudRun detects if we are running inside a Cloud Run app.
 func IsCloudRun() bool {
 	return os.Getenv("K_CONFIGURATION") != ""
