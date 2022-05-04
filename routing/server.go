@@ -339,6 +339,7 @@ func WithMiddleware(middleware Middleware) RouterOption {
 	}
 }
 
+// Domain matches a hostname.
 func (router *Router) Domain(host string, opts ...RouterOption) *Router {
 	sub := &Router{
 		s:           router.s,
@@ -351,6 +352,21 @@ func (router *Router) Domain(host string, opts ...RouterOption) *Router {
 	return sub
 }
 
+// Header matches a header with a specific value. If the value is empty it will match
+// any value as long as the header is present in the request.
+func (router *Router) Header(header, value string, opts ...RouterOption) *Router {
+	sub := &Router{
+		s:           router.s,
+		r:           router.r.Headers(header, value).Subrouter(),
+		middlewares: router.middlewares,
+	}
+	for _, opt := range opts {
+		opt(sub)
+	}
+	return sub
+}
+
+// PathPrefix matches a path prefix.
 func (router *Router) PathPrefix(path string, opts ...RouterOption) *Router {
 	sub := &Router{
 		s:           router.s,
