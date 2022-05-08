@@ -103,7 +103,6 @@ func grpcUnaryErrorLogger() grpc.UnaryServerInterceptor {
 		if err != nil {
 			logError(ctx, client, info.FullMethod, err)
 		}
-
 		return resp, err
 	}
 }
@@ -136,6 +135,11 @@ func logError(ctx context.Context, client *sentry.Client, method string, err err
 	// These kind of errors are common when receiving Envoy access logs or validating
 	// HTML inputs in admin editors.
 	if strings.HasPrefix(err.Error(), "rpc error: code = Internal desc = grpc: failed to unmarshal the received message") && strings.HasSuffix(err.Error(), "contains invalid UTF-8") {
+		return
+	}
+
+	// Do not notify disconnections from the client.
+	if ctx.Err() == context.Canceled {
 		return
 	}
 
