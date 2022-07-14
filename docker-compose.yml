@@ -5,7 +5,6 @@ services:
   database:
     image: eu.gcr.io/altipla-tools/mysql:latest
     ports: ['3306:3306']
-    volumes: ['./infra/cloudsql:/docker-entrypoint-initdb.d']
 
   redis:
     image: redis:5
