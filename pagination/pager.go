@@ -10,7 +10,7 @@ import (
 	"libs.altipla.consulting/errors"
 )
 
-// Deprecated: Use NewSQL instead.
+// Deprecated: Use NewSQLToken instead.
 type Pager struct {
 	NextPageToken string
 	TotalSize     int32
@@ -20,7 +20,7 @@ type Pager struct {
 	c    *database.Collection
 }
 
-// Deprecated: Use NewSQL instead.
+// Deprecated: Use NewSQLToken instead.
 func NewPager(c *database.Collection) *Pager {
 	return &Pager{
 		c:    c,
@@ -28,10 +28,12 @@ func NewPager(c *database.Collection) *Pager {
 	}
 }
 
+// Deprecated: Use NewSQLToken instead.
 func (pager *Pager) SetInputs(pageToken string, pageSize int32) {
 	pager.ctrl = NewSQLToken(pager.c, FromToken(pageSize, pageToken))
 }
 
+// Deprecated: Use NewSQLToken instead.
 func (pager *Pager) Fetch(ctx context.Context, models interface{}) error {
 	if err := pager.ctrl.Fetch(ctx, models); err != nil {
 		if errors.Is(err, ErrInvalidToken) {
