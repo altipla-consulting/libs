@@ -32,7 +32,7 @@ func (storage *rdbStorage) fetch(ctx context.Context, models interface{}, start 
 		return 0, errors.Trace(err)
 	}
 
-	return storage.q.Stats().TotalResults, nil
+	return q.Stats().TotalResults, nil
 }
 
 type sqlStorage struct {

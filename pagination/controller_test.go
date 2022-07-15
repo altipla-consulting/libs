@@ -23,7 +23,7 @@ func (model *RDBModel) Collection() string {
 	return "RDBModels"
 }
 
-func initRDBTestbed(t *testing.T) *rdb.Collection {
+func initRDBTestbed(t *testing.T) *rdb.Database {
 	ctx := context.Background()
 
 	db, err := rdb.Open("http://localhost:13000", "RDBModels", rdb.WithLocalCreate(), rdb.WithStrongConsistency())
@@ -36,27 +36,32 @@ func initRDBTestbed(t *testing.T) *rdb.Collection {
 		require.NoError(t, collection.Put(ctx, model))
 	}
 
-	return collection
+	return db
+}
+
+func initCollection(db *rdb.Database) *rdb.Query {
+	return db.Collection(new(RDBModel)).Query
 }
 
 func TestRDBTokenNextPrevPageTokens(t *testing.T) {
 	ctx := context.Background()
-	collection := initRDBTestbed(t)
+	db := initRDBTestbed(t)
 
 	var models []*RDBModel
 	var pager *TokenController
 
 	// Page 1 with no token.
-	pager = NewRDBToken(collection.Query, FromToken(2, ""))
+	pager = NewRDBToken(initCollection(db), FromToken(2, ""))
 	require.NoError(t, pager.Fetch(ctx, &models))
 	require.Len(t, models, 2)
 	require.Equal(t, models[0].ID, "rdbmodels/0")
 	require.Equal(t, models[1].ID, "rdbmodels/1")
 	require.Equal(t, pager.NextPageToken(), "plre6r44fy")
 	require.Empty(t, pager.PrevPageToken())
+	require.EqualValues(t, pager.TotalSize(), 10)
 
 	// Page 2 with next page token.
-	pager = NewRDBToken(collection.Query, FromToken(2, "plre6r44fy"))
+	pager = NewRDBToken(initCollection(db), FromToken(2, "plre6r44fy"))
 	require.NoError(t, pager.Fetch(ctx, &models))
 	require.Len(t, models, 2)
 	require.Equal(t, models[0].ID, "rdbmodels/2")
@@ -65,7 +70,7 @@ func TestRDBTokenNextPrevPageTokens(t *testing.T) {
 	require.Equal(t, pager.PrevPageToken(), "2gexje33fg")
 
 	// Page 3 with next page token.
-	pager = NewRDBToken(collection.Query, FromToken(2, "krnlen44fz"))
+	pager = NewRDBToken(initCollection(db), FromToken(2, "krnlen44fz"))
 	require.NoError(t, pager.Fetch(ctx, &models))
 	require.Len(t, models, 2)
 	require.Equal(t, models[0].ID, "rdbmodels/4")
@@ -74,7 +79,7 @@ func TestRDBTokenNextPrevPageTokens(t *testing.T) {
 	require.Equal(t, pager.PrevPageToken(), "plre6r44fy")
 
 	// Page 1 with prev page token.
-	pager = NewRDBToken(collection.Query, FromToken(2, "2gexje33fg"))
+	pager = NewRDBToken(initCollection(db), FromToken(2, "2gexje33fg"))
 	require.NoError(t, pager.Fetch(ctx, &models))
 	require.Len(t, models, 2)
 	require.Equal(t, models[0].ID, "rdbmodels/0")
@@ -85,12 +90,12 @@ func TestRDBTokenNextPrevPageTokens(t *testing.T) {
 
 func TestRDBTokenLastCount(t *testing.T) {
 	ctx := context.Background()
-	collection := initRDBTestbed(t)
+	db := initRDBTestbed(t)
 
 	var models []*RDBModel
 	var pager *TokenController
 
-	pager = NewRDBToken(collection.Query, FromToken(4, ""))
+	pager = NewRDBToken(initCollection(db), FromToken(4, ""))
 	require.NoError(t, pager.Fetch(ctx, &models))
 	require.Len(t, models, 4)
 	require.Equal(t, models[0].ID, "rdbmodels/0")
@@ -99,7 +104,7 @@ func TestRDBTokenLastCount(t *testing.T) {
 	require.Equal(t, models[3].ID, "rdbmodels/3")
 	require.Equal(t, pager.NextPageToken(), "389ozr99ud")
 
-	pager = NewRDBToken(collection.Query, FromToken(4, "389ozr99ud"))
+	pager = NewRDBToken(initCollection(db), FromToken(4, "389ozr99ud"))
 	require.NoError(t, pager.Fetch(ctx, &models))
 	require.Len(t, models, 4)
 	require.Equal(t, models[0].ID, "rdbmodels/4")
@@ -108,7 +113,7 @@ func TestRDBTokenLastCount(t *testing.T) {
 	require.Equal(t, models[3].ID, "rdbmodels/7")
 	require.Equal(t, pager.NextPageToken(), "167ezx77bo")
 
-	pager = NewRDBToken(collection.Query, FromToken(4, "167ezx77bo"))
+	pager = NewRDBToken(initCollection(db), FromToken(4, "167ezx77bo"))
 	require.NoError(t, pager.Fetch(ctx, &models))
 	require.Len(t, models, 2)
 	require.Equal(t, models[0].ID, "rdbmodels/8")
@@ -118,12 +123,12 @@ func TestRDBTokenLastCount(t *testing.T) {
 
 func TestRDBPaged(t *testing.T) {
 	ctx := context.Background()
-	collection := initRDBTestbed(t)
+	db := initRDBTestbed(t)
 
 	var models []*RDBModel
 	var pager *PagedController
 
-	pager = NewRDBPaged(collection.Query, FromPaged(4, 1, 0))
+	pager = NewRDBPaged(initCollection(db), FromPaged(4, 1, 0))
 	require.NoError(t, pager.Fetch(ctx, &models))
 	require.Len(t, models, 4)
 	require.Equal(t, models[0].ID, "rdbmodels/0")
@@ -132,7 +137,7 @@ func TestRDBPaged(t *testing.T) {
 	require.Equal(t, models[3].ID, "rdbmodels/3")
 	require.EqualValues(t, pager.Checksum(), 304987742)
 
-	pager = NewRDBPaged(collection.Query, FromPaged(4, 2, 304987742))
+	pager = NewRDBPaged(initCollection(db), FromPaged(4, 2, 304987742))
 	require.NoError(t, pager.Fetch(ctx, &models))
 	require.Len(t, models, 4)
 	require.Equal(t, models[0].ID, "rdbmodels/4")
@@ -141,7 +146,7 @@ func TestRDBPaged(t *testing.T) {
 	require.Equal(t, models[3].ID, "rdbmodels/7")
 	require.EqualValues(t, pager.Checksum(), 304987742)
 
-	pager = NewRDBPaged(collection.Query, FromPaged(4, 3, 304987742))
+	pager = NewRDBPaged(initCollection(db), FromPaged(4, 3, 304987742))
 	require.NoError(t, pager.Fetch(ctx, &models))
 	require.Len(t, models, 2)
 	require.Equal(t, models[0].ID, "rdbmodels/8")
@@ -149,7 +154,7 @@ func TestRDBPaged(t *testing.T) {
 	require.EqualValues(t, pager.Checksum(), 304987742)
 	require.False(t, pager.OutOfBounds())
 
-	pager = NewRDBPaged(collection.Query, FromPaged(4, 4, 304987742))
+	pager = NewRDBPaged(initCollection(db), FromPaged(4, 4, 304987742))
 	require.NoError(t, pager.Fetch(ctx, &models))
 	require.Empty(t, models)
 	require.EqualValues(t, pager.Checksum(), 304987742)
@@ -158,13 +163,13 @@ func TestRDBPaged(t *testing.T) {
 
 func TestRDBPagedNextPrevURLs(t *testing.T) {
 	ctx := context.Background()
-	collection := initRDBTestbed(t)
+	db := initRDBTestbed(t)
 
 	var models []*RDBModel
 	var pager *PagedController
 
 	req := httptest.NewRequest(http.MethodGet, "/rdbmodels?page-size=4", nil)
-	pager = NewRDBPaged(collection.Query, FromRequest(req))
+	pager = NewRDBPaged(initCollection(db), FromRequest(req))
 	require.NoError(t, pager.Fetch(ctx, &models))
 	require.Len(t, models, 4)
 	require.Equal(t, models[0].ID, "rdbmodels/0")
@@ -179,7 +184,7 @@ func TestRDBPagedNextPrevURLs(t *testing.T) {
 	require.Equal(t, pager.NextPageURLString(req), "/rdbmodels?checksum=304987742&page=2&page-size=4")
 
 	req = httptest.NewRequest(http.MethodGet, "/rdbmodels?checksum=304987742&page=2&page-size=4", nil)
-	pager = NewRDBPaged(collection.Query, FromRequest(req))
+	pager = NewRDBPaged(initCollection(db), FromRequest(req))
 	require.NoError(t, pager.Fetch(ctx, &models))
 	require.Len(t, models, 4)
 	require.Equal(t, models[0].ID, "rdbmodels/4")
@@ -194,7 +199,7 @@ func TestRDBPagedNextPrevURLs(t *testing.T) {
 	require.Equal(t, pager.NextPageURLString(req), "/rdbmodels?checksum=304987742&page=3&page-size=4")
 
 	req = httptest.NewRequest(http.MethodGet, "/rdbmodels?checksum=304987742&page=3&page-size=4", nil)
-	pager = NewRDBPaged(collection.Query, FromRequest(req))
+	pager = NewRDBPaged(initCollection(db), FromRequest(req))
 	require.NoError(t, pager.Fetch(ctx, &models))
 	require.Len(t, models, 2)
 	require.Equal(t, models[0].ID, "rdbmodels/8")
@@ -209,13 +214,13 @@ func TestRDBPagedNextPrevURLs(t *testing.T) {
 
 func TestRDBPagedOutOfBounds(t *testing.T) {
 	ctx := context.Background()
-	collection := initRDBTestbed(t)
+	db := initRDBTestbed(t)
 
 	var models []*RDBModel
 	var pager *PagedController
 
 	req := httptest.NewRequest(http.MethodGet, "/rdbmodels?checksum=304987742&page=4&page-size=4", nil)
-	pager = NewRDBPaged(collection.Query, FromRequest(req))
+	pager = NewRDBPaged(initCollection(db), FromRequest(req))
 	require.NoError(t, pager.Fetch(ctx, &models))
 	require.Empty(t, models)
 	require.True(t, pager.OutOfBounds())
@@ -227,7 +232,7 @@ func TestRDBPagedOutOfBounds(t *testing.T) {
 	require.Empty(t, pager.NextPageURLString(req))
 
 	req = httptest.NewRequest(http.MethodGet, "/rdbmodels?checksum=304987742&page=40&page-size=4", nil)
-	pager = NewRDBPaged(collection.Query, FromRequest(req))
+	pager = NewRDBPaged(initCollection(db), FromRequest(req))
 	require.NoError(t, pager.Fetch(ctx, &models))
 	require.Empty(t, models)
 	require.True(t, pager.OutOfBounds())
