@@ -20,6 +20,10 @@ func NewDate(t time.Time) Date {
 	return Date{datetime.TimeToDate(t)}
 }
 
+func ZeroDate() Date {
+	return Date{}
+}
+
 func (value Date) String() string {
 	if value.Time.IsZero() {
 		return ""
@@ -58,6 +62,10 @@ type DateTime struct {
 
 func NewDateTime(t time.Time) DateTime {
 	return DateTime{t}
+}
+
+func ZeroDateTime() DateTime {
+	return DateTime{}
 }
 
 func (value DateTime) String() string {
