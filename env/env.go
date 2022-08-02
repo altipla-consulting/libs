@@ -31,6 +31,11 @@ func IsAzureFunction() bool {
 	return os.Getenv("APPSETTING_WEBSITE_SITE_NAME") != ""
 }
 
+// IsKubernetes detects if we are running inside a Kubernetes pod.
+func IsKubernetes() bool {
+	return os.Getenv("KUBERNETES_SERVICE_HOST") != ""
+}
+
 // Version returns the application version. In supported environment it may extract
 // the info from files or environment variables. Otherwise it will use the env variable
 // VERSION that should be set manually to the desired value.

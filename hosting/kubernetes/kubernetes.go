@@ -13,14 +13,14 @@ import (
 )
 
 func Platform() hosting.Platform {
-	return new(k8splatform)
+	return new(kubernetesPlatform)
 }
 
-type k8splatform struct {
+type kubernetesPlatform struct {
 	internal *http.Server
 }
 
-func (platform *k8splatform) Init() error {
+func (platform *kubernetesPlatform) Init() error {
 	r := routing.NewServer(routing.WithLogrus())
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) error {
 		fmt.Fprintf(w, "%s is ok\n", env.ServiceName())
@@ -36,7 +36,7 @@ func (platform *k8splatform) Init() error {
 	return nil
 }
 
-func (platform *k8splatform) Shutdown(ctx context.Context) error {
+func (platform *kubernetesPlatform) Shutdown(ctx context.Context) error {
 	if err := platform.internal.Shutdown(ctx); err != nil {
 		return errors.Trace(err)
 	}

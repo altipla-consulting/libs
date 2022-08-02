@@ -28,7 +28,6 @@ func (value Date) String() string {
 	if value.Time.IsZero() {
 		return ""
 	}
-	// Zeros for the nanoseconds is bad on purpose to avoid formatting them.
 	return datetime.TimeToDate(value.Time).In(time.UTC).Format(api.DateTimeFormat)
 }
 
