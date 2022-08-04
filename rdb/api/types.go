@@ -92,9 +92,13 @@ func (result Result) MetadataBool(key string) bool {
 	return str.(bool)
 }
 
-func (result Result) DirectMetadata(key string) string {
-	val, _ := result[key].(string)
-	return val
+func (result Result) ReadAsMetadata() ModelMetadata {
+	id, _ := result["@id"].(string)
+	changeVector, _ := result["@change-vector"].(string)
+	return ModelMetadata{
+		ID:           id,
+		ChangeVector: changeVector,
+	}
 }
 
 type BulkCommands struct {

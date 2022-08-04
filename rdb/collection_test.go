@@ -3,6 +3,7 @@ package rdb
 import (
 	"context"
 	"errors"
+	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -475,4 +476,46 @@ func TestPutTTLRealTimer(t *testing.T) {
 	require.EqualError(t, collection.Get(ctx, "foo-collections/ttl", &other), ErrNoSuchEntity.Error())
 
 	require.NoError(t, db.Maintenance(ctx, DisableExpiration()))
+}
+
+func TestPutWithIdentityID(t *testing.T) {
+	ctx := context.Background()
+	db := initCollectionTestbed(t)
+	collection := db.Collection(new(FooCollectionModel))
+
+	identity, err := db.DebugNextIdentity(ctx, "foo-collections")
+	require.NoError(t, err)
+
+	foo := &FooCollectionModel{
+		ID: "foo-collections|",
+	}
+	require.NoError(t, collection.Put(ctx, foo))
+
+	require.Equal(t, foo.ID, fmt.Sprintf("foo-collections/%v", identity))
+}
+
+func TestMultiPutWithIdentityID(t *testing.T) {
+	ctx := context.Background()
+	db := initCollectionTestbed(t)
+	collection := db.Collection(new(FooCollectionModel))
+
+	identity, err := db.DebugNextIdentity(ctx, "foo-collections")
+	require.NoError(t, err)
+
+	ctx, sess := db.NewSession(ctx)
+
+	foo := &FooCollectionModel{
+		ID: "foo-collections|",
+	}
+	require.NoError(t, collection.Put(ctx, foo))
+
+	bar := &FooCollectionModel{
+		ID: "foo-collections|",
+	}
+	require.NoError(t, collection.Put(ctx, bar))
+
+	require.NoError(t, sess.SaveChanges(ctx))
+
+	require.Equal(t, foo.ID, fmt.Sprintf("foo-collections/%v", identity))
+	require.Equal(t, bar.ID, fmt.Sprintf("foo-collections/%v", identity+1))
 }

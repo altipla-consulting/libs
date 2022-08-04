@@ -385,13 +385,15 @@ func (db *Database) Patch(ctx context.Context, query *RQLQuery) (*Operation, err
 	}, nil
 }
 
+// UpsertIdentity sets a new starting value for an identity that will be used for the next
+// generated ID. If the value is less than the existing one it will be ignored by RavenDB.
 func (db *Database) UpsertIdentity(ctx context.Context, name string, value int64) error {
-	db.mu.RLock()
-	defer db.mu.RUnlock()
-
 	if name == "" {
 		return errors.Errorf("identity name is required to assign it")
 	}
+
+	db.mu.RLock()
+	defer db.mu.RUnlock()
 
 	args := map[string]interface{}{
 		"name":  name,
@@ -413,6 +415,37 @@ func (db *Database) UpsertIdentity(ctx context.Context, name string, value int64
 	}
 
 	return nil
+}
+
+// DebugNextIdentity returns the expected ID for a new item. Do not use in production.
+func (db *Database) DebugNextIdentity(ctx context.Context, name string) (int64, error) {
+	if name == "" {
+		return 0, errors.Errorf("identity name is required")
+	}
+
+	db.mu.RLock()
+	defer db.mu.RUnlock()
+
+	r, err := db.conn.buildGET(db.conn.endpoint("debug/identities"), nil)
+	if err != nil {
+		return 0, errors.Trace(err)
+	}
+	resp, err := db.conn.sendRequest(ctx, r)
+	if err != nil {
+		return 0, errors.Trace(err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return 0, NewUnexpectedStatusError(r, resp)
+	}
+
+	results := make(map[string]int64)
+	if err := json.NewDecoder(resp.Body).Decode(&results); err != nil {
+		return 0, errors.Trace(err)
+	}
+
+	return results[name+"|"] + 1, nil
 }
 
 // ConfigureDefaultRevisions for all the collections of this database storing every change.

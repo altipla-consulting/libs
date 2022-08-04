@@ -123,6 +123,9 @@ func (sess *Session) SaveChanges(ctx context.Context) error {
 					return errors.Trace(err)
 				}
 				action.model.Tracking().changeVector = metadata.ChangeVector
+				if err := setModelID(action.model, metadata); err != nil {
+					return errors.Trace(err)
+				}
 				return nil
 			case http.StatusConflict:
 				return errors.Trace(ErrConcurrentTransaction)
@@ -210,7 +213,11 @@ func (sess *Session) SaveChanges(ctx context.Context) error {
 		}
 		for i, result := range results.Results {
 			if store, ok := sess.actions[i].(*storeModelAction); ok {
-				store.model.Tracking().changeVector = result.DirectMetadata("@change-vector")
+				metadata := result.ReadAsMetadata()
+				store.model.Tracking().changeVector = metadata.ChangeVector
+				if err := setModelID(store.model, metadata); err != nil {
+					return errors.Trace(err)
+				}
 			}
 		}
 	case http.StatusConflict:
