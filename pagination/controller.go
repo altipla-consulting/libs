@@ -63,7 +63,7 @@ func WithMaxPageSize(maxPageSize int32) ControllerOption {
 
 // WithRDBInclude brings linked models when querying the database. Cannot be
 // used with NewSQL.
-func WithRDBInclude(includes ...rdb.IncludeOption) InputAdapter {
+func WithRDBInclude(includes ...rdb.IncludeOption) ControllerOption {
 	return func(ctrl Controller) {
 		storage := ctrl.rdbStorage()
 		if storage == nil {
