@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/rs/cors"
 	log "github.com/sirupsen/logrus"
 
 	"libs.altipla.consulting/env"
@@ -333,9 +334,17 @@ func (router *Router) ProxyLocalAssets(destAddress string) {
 
 type RouterOption func(router *Router)
 
+// WithMiddleware adds a middleware to the router.
 func WithMiddleware(middleware Middleware) RouterOption {
 	return func(router *Router) {
 		router.middlewares = append(router.middlewares, middleware)
+	}
+}
+
+// WithCORS configures a CORS middleware to authorize cross-origin requests.
+func WithCORS(opts cors.Options) RouterOption {
+	return func(router *Router) {
+		router.r.Use(cors.New(opts).Handler)
 	}
 }
 
