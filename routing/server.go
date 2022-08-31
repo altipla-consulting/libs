@@ -22,6 +22,14 @@ import (
 // Handler should be implemented by the handler functions that we want to register.
 type Handler func(w http.ResponseWriter, r *http.Request) error
 
+// NewHandlerFromHTTP creates a new handler from a standard http.Handler.
+func NewHandlerFromHTTP(handler http.Handler) Handler {
+	return func(w http.ResponseWriter, r *http.Request) error {
+		handler.ServeHTTP(w, r)
+		return nil
+	}
+}
+
 // ServerOption is implement by any option that can be passed when constructing a new server.
 type ServerOption func(server *Server)
 
@@ -293,6 +301,11 @@ func (router *Router) Head(path string, handler Handler) {
 		return
 	}
 	router.r.HandleFunc(router.migratePath(path), fn).Methods(http.MethodHead)
+}
+
+func (router *Router) PathPrefixHandler(pathPrefix string, handler Handler) {
+	fn := router.s.decorate(router.middlewares, pathPrefix, handler)
+	router.r.PathPrefix(pathPrefix).HandlerFunc(fn)
 }
 
 func hasWildcard(path string) string {
