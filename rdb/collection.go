@@ -204,7 +204,7 @@ func (collection *Collection) GetMulti(ctx context.Context, ids []string, dest i
 		slice := reflect.MakeSlice(rt.Elem(), 0, len(ids))
 		for i, result := range results.Results {
 			if result == nil {
-				merr[i] = errors.Wrapf(ErrNoSuchEntity, "id: %s", ids[i])
+				merr[i] = errors.Wrapf(ErrNoSuchEntity, "id: %q", ids[i])
 				slice = reflect.Append(slice, reflect.Zero(rt.Elem().Elem()))
 				continue
 			}
@@ -231,7 +231,9 @@ func (collection *Collection) GetMulti(ctx context.Context, ids []string, dest i
 
 		return nil
 	case http.StatusNotFound:
-		return errors.Wrapf(ErrNoSuchEntity, "ids: %s", ids)
+		return MultiError{
+			errors.Wrapf(ErrNoSuchEntity, "id: %q", ids[0]),
+		}
 	default:
 		return NewUnexpectedStatusError(r, resp)
 	}
