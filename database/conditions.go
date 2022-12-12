@@ -19,10 +19,10 @@ type Condition interface {
 // Filter applies a new simple filter to the collection. There are multiple types
 // of simple filters depending on the SQL you pass to it:
 //
-//   Filter("foo", "bar")
-//   Filter("foo >", 3)
-//   Filter("foo LIKE", "%bar%")
-//   Filter("DATE_DIFF(?, mycolumn) > 30", time.Now())
+//	Filter("foo", "bar")
+//	Filter("foo >", 3)
+//	Filter("foo LIKE", "%bar%")
+//	Filter("DATE_DIFF(?, mycolumn) > 30", time.Now())
 func Filter(sql string, value interface{}) Condition {
 	var queryValues []interface{}
 	if !strings.Contains(sql, " ") {

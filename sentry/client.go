@@ -76,7 +76,7 @@ func (client *Client) ReportPanics(ctx context.Context) {
 	if client == nil {
 		return
 	}
-	client.ReportPanic(ctx, recover())
+	client.ReportPanic(ctx, recover()) // revive:disable-line:defer
 }
 
 // ReportPanic sends a panic correctly formated to the server if the argument
@@ -102,7 +102,7 @@ func (client *Client) ReportPanicsRequest(r *http.Request) {
 	if client == nil {
 		return
 	}
-	if rec := errors.Recover(recover()); rec != nil {
+	if rec := errors.Recover(recover()); rec != nil { // revive:disable-line:defer
 		log.WithField("error", rec.Error()).Error("Panic recovered")
 		client.sendReportPanic(r.Context(), rec, string(debug.Stack()), r)
 	}

@@ -7,11 +7,11 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"strconv"
 	"strings"
 
+	log "github.com/sirupsen/logrus"
 	"golang.org/x/text/unicode/cldr"
 
 	"libs.altipla.consulting/errors"

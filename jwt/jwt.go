@@ -60,7 +60,8 @@ func NewHS256Base64(encodedKey string) *Generator {
 // them with the cached keys obtained from the well known URL.
 //
 // The well known URL is something like this:
-//     https://{domain}/.well-known/jwks.json
+//
+//	https://{domain}/.well-known/jwks.json
 func NewRS256FromWellKnown(wkurl string) *Generator {
 	c := &rs256{
 		wkurl: wkurl,

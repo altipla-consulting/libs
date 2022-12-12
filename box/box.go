@@ -40,12 +40,12 @@ func (box *Box) maxlength() int {
 // AddLine adds a new line to the output content. It accepts multiple strings
 // or aurora.Value for colored output.
 //
-//   o.AddLine("part1", "part2", "joined without spaces")
+//	o.AddLine("part1", "part2", "joined without spaces")
 //
 // If you need colored output split the string, this function should be able to read
 // every part individually to calculate the length correctly:
 //
-//   o.AddLine("before", aurora.Red("colored"), "after", aurora.Blue("another colored"))
+//	o.AddLine("before", aurora.Red("colored"), "after", aurora.Blue("another colored"))
 func (box *Box) AddLine(parts ...interface{}) {
 	var length int
 	var line string

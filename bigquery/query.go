@@ -132,9 +132,9 @@ func (c *Condition) Clone() *Condition {
 
 // Filter builds a new condition adding the filter we specify. Examples:
 //
-//   .Filter("foo", 3)
-//   .Filter("foo >", 3)
-//   .Filter("foo BETWEEN ? AND ?", 3, 4)
+//	.Filter("foo", 3)
+//	.Filter("foo >", 3)
+//	.Filter("foo BETWEEN ? AND ?", 3, 4)
 func (c *Condition) Filter(filter string, values ...interface{}) *Condition {
 	if len(values) == 1 {
 		if !strings.Contains(filter, " ") {
@@ -154,10 +154,10 @@ func (c *Condition) Filter(filter string, values ...interface{}) *Condition {
 
 // FilterCond builds a new condition adding the new child condition we specify here. Examples:
 //
-//   cond := ConditionOr()
-//   cond = cond.Filter("foo", 3)
-//   cond = cond.Filter("bar", 4)
-//   .FilterCond(cond)
+//	cond := ConditionOr()
+//	cond = cond.Filter("foo", 3)
+//	cond = cond.Filter("bar", 4)
+//	.FilterCond(cond)
 func (c *Condition) FilterCond(child *Condition) *Condition {
 	c = c.Clone()
 	c.children = append(c.children, child)

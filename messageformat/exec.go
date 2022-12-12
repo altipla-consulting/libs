@@ -24,7 +24,7 @@ func (s *state) errorf(format string, args ...interface{}) {
 // recover is the handler that turns panics into returns from the top
 // level of Parse.
 func (s *state) recover(errp *error) {
-	e := recover()
+	e := recover() // revive:disable-line:defer
 	if e != nil {
 		if _, ok := e.(runtime.Error); ok {
 			panic(e)
