@@ -374,16 +374,7 @@ func Cause(err error) error {
 
 // Is reports whether err or its cause matches target.
 func Is(err, target error) bool {
-	if target == nil {
-		return err == target
-	}
-	if err == target {
-		return true
-	}
-	if e, ok := err.(*altiplaError); ok {
-		return e.cause == target
-	}
-	return false
+	return errors.Is(err, target)
 }
 
 // Recover recovers from a panic in a defer. If there is no panic, Recover()

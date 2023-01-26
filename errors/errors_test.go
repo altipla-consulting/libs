@@ -1,6 +1,9 @@
 package errors
 
 import (
+	"database/sql"
+	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -28,4 +31,11 @@ func TestUnknownErrorAsGRPC(t *testing.T) {
 	require.True(t, ok)
 	require.Equal(t, s.Code(), codes.Unknown)
 	require.Equal(t, s.Message(), "unrelated")
+}
+
+func TestWrappingNativeStackedErrors(t *testing.T) {
+	err := Trace(fmt.Errorf("cannot query: %w", sql.ErrNoRows))
+
+	require.True(t, errors.Is(err, sql.ErrNoRows))
+	require.True(t, Is(err, sql.ErrNoRows))
 }
