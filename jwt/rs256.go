@@ -86,12 +86,17 @@ func (crypto *rs256) updateKeys(ctx context.Context) (jose.JSONWebKeySet, error)
 
 	var valid jose.JSONWebKeySet
 	for _, key := range keyset.Keys {
-		if key.Algorithm != string(jose.RS256) {
+		// We only accept keys for the RS256 algorithm like the standard or with no
+		// algorithm specified like Azure AD.
+		if key.Algorithm != string(jose.RS256) && key.Algorithm != "" {
 			continue
 		}
+
+		// Do not accept private or symmetric keys.
 		if !key.IsPublic() {
 			continue
 		}
+
 		if !key.Valid() {
 			log.WithFields(log.Fields{
 				"source": crypto.wkurl,
