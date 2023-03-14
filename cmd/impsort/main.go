@@ -10,11 +10,10 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/altipla-consulting/errors"
 	log "github.com/sirupsen/logrus"
 	flag "github.com/spf13/pflag"
 	"golang.org/x/tools/go/packages"
-
-	"libs.altipla.consulting/errors"
 )
 
 var (

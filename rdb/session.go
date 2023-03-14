@@ -5,7 +5,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"libs.altipla.consulting/errors"
+	"github.com/altipla-consulting/errors"
+
 	"libs.altipla.consulting/naming"
 	"libs.altipla.consulting/rdb/api"
 )
@@ -233,7 +234,7 @@ func (sess *Session) SaveChanges(ctx context.Context) error {
 func (sess *Session) Load(id string, dest interface{}) error {
 	result, ok := sess.includes[id]
 	if !ok {
-		return errors.Wrapf(ErrNoSuchEntity, "included id: %s", id)
+		return newNoSuchEntityError("included id %q", id)
 	}
 	_, err := createModel(dest, result)
 	return errors.Trace(err)

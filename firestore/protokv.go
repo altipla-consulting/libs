@@ -2,10 +2,10 @@ package firestore
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/altipla-consulting/errors"
 	"google.golang.org/protobuf/proto"
-
-	"libs.altipla.consulting/errors"
 )
 
 type protoKVEntity struct {
@@ -40,7 +40,7 @@ func (kv *ProtoKV) Put(ctx context.Context, model proto.Message) error {
 	}
 
 	if err := kv.ent.Put(ctx, item); err != nil {
-		return errors.Wrapf(err, "key: %s/%s", kv.collection, kv.key)
+		return fmt.Errorf("key %s/%s: %w", kv.collection, kv.key, err)
 	}
 
 	return nil

@@ -13,6 +13,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/altipla-consulting/errors"
 	"github.com/ernestoalejo/aeimagesflags"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -23,7 +24,6 @@ import (
 	"libs.altipla.consulting/content"
 	"libs.altipla.consulting/datetime"
 	"libs.altipla.consulting/env"
-	"libs.altipla.consulting/errors"
 	"libs.altipla.consulting/langs"
 	"libs.altipla.consulting/messageformat"
 	"libs.altipla.consulting/money"
@@ -268,14 +268,14 @@ func fnThumbnail(servingURL string, strFlags string) (string, error) {
 		case "width":
 			n, err := strconv.ParseUint(strFlag[1], 10, 64)
 			if err != nil {
-				return "", errors.Wrapf(err, "cannot parse width flag")
+				return "", fmt.Errorf("cannot parse width flag: %v", err)
 			}
 			flags.Width = n
 
 		case "height":
 			n, err := strconv.ParseUint(strFlag[1], 10, 64)
 			if err != nil {
-				return "", errors.Wrapf(err, "cannot parse height flag")
+				return "", fmt.Errorf("cannot parse height flag: %v", err)
 			}
 			flags.Height = n
 
@@ -294,7 +294,7 @@ func fnThumbnail(servingURL string, strFlags string) (string, error) {
 		case "size":
 			n, err := strconv.ParseUint(strFlag[1], 10, 64)
 			if err != nil {
-				return "", errors.Wrapf(err, "cannot parse size flag")
+				return "", fmt.Errorf("cannot parse size flag: %v", err)
 			}
 			flags.Size = n
 
@@ -592,12 +592,12 @@ func fnMsgFormat(lang, format string, params ...interface{}) (string, error) {
 
 	message, err := messageformat.New(format)
 	if err != nil {
-		return "", errors.Wrapf(err, "cannot parse messageformat: %s", format)
+		return "", fmt.Errorf("cannot parse messageformat %q: %v", format, err)
 	}
 
 	res, err := message.Format(lang, params)
 	if err != nil {
-		return "", errors.Wrapf(err, "cannot run messageformat: %s", format)
+		return "", fmt.Errorf("cannot run messageformat %q: %v", format, err)
 	}
 
 	return res, nil

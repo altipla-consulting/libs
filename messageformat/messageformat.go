@@ -4,7 +4,8 @@ import (
 	"bytes"
 	"strconv"
 
-	"libs.altipla.consulting/errors"
+	"github.com/altipla-consulting/errors"
+
 	"libs.altipla.consulting/langs"
 	"libs.altipla.consulting/messageformat/parse"
 )

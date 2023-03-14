@@ -3,7 +3,7 @@ package database
 import (
 	"context"
 
-	"libs.altipla.consulting/errors"
+	"github.com/altipla-consulting/errors"
 )
 
 type HookFn func(ctx context.Context, instance Model) error

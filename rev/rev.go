@@ -8,8 +8,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/altipla-consulting/errors"
+
 	"libs.altipla.consulting/env"
-	"libs.altipla.consulting/errors"
 	"libs.altipla.consulting/loaders"
 	"libs.altipla.consulting/routing"
 )

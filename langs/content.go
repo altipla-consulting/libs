@@ -3,7 +3,7 @@ package langs
 import (
 	"encoding/json"
 
-	"libs.altipla.consulting/errors"
+	"github.com/altipla-consulting/errors"
 )
 
 // Content represents a translatable string that can store a different value in

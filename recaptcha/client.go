@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"libs.altipla.consulting/errors"
+	"github.com/altipla-consulting/errors"
 )
 
 type apiResponse struct {

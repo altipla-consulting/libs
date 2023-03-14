@@ -6,9 +6,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/altipla-consulting/errors"
 	log "github.com/sirupsen/logrus"
-
-	"libs.altipla.consulting/errors"
 )
 
 // Value is a secret accesor that will keep its own value updated in background.

@@ -3,11 +3,13 @@ package rdb
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
 
-	"libs.altipla.consulting/errors"
+	"github.com/altipla-consulting/errors"
+
 	"libs.altipla.consulting/rdb/api"
 )
 
@@ -82,7 +84,7 @@ func (op *Operation) fetchStatus(ctx context.Context) (*api.OperationStatus, err
 	}
 
 	if status.Status == api.OperationStatusFaulted && status.Result != nil {
-		return nil, errors.Wrapf(errors.Errorf("operation failed: %s", status.Result.Message), "database side stack:\n%s", status.Result.Error)
+		return nil, fmt.Errorf("operation failed %s; database side stack %q", status.Result.Message, status.Result.Error)
 	}
 
 	return status, nil

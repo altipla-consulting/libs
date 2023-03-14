@@ -6,8 +6,6 @@ import (
 	"time"
 
 	"cloud.google.com/go/storage"
-
-	"libs.altipla.consulting/errors"
 )
 
 type Writer interface {
@@ -38,7 +36,7 @@ func (w *productionWriter) WriteFile(ctx context.Context, path string, content [
 		}
 		time.Sleep(1 * time.Second)
 	}
-	return errors.Trace(err)
+	return err
 }
 
 func (w *productionWriter) writeFileSafe(ctx context.Context, path string, content []byte) error {
@@ -49,11 +47,11 @@ func (w *productionWriter) writeFileSafe(ctx context.Context, path string, conte
 
 	if _, err := fmt.Fprintf(writer, string(content)); err != nil {
 		writer.Close()
-		return errors.Wrapf(err, "cannot write file: %s", path)
+		return fmt.Errorf("cannot write file %q: %w", path, err)
 	}
 
 	if err := writer.Close(); err != nil {
-		return errors.Wrapf(err, "cannot close file: %s", path)
+		return fmt.Errorf("cannot close file %q: %w", path, err)
 	}
 
 	return nil

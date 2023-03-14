@@ -4,7 +4,8 @@ import (
 	"context"
 	"net/http"
 
-	"libs.altipla.consulting/errors"
+	"github.com/altipla-consulting/errors"
+
 	"libs.altipla.consulting/rdb/api"
 )
 
@@ -42,7 +43,7 @@ func (counter *Counter) Increment(ctx context.Context, delta int64) error {
 	if err != nil {
 		var unexpected UnexpectedStatusError
 		if errors.As(err, &unexpected) && unexpected.Advanced != nil && unexpected.Advanced.Type == "Raven.Client.Exceptions.Documents.DocumentDoesNotExistException" {
-			return errors.Wrapf(ErrNoSuchEntity, "document %s does not exists when updating counter %s", counter.docID, counter.name)
+			return newNoSuchEntityError("document %q does not exists when updating counter %q", counter.docID, counter.name)
 		}
 		return errors.Trace(err)
 	}

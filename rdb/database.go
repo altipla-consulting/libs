@@ -14,10 +14,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/altipla-consulting/errors"
 	log "github.com/sirupsen/logrus"
 
 	"libs.altipla.consulting/env"
-	"libs.altipla.consulting/errors"
 	"libs.altipla.consulting/rdb/api"
 	"libs.altipla.consulting/secrets"
 )

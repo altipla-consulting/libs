@@ -3,7 +3,7 @@ package firestore
 import (
 	"context"
 
-	"libs.altipla.consulting/errors"
+	"github.com/altipla-consulting/errors"
 )
 
 type stringKVEntity struct {

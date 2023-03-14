@@ -10,8 +10,9 @@ import (
 	"path/filepath"
 	"sync"
 
+	"github.com/altipla-consulting/errors"
+
 	"libs.altipla.consulting/env"
-	"libs.altipla.consulting/errors"
 )
 
 type Group struct {
@@ -117,7 +118,7 @@ func (g *Group) load() error {
 
 	for _, glob := range g.globs {
 		if _, err := g.tmpl.ParseGlob(glob); err != nil {
-			return errors.Wrapf(err, "glob: %s", glob)
+			return fmt.Errorf("glob %q: %w", glob, err)
 		}
 	}
 

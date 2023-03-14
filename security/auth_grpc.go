@@ -6,11 +6,10 @@ import (
 	"net/url"
 	"sync"
 
+	"github.com/altipla-consulting/errors"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 	"google.golang.org/grpc"
-
-	"libs.altipla.consulting/errors"
 )
 
 var (

@@ -7,11 +7,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/altipla-consulting/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 
 	"libs.altipla.consulting/clock"
-	"libs.altipla.consulting/errors"
 )
 
 func TestSign(t *testing.T) {

@@ -7,10 +7,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/altipla-consulting/errors"
 	log "github.com/sirupsen/logrus"
 	jose "gopkg.in/square/go-jose.v2"
-
-	"libs.altipla.consulting/errors"
 )
 
 type rs256 struct {

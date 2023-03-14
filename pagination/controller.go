@@ -8,11 +8,11 @@ import (
 	"net/url"
 	"reflect"
 
+	"github.com/altipla-consulting/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/speps/go-hashids"
 
 	"libs.altipla.consulting/database"
-	"libs.altipla.consulting/errors"
 	"libs.altipla.consulting/rdb"
 )
 
@@ -216,16 +216,16 @@ func (ctrl *TokenController) Fetch(ctx context.Context, models interface{}) erro
 	if ctrl.token != "" {
 		decoded, err := h.DecodeInt64WithError(ctrl.token)
 		if err != nil {
-			return errors.Wrapf(ErrInvalidToken, "cannot decode token: %v: %v", ctrl.token, err)
+			return fmt.Errorf("cannot decode token %q: %v: %w", ctrl.token, err, ErrInvalidToken)
 		}
 		if len(decoded) != 2 {
-			return errors.Wrapf(ErrInvalidToken, "invalid number of parts inside the token: %v: %v", ctrl.token, len(decoded))
+			return fmt.Errorf("invalid %d parts inside the token %q: %w", len(decoded), ctrl.token, ErrInvalidToken)
 		}
 
 		ctrl.start = decoded[1]
 
 		if int64(ctrl.checksum) != decoded[0] {
-			return errors.Wrapf(ErrChecksumMismatch, "checksum mismatch: %v: %v, expected %v", ctrl.token, decoded[0], ctrl.checksum)
+			return fmt.Errorf("checksum mismatch for token %q: got %q, expected %q: %w", ctrl.token, decoded[0], ctrl.checksum, ErrChecksumMismatch)
 		}
 	}
 	if ctrl.start < 0 {
@@ -336,7 +336,7 @@ func (ctrl *PagedController) Fetch(ctx context.Context, models interface{}) erro
 	// never get a negative number doing so.
 	checksum := ctrl.storage.checksum(ctrl.pageSize)
 	if ctrl.page > 1 && checksum != ctrl.checksum {
-		return errors.Wrapf(ErrChecksumMismatch, "checksum mismatch: %v, expected %v", ctrl.checksum, checksum)
+		return fmt.Errorf("checksum mismatch: got %v, expected %v: %w", ctrl.checksum, checksum, ErrChecksumMismatch)
 	}
 	ctrl.checksum = checksum
 

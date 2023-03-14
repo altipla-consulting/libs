@@ -6,12 +6,12 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/altipla-consulting/errors"
 	log "github.com/sirupsen/logrus"
 	jose "gopkg.in/square/go-jose.v2"
 	"gopkg.in/square/go-jose.v2/jwt"
 
 	"libs.altipla.consulting/clock"
-	"libs.altipla.consulting/errors"
 )
 
 type InvalidTokenError struct {

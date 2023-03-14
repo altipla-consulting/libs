@@ -7,7 +7,8 @@ import (
 	"net/http"
 	"reflect"
 
-	"libs.altipla.consulting/errors"
+	"github.com/altipla-consulting/errors"
+
 	"libs.altipla.consulting/rdb/api"
 )
 

@@ -52,7 +52,7 @@ func TestEntityCycleDelete(t *testing.T) {
 
 	require.NoError(t, c.Delete(ctx, fake))
 
-	require.EqualError(t, c.Get(ctx, fake), ErrNoSuchEntity.Error())
+	require.EqualError(t, c.Get(ctx, fake), "key entity_fakes/foo-name: firestore: no such entity")
 }
 
 func TestEntityQuery(t *testing.T) {

@@ -6,9 +6,8 @@ import (
 	"net/http"
 	"sync"
 
+	"github.com/altipla-consulting/errors"
 	"golang.org/x/oauth2"
-
-	"libs.altipla.consulting/errors"
 )
 
 func NewAuthenticatedHTTPClient() *http.Client {

@@ -5,7 +5,7 @@ import (
 	"time"
 	"unicode"
 
-	"libs.altipla.consulting/errors"
+	"github.com/altipla-consulting/errors"
 )
 
 // Model should be implemented by any model that want to be serializable to redis keys.

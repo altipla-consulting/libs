@@ -6,7 +6,7 @@ import (
 	"encoding/binary"
 	"fmt"
 
-	"libs.altipla.consulting/errors"
+	"github.com/altipla-consulting/errors"
 )
 
 // Point maps against MySQL geographical point.

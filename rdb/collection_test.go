@@ -131,7 +131,7 @@ func TestGetEnforced(t *testing.T) {
 	})
 
 	other := new(FooCollectionModel)
-	require.EqualError(t, enforced.Get(ctx, "foo-collections/3", &other), ErrNoSuchEntity.Error())
+	require.EqualError(t, enforced.Get(ctx, "foo-collections/3", &other), `rdb: no such entity: enforced id "foo-collections/3"`)
 	require.Nil(t, other)
 
 	require.NoError(t, enforced.Get(ctx, "foo-collections/4", &other))
@@ -158,7 +158,7 @@ func TestGetNotNilPointerNoSuchEntity(t *testing.T) {
 	collection := db.Collection(new(FooCollectionModel))
 
 	foo := new(FooCollectionModel)
-	require.EqualError(t, collection.Get(ctx, "foo-collections/30", &foo), ErrNoSuchEntity.Error())
+	require.EqualError(t, collection.Get(ctx, "foo-collections/30", &foo), `rdb: no such entity: id "foo-collections/30"`)
 }
 
 func TestGetNotFoundLeavesNilPointer(t *testing.T) {
@@ -167,7 +167,7 @@ func TestGetNotFoundLeavesNilPointer(t *testing.T) {
 	collection := db.Collection(new(FooCollectionModel))
 
 	var foo *FooCollectionModel
-	require.EqualError(t, collection.Get(ctx, "foo-collections/30", &foo), ErrNoSuchEntity.Error())
+	require.EqualError(t, collection.Get(ctx, "foo-collections/30", &foo), `rdb: no such entity: id "foo-collections/30"`)
 	require.Nil(t, foo)
 }
 
@@ -179,7 +179,7 @@ func TestGetNotFoundLeavesEntityUnchanged(t *testing.T) {
 	foo := &FooCollectionModel{
 		DisplayName: "foo",
 	}
-	require.EqualError(t, collection.Get(ctx, "foo-collections/30", &foo), ErrNoSuchEntity.Error())
+	require.EqualError(t, collection.Get(ctx, "foo-collections/30", &foo), `rdb: no such entity: id "foo-collections/30"`)
 	require.NotNil(t, foo)
 	require.Equal(t, foo.DisplayName, "foo")
 }
@@ -243,14 +243,14 @@ func TestGetMultiNoSuchEntityNone(t *testing.T) {
 
 	var results []*FooCollectionModel
 	err := collection.GetMulti(ctx, []string{"foo-collections/1", "foo-collections/3"}, &results)
-	require.EqualError(t, err, "rdb: no such entity; rdb: no such entity")
+	require.EqualError(t, err, `rdb: no such entity: id "foo-collections/1"; rdb: no such entity: id "foo-collections/3"`)
 
 	var merr MultiError
 	require.True(t, errors.As(err, &merr))
 
 	require.Len(t, merr, 2)
-	require.EqualError(t, merr[0], ErrNoSuchEntity.Error())
-	require.EqualError(t, merr[1], ErrNoSuchEntity.Error())
+	require.EqualError(t, merr[0], `rdb: no such entity: id "foo-collections/1"`)
+	require.EqualError(t, merr[1], `rdb: no such entity: id "foo-collections/3"`)
 
 	require.Len(t, results, 2)
 	require.Nil(t, results[0])
@@ -269,14 +269,14 @@ func TestGetMultiNoSuchEntitySome(t *testing.T) {
 
 	var results []*FooCollectionModel
 	err := collection.GetMulti(ctx, []string{"foo-collections/1", "foo-collections/3"}, &results)
-	require.EqualError(t, err, "<nil>; rdb: no such entity")
+	require.EqualError(t, err, `<nil>; rdb: no such entity: id "foo-collections/3"`)
 
 	var merr MultiError
 	require.True(t, errors.As(err, &merr))
 
 	require.Len(t, merr, 2)
 	require.Nil(t, merr[0])
-	require.EqualError(t, merr[1], ErrNoSuchEntity.Error())
+	require.EqualError(t, merr[1], `rdb: no such entity: id "foo-collections/3"`)
 
 	require.Len(t, results, 2)
 	require.NotNil(t, results[0])
@@ -297,7 +297,7 @@ func TestDelete(t *testing.T) {
 	require.NoError(t, collection.Delete(ctx, foo))
 
 	var other *FooCollectionModel
-	require.EqualError(t, collection.Get(ctx, "foo-collections/3", &other), ErrNoSuchEntity.Error())
+	require.EqualError(t, collection.Get(ctx, "foo-collections/3", &other), `rdb: no such entity: id "foo-collections/3"`)
 }
 
 func TestConcurrentUpdates(t *testing.T) {
@@ -473,7 +473,7 @@ func TestPutTTLRealTimer(t *testing.T) {
 
 	time.Sleep(3 * time.Second)
 
-	require.EqualError(t, collection.Get(ctx, "foo-collections/ttl", &other), ErrNoSuchEntity.Error())
+	require.EqualError(t, collection.Get(ctx, "foo-collections/ttl", &other), `rdb: no such entity: id "foo-collections/ttl"`)
 
 	require.NoError(t, db.Maintenance(ctx, DisableExpiration()))
 }

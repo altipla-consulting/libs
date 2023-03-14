@@ -4,9 +4,8 @@ import (
 	"context"
 	"testing"
 
+	"github.com/altipla-consulting/errors"
 	"github.com/stretchr/testify/require"
-
-	"libs.altipla.consulting/errors"
 )
 
 func TestGet(t *testing.T) {

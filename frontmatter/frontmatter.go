@@ -10,8 +10,6 @@ import (
 	"google.golang.org/protobuf/encoding/prototext"
 	"google.golang.org/protobuf/proto"
 	"gopkg.in/yaml.v2"
-
-	"libs.altipla.consulting/errors"
 )
 
 // Unmarshal reads the input and parses the frontmatter into data returning the
@@ -27,7 +25,7 @@ func Unmarshal(rd io.Reader, data interface{}) (string, error) {
 				return "", nil
 			}
 
-			return "", errors.Wrapf(err, "cannot read file line")
+			return "", fmt.Errorf("cannot read file line: %w", err)
 		}
 		line = strings.TrimSpace(line)
 		if line == "---" {
@@ -36,14 +34,14 @@ func Unmarshal(rd io.Reader, data interface{}) (string, error) {
 			continue
 		}
 
-		return "", errors.Errorf("unknown file header line: %s", line)
+		return "", fmt.Errorf("unknown file header line: %s", line)
 	}
 
 	var header []string
 	for {
 		line, err := r.ReadString('\n')
 		if err != nil {
-			return "", errors.Wrapf(err, "cannot read header")
+			return "", fmt.Errorf("cannot read header: %w", err)
 		}
 		line = strings.TrimSpace(line)
 		if line == "---" {
@@ -55,17 +53,17 @@ func Unmarshal(rd io.Reader, data interface{}) (string, error) {
 
 	content, err := ioutil.ReadAll(r)
 	if err != nil {
-		return "", errors.Wrapf(err, "cannot read content")
+		return "", fmt.Errorf("cannot read content: %w", err)
 	}
 
 	msg, ok := data.(proto.Message)
 	if ok {
 		if err := prototext.Unmarshal([]byte(strings.Join(header, "")), msg); err != nil {
-			return "", errors.Wrapf(err, "cannot decode proto header")
+			return "", fmt.Errorf("cannot decode proto header: %w", err)
 		}
 	} else {
 		if err := yaml.Unmarshal([]byte(strings.Join(header, "")), data); err != nil {
-			return "", errors.Wrapf(err, "cannot decode yaml header")
+			return "", fmt.Errorf("cannot decode yaml header: %w", err)
 		}
 	}
 
@@ -81,13 +79,13 @@ func Marshal(w io.Writer, data interface{}, content string) error {
 	if ok {
 		value, err := prototext.Marshal(msg)
 		if err != nil {
-			return errors.Wrapf(err, "cannot encode proto header")
+			return fmt.Errorf("cannot encode proto header: %w", err)
 		}
 		header = string(value)
 	} else {
 		out, err := yaml.Marshal(data)
 		if err != nil {
-			return errors.Wrapf(err, "cannot encode proto header")
+			return fmt.Errorf("cannot encode proto header: %w", err)
 		}
 		header = string(out)
 	}
@@ -96,7 +94,7 @@ func Marshal(w io.Writer, data interface{}, content string) error {
 		content += "\n"
 	}
 	if _, err := fmt.Fprintf(w, "---\n%s---\n\n%s", header, content); err != nil {
-		return errors.Wrapf(err, "cannot encode yaml header")
+		return fmt.Errorf("cannot encode yaml header: %w", err)
 	}
 
 	return nil

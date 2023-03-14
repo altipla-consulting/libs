@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"io/ioutil"
 	"net"
 	"net/mail"
@@ -11,8 +13,6 @@ import (
 
 	"github.com/mailgun/mailgun-go/v3"
 	log "github.com/sirupsen/logrus"
-
-	"libs.altipla.consulting/errors"
 )
 
 var (
@@ -71,7 +71,7 @@ func (client *Client) SendReturnID(ctx context.Context, domain string, email *Em
 	}
 	for _, tag := range email.Tags {
 		if err := msg.AddTag(tag); err != nil {
-			return "", errors.Wrapf(err, "failed tag: %s; all tags: %v", tag, email.Tags)
+			return "", fmt.Errorf("cannot add tag %q of %v: %w", tag, email.Tags, err)
 		}
 	}
 	for _, attachment := range email.Attachments {
@@ -82,20 +82,20 @@ func (client *Client) SendReturnID(ctx context.Context, domain string, email *Em
 	}
 	for k, v := range email.UserVariables {
 		if err := msg.AddVariable(k, v); err != nil {
-			return "", errors.Trace(err)
+			return "", fmt.Errorf("cannot add variable %q of %v: %w", k, email.UserVariables, err)
 		}
 	}
 
 	message, id, err := mgclient.Send(ctx, msg)
 	if err != nil {
 		if neterr, ok := err.(net.Error); ok && neterr.Timeout() {
-			return "", errors.Trace(ErrTimeout)
+			return "", ErrTimeout
 		}
 		if strings.HasPrefix(err.Error(), "remote server prematurely closed connection:") {
-			return "", errors.Trace(ErrTimeout)
+			return "", ErrTimeout
 		}
 		if strings.HasPrefix(err.Error(), "while making http request:") && strings.Contains(err.Error(), "read: connection reset by peer") {
-			return "", errors.Trace(ErrTimeout)
+			return "", ErrTimeout
 		}
 
 		var mgerr *mailgun.UnexpectedResponseError
@@ -103,15 +103,15 @@ func (client *Client) SendReturnID(ctx context.Context, domain string, email *Em
 			errdata := new(sendError)
 			if err := json.Unmarshal(mgerr.Data, errdata); err == nil {
 				if errdata.Message == "'to' parameter is not a valid address. please check documentation" {
-					return "", errors.Wrapf(ErrInvalidAddress, "email: %s", email.To.String())
+					return "", fmt.Errorf("email %q: %w", email.To.String(), ErrInvalidAddress)
 				}
 				if errdata.Message == "to parameter is not a valid address. please check documentation" {
-					return "", errors.Wrapf(ErrInvalidAddress, "email: %s", email.To.String())
+					return "", fmt.Errorf("email %q: %w", email.To.String(), ErrInvalidAddress)
 				}
 			}
 		}
 
-		return "", errors.Wrapf(err, "send failed")
+		return "", fmt.Errorf("send failed: %w", err)
 	}
 
 	log.WithFields(log.Fields{"id": id, "message": message}).Debug("Mailgun email sent")
@@ -120,11 +120,8 @@ func (client *Client) SendReturnID(ctx context.Context, domain string, email *Em
 }
 
 func (client *Client) Send(ctx context.Context, domain string, email *Email) error {
-	if _, err := client.SendReturnID(ctx, domain, email); err != nil {
-		return errors.Trace(err)
-	}
-
-	return nil
+	_, err := client.SendReturnID(ctx, domain, email)
+	return err
 }
 
 func (client *Client) ValidateEmail(ctx context.Context, email string) (bool, error) {
@@ -132,7 +129,7 @@ func (client *Client) ValidateEmail(ctx context.Context, email string) (bool, er
 
 	ev, err := validator.ValidateEmail(ctx, email, false)
 	if err != nil {
-		return false, errors.Wrapf(err, "validate failed")
+		return false, fmt.Errorf("validate %q failed: %w", email, err)
 	}
 
 	return ev.IsValid, nil

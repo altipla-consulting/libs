@@ -7,7 +7,7 @@ import (
 	"time"
 	"unicode"
 
-	"libs.altipla.consulting/errors"
+	"github.com/altipla-consulting/errors"
 )
 
 var modelTrackingType = reflect.TypeOf(ModelTracking{})

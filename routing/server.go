@@ -10,13 +10,13 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/altipla-consulting/errors"
+	"github.com/altipla-consulting/sentry"
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
 	log "github.com/sirupsen/logrus"
 
 	"libs.altipla.consulting/env"
-	"libs.altipla.consulting/errors"
-	"libs.altipla.consulting/sentry"
 )
 
 // Handler should be implemented by the handler functions that we want to register.
@@ -117,10 +117,10 @@ func generic404Handler(w http.ResponseWriter, r *http.Request) error {
 
 	tmpl, err := template.New("error").Parse(errorTemplate)
 	if err != nil {
-		return errors.Wrapf(err, "cannot parse default 404 error template")
+		return fmt.Errorf("cannot parse default 404 error template: %v", err)
 	}
 	if err := tmpl.Execute(w, http.StatusNotFound); err != nil {
-		return errors.Wrapf(err, "cannot execute default 404 error template")
+		return fmt.Errorf("cannot execute default 404 error template: %v", err)
 	}
 
 	return nil

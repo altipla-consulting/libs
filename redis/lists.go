@@ -4,10 +4,9 @@ import (
 	"context"
 	"reflect"
 
+	"github.com/altipla-consulting/errors"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
-
-	"libs.altipla.consulting/errors"
 )
 
 type StringsList struct {

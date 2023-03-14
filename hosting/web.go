@@ -9,11 +9,11 @@ import (
 	"time"
 
 	"cloud.google.com/go/profiler"
+	"github.com/altipla-consulting/errors"
 	"github.com/sethvargo/go-signalcontext"
 	log "github.com/sirupsen/logrus"
 
 	"libs.altipla.consulting/env"
-	"libs.altipla.consulting/errors"
 	"libs.altipla.consulting/routing"
 )
 

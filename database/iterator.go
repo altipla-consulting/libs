@@ -3,7 +3,7 @@ package database
 import (
 	"database/sql"
 
-	"libs.altipla.consulting/errors"
+	"github.com/altipla-consulting/errors"
 )
 
 // Iterator helps to loop through rows of a collection retrieving a single model each time.

@@ -8,9 +8,8 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/altipla-consulting/errors"
 	log "github.com/sirupsen/logrus"
-
-	"libs.altipla.consulting/errors"
 )
 
 type CollectionOption func(c *Collection)
@@ -180,7 +179,7 @@ func (c *Collection) Put(ctx context.Context, instance Model) error {
 	if pks == 1 && !instance.Tracking().IsInserted() {
 		id, err := result.LastInsertId()
 		if err != nil {
-			return errors.Wrapf(err, "cannot get last inserted id")
+			return fmt.Errorf("cannot get last inserted id: %v", err)
 		}
 
 		if id != 0 {
@@ -196,7 +195,7 @@ func (c *Collection) Put(ctx context.Context, instance Model) error {
 
 	rows, err := result.RowsAffected()
 	if err != nil {
-		return errors.Wrapf(err, "cannot get rows affected")
+		return fmt.Errorf("cannot get rows affected: %v", err)
 	}
 	if rows == 0 {
 		return ErrConcurrentTransaction

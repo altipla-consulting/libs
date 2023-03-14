@@ -13,7 +13,7 @@ require (
 	cloud.google.com/go/storage v1.29.0
 	github.com/ernestoalejo/aeimagesflags v0.0.0-20150830225655-eed2909a7c2b
 	github.com/fsnotify/fsnotify v1.6.0
-	github.com/getsentry/sentry-go v0.18.0
+	github.com/getsentry/sentry-go v0.19.0
 	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/go-sql-driver/mysql v1.7.0
 	github.com/golang/protobuf v1.5.2
@@ -48,6 +48,8 @@ require (
 	cloud.google.com/go/iam v0.12.0 // indirect
 	cloud.google.com/go/kms v1.8.0 // indirect
 	cloud.google.com/go/longrunning v0.3.0 // indirect
+	github.com/altipla-consulting/errors v1.2.2 // indirect
+	github.com/altipla-consulting/sentry v0.4.0 // indirect
 	github.com/andybalholm/brotli v1.0.4 // indirect
 	github.com/apache/arrow/go/v10 v10.0.1 // indirect
 	github.com/apache/thrift v0.16.0 // indirect

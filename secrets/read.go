@@ -9,11 +9,11 @@ import (
 
 	"cloud.google.com/go/compute/metadata"
 	secretmanager "cloud.google.com/go/secretmanager/apiv1"
+	"github.com/altipla-consulting/errors"
 	log "github.com/sirupsen/logrus"
 	pb "google.golang.org/genproto/googleapis/cloud/secretmanager/v1"
 
 	"libs.altipla.consulting/env"
-	"libs.altipla.consulting/errors"
 )
 
 var (

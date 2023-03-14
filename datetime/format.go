@@ -10,8 +10,9 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/altipla-consulting/errors"
+
 	"libs.altipla.consulting/datetime/symbols"
-	"libs.altipla.consulting/errors"
 )
 
 const (

@@ -9,11 +9,11 @@ import (
 
 	"cloud.google.com/go/compute/metadata"
 	"cloud.google.com/go/pubsub"
+	"github.com/altipla-consulting/errors"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/proto"
 
 	"libs.altipla.consulting/env"
-	"libs.altipla.consulting/errors"
 )
 
 type Client struct {

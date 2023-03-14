@@ -4,9 +4,8 @@ import (
 	"io/ioutil"
 	"os"
 
+	"github.com/altipla-consulting/errors"
 	"gopkg.in/yaml.v2"
-
-	"libs.altipla.consulting/errors"
 )
 
 type localSecrets struct {

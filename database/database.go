@@ -6,10 +6,9 @@ import (
 	"fmt"
 	"reflect"
 
+	"github.com/altipla-consulting/errors"
 	_ "github.com/go-sql-driver/mysql" // MySQL driver
 	log "github.com/sirupsen/logrus"
-
-	"libs.altipla.consulting/errors"
 )
 
 // Database represents a reusable connection to a remote MySQL database.
@@ -32,14 +31,14 @@ func Open(credentials Credentials, options ...Option) (*Database, error) {
 	var err error
 	db.sess, err = sql.Open("mysql", credentials.String())
 	if err != nil {
-		return nil, errors.Wrapf(err, "cannot connect to mysql")
+		return nil, fmt.Errorf("cannot connect to mysql: %v", err)
 	}
 
 	db.sess.SetMaxOpenConns(3)
 	db.sess.SetMaxIdleConns(0)
 
 	if err := db.sess.Ping(); err != nil {
-		return nil, errors.Wrapf(err, "cannot ping mysql")
+		return nil, fmt.Errorf("cannot ping mysql: %v", err)
 	}
 
 	return db, nil
@@ -223,7 +222,7 @@ func (db *Database) RunTransaction(ctx context.Context, fn TransactionalFn) erro
 
 	if err := fn(ctx); err != nil {
 		if err := tx.Rollback(); err != nil {
-			return errors.Wrapf(err, "unable to rollback transaction")
+			return fmt.Errorf("unable to rollback transaction: %w", err)
 		}
 
 		return errors.Trace(err)

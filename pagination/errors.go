@@ -1,6 +1,6 @@
 package pagination
 
-import "libs.altipla.consulting/errors"
+import "github.com/altipla-consulting/errors"
 
 var (
 	ErrInvalidToken     = errors.New("pagination: invalid token")

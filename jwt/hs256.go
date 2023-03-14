@@ -1,9 +1,8 @@
 package jwt
 
 import (
+	"github.com/altipla-consulting/errors"
 	jose "gopkg.in/square/go-jose.v2"
-
-	"libs.altipla.consulting/errors"
 )
 
 type hs256 struct {

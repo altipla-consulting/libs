@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"libs.altipla.consulting/errors"
+	"github.com/altipla-consulting/errors"
 )
 
 func JSON(w http.ResponseWriter, reply interface{}, opts ...ReplyOption) error {

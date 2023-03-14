@@ -6,10 +6,10 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/altipla-consulting/errors"
 	"github.com/fsnotify/fsnotify"
 
 	"libs.altipla.consulting/collections"
-	"libs.altipla.consulting/errors"
 )
 
 func Recursive(ctx context.Context, changes chan string, folders ...string) error {

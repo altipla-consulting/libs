@@ -3,8 +3,9 @@ package pagination
 import (
 	"context"
 
+	"github.com/altipla-consulting/errors"
+
 	"libs.altipla.consulting/database"
-	"libs.altipla.consulting/errors"
 	"libs.altipla.consulting/rdb"
 )
 

@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"libs.altipla.consulting/errors"
+	"github.com/altipla-consulting/errors"
 )
 
 type Duration time.Duration

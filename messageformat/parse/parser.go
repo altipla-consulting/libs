@@ -5,7 +5,7 @@ import (
 	"runtime"
 	"strconv"
 
-	"libs.altipla.consulting/errors"
+	"github.com/altipla-consulting/errors"
 )
 
 type Tree struct {

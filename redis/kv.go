@@ -5,11 +5,10 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/altipla-consulting/errors"
 	"github.com/go-redis/redis"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
-
-	"libs.altipla.consulting/errors"
 )
 
 type StringKV struct {

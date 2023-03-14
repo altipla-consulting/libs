@@ -6,8 +6,9 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/altipla-consulting/errors"
+
 	"libs.altipla.consulting/collections"
-	"libs.altipla.consulting/errors"
 )
 
 type Hash struct {
@@ -43,7 +44,7 @@ func (hash *Hash) Get(ctx context.Context, key string, instance Model, masks ...
 
 	fields, err := hash.db.Cmdable(ctx).HMGet(hash.name+":"+key, names...).Result()
 	if err != nil {
-		return errors.Wrapf(err, "cannot get fields of hash")
+		return errors.Trace(err)
 	}
 	var nilFields int
 	for i, field := range fields {
@@ -57,7 +58,7 @@ func (hash *Hash) Get(ctx context.Context, key string, instance Model, masks ...
 		case int64:
 			n, err := strconv.ParseInt(field.(string), 10, 64)
 			if err != nil {
-				return errors.Wrapf(err, "cannot parse int64 field (%s = %s)", prop.Name, field)
+				return errors.Trace(err)
 			}
 			prop.ReflectValue.Set(reflect.ValueOf(n))
 
@@ -67,7 +68,7 @@ func (hash *Hash) Get(ctx context.Context, key string, instance Model, masks ...
 		case time.Time:
 			var t time.Time
 			if err := t.UnmarshalText([]byte(field.(string))); err != nil {
-				return errors.Wrapf(err, "cannot unmarshal time field (%s = %s)", prop.Name, field)
+				return errors.Trace(err)
 			}
 			prop.ReflectValue.Set(reflect.ValueOf(t))
 		}
@@ -102,7 +103,7 @@ func (hash *Hash) Put(ctx context.Context, key string, instance Model, masks ...
 		case time.Time:
 			t, err := v.MarshalText()
 			if err != nil {
-				return errors.Wrapf(err, "cannot marshal time (%s = %s)", prop.Name, prop.Value)
+				return errors.Trace(err)
 			}
 			store = string(t)
 		}
@@ -111,7 +112,7 @@ func (hash *Hash) Put(ctx context.Context, key string, instance Model, masks ...
 	}
 
 	if err := hash.db.Cmdable(ctx).HMSet(hash.name+":"+key, fields).Err(); err != nil {
-		return errors.Wrapf(err, "cannot set fields of hash")
+		return errors.Trace(err)
 	}
 
 	return nil
@@ -120,7 +121,7 @@ func (hash *Hash) Put(ctx context.Context, key string, instance Model, masks ...
 // Delete inmediately removes the key from the hash.
 func (hash *Hash) Delete(ctx context.Context, key string) error {
 	if err := hash.db.Cmdable(ctx).Del(hash.name + ":" + key).Err(); err != nil {
-		return errors.Wrapf(err, "cannot delete hash %s", key)
+		return errors.Trace(err)
 	}
 	return nil
 }
@@ -128,7 +129,7 @@ func (hash *Hash) Delete(ctx context.Context, key string) error {
 // ExpireAt sets the expiration of a key of this hash.
 func (hash *Hash) ExpireAt(ctx context.Context, key string, t time.Time) error {
 	if err := hash.db.Cmdable(ctx).ExpireAt(hash.name+":"+key, t).Err(); err != nil {
-		return errors.Wrapf(err, "cannot expire hash %s", key)
+		return errors.Trace(err)
 	}
 	return nil
 }

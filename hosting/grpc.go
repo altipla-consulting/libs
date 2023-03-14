@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"cloud.google.com/go/profiler"
+	"github.com/altipla-consulting/errors"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/rs/cors"
 	"github.com/sethvargo/go-signalcontext"
@@ -18,7 +19,6 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 
 	"libs.altipla.consulting/env"
-	"libs.altipla.consulting/errors"
 	"libs.altipla.consulting/routing"
 )
 

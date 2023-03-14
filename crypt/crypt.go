@@ -4,10 +4,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/altipla-consulting/errors"
 	"github.com/gorilla/securecookie"
 	"google.golang.org/protobuf/proto"
-
-	"libs.altipla.consulting/errors"
 )
 
 var (
@@ -39,12 +38,12 @@ func (s *Signer) SignMessage(msg proto.Message, opts ...SignOption) (string, err
 
 	encoded, err := proto.Marshal(msg)
 	if err != nil {
-		return "", errors.Wrapf(err, "cannot marshal proto message")
+		return "", errors.Trace(err)
 	}
 
 	token, err := sc.Encode("crypt", encoded)
 	if err != nil {
-		return "", errors.Wrapf(err, "cannot encode crypt token")
+		return "", errors.Trace(err)
 	}
 
 	return strings.TrimRight(token, "="), nil
@@ -66,11 +65,11 @@ func (s *Signer) ReadMessage(token string, msg proto.Message, opts ...SignOption
 			return errors.Trace(ErrExpiredToken)
 		}
 
-		return errors.Wrapf(err, "cannot decode crypt token")
+		return errors.Trace(err)
 	}
 
 	if err := proto.Unmarshal(encoded, msg); err != nil {
-		return errors.Wrapf(err, "cannot unmarshal proto message")
+		return errors.Trace(err)
 	}
 
 	return nil

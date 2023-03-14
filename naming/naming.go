@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"libs.altipla.consulting/errors"
+	"github.com/altipla-consulting/errors"
 )
 
 func Generate(parts ...interface{}) string {

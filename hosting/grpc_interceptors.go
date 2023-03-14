@@ -6,6 +6,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/altipla-consulting/errors"
+	"github.com/altipla-consulting/sentry"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -14,8 +16,6 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 
 	"libs.altipla.consulting/env"
-	"libs.altipla.consulting/errors"
-	"libs.altipla.consulting/sentry"
 )
 
 func grpcTrimStrings() grpc.UnaryServerInterceptor {
@@ -93,8 +93,6 @@ func grpcUnaryErrorLogger() grpc.UnaryServerInterceptor {
 
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		defer client.ReportPanics(ctx)
-
-		ctx = sentry.WithContextRPC(ctx, env.ServiceName(), info.FullMethod)
 
 		ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 		defer cancel()

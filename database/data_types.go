@@ -3,7 +3,7 @@ package database
 import (
 	"database/sql/driver"
 
-	"libs.altipla.consulting/errors"
+	"github.com/altipla-consulting/errors"
 )
 
 // NullableString can be used in a model column as a normal string, but if the

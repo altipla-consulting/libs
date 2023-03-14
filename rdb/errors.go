@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"strings"
 
-	"libs.altipla.consulting/errors"
+	"github.com/altipla-consulting/errors"
 )
 
 var (
@@ -15,6 +15,22 @@ var (
 	ErrConcurrentTransaction = errors.New("rdb: concurrent transaction")
 	ErrDatabaseDoesNotExists = errors.New("rdb: database does not exists")
 )
+
+type noSuchEntityError struct {
+	reason string
+}
+
+func newNoSuchEntityError(format string, args ...any) noSuchEntityError {
+	return noSuchEntityError{fmt.Sprintf(format, args...)}
+}
+
+func (err noSuchEntityError) Error() string {
+	return fmt.Sprintf("%s: %v", ErrNoSuchEntity, err.reason)
+}
+
+func (err noSuchEntityError) Unwrap() error {
+	return ErrNoSuchEntity
+}
 
 // MultiError stores a list of error when retrieving multiple models and only
 // some of them may fail.

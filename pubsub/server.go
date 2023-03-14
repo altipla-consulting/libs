@@ -7,10 +7,10 @@ import (
 	"net/http"
 
 	"cloud.google.com/go/compute/metadata"
+	"github.com/altipla-consulting/errors"
 	"google.golang.org/api/idtoken"
 
 	"libs.altipla.consulting/env"
-	"libs.altipla.consulting/errors"
 	"libs.altipla.consulting/hosting"
 	"libs.altipla.consulting/routing"
 	"libs.altipla.consulting/security"

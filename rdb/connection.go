@@ -6,6 +6,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httputil"
@@ -13,9 +14,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/altipla-consulting/errors"
 	log "github.com/sirupsen/logrus"
 
-	"libs.altipla.consulting/errors"
 	"libs.altipla.consulting/rdb/api"
 )
 
@@ -308,7 +309,7 @@ func (conn *connection) descriptor(ctx context.Context) (*api.Database, error) {
 
 	switch {
 	case resp.StatusCode == http.StatusNotFound && resp.Header.Get("Database-Missing") == conn.dbname:
-		return nil, errors.Wrapf(ErrDatabaseDoesNotExists, "dbname: %s", conn.dbname)
+		return nil, fmt.Errorf("dbname %q: %w", conn.dbname, ErrDatabaseDoesNotExists)
 	case resp.StatusCode == http.StatusOK:
 		desc := new(api.Database)
 		if err := json.NewDecoder(resp.Body).Decode(desc); err != nil {

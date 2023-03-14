@@ -3,11 +3,11 @@ package pagination
 import (
 	"context"
 
+	"github.com/altipla-consulting/errors"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
 	"libs.altipla.consulting/database"
-	"libs.altipla.consulting/errors"
 )
 
 // Deprecated: Use NewSQLToken instead.

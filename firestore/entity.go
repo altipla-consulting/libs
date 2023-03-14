@@ -2,13 +2,13 @@ package firestore
 
 import (
 	"context"
+	"fmt"
 
 	"cloud.google.com/go/firestore"
+	"github.com/altipla-consulting/errors"
 	"google.golang.org/api/iterator"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-
-	"libs.altipla.consulting/errors"
 )
 
 var Done = iterator.Done
@@ -45,7 +45,7 @@ func (kv *EntityKV) Get(ctx context.Context, model Model) error {
 	snapshot, err := kv.c.Collection(model.Collection()).Doc(model.Key()).Get(ctx)
 	if err != nil {
 		if status.Code(err) == codes.NotFound {
-			return errors.Wrapf(ErrNoSuchEntity, "key: %v/%v", model.Collection(), model.Key())
+			return fmt.Errorf("key %v/%v: %w", model.Collection(), model.Key(), ErrNoSuchEntity)
 		}
 
 		return errors.Trace(err)

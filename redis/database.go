@@ -4,9 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/altipla-consulting/errors"
 	"github.com/go-redis/redis"
-
-	"libs.altipla.consulting/errors"
 )
 
 // Database keeps a connection to a Redis server.

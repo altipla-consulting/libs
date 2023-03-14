@@ -3,7 +3,7 @@ package loaders
 import (
 	"sync"
 
-	"libs.altipla.consulting/errors"
+	"github.com/altipla-consulting/errors"
 )
 
 // Lazy runs the function only once and returns the error if there is one. If the

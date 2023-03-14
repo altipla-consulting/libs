@@ -5,9 +5,9 @@ import (
 	"reflect"
 	"time"
 
+	"github.com/altipla-consulting/errors"
 	"github.com/gorilla/schema"
 
-	"libs.altipla.consulting/errors"
 	"libs.altipla.consulting/routing"
 )
 

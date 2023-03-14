@@ -11,10 +11,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/altipla-consulting/errors"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/text/unicode/cldr"
-
-	"libs.altipla.consulting/errors"
 )
 
 var locales = flag.String("locales", "", "Locales to extract from CLDR")

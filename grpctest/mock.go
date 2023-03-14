@@ -7,10 +7,9 @@ import (
 	"reflect"
 	"time"
 
+	"github.com/altipla-consulting/errors"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/test/bufconn"
-
-	"libs.altipla.consulting/errors"
 )
 
 // ClientMock contains all the info needed to mock client calls.

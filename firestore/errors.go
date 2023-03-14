@@ -1,7 +1,7 @@
 package firestore
 
 import (
-	"libs.altipla.consulting/errors"
+	"github.com/altipla-consulting/errors"
 )
 
 var ErrNoSuchEntity = errors.New("firestore: no such entity")

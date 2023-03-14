@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"time"
 
+	"github.com/altipla-consulting/errors"
 	"google.golang.org/protobuf/encoding/protojson"
 
 	"libs.altipla.consulting/datetime"
-	"libs.altipla.consulting/errors"
 	pb "libs.altipla.consulting/protos/datetime"
 	"libs.altipla.consulting/rdb/api"
 )

@@ -6,7 +6,8 @@ import (
 	"net/http"
 	"reflect"
 
-	"libs.altipla.consulting/errors"
+	"github.com/altipla-consulting/errors"
+
 	"libs.altipla.consulting/rdb/api"
 )
 
@@ -50,7 +51,7 @@ func (collection *Collection) checkEnforcers(model Model) bool {
 
 func (collection *Collection) Put(ctx context.Context, model Model) error {
 	if !collection.checkEnforcers(model) {
-		return errors.Wrapf(ErrNoSuchEntity, "enforced model")
+		return newNoSuchEntityError("enforced model")
 	}
 
 	sess := SessionFromContext(ctx)
@@ -73,10 +74,10 @@ func (collection *Collection) Get(ctx context.Context, id string, dest interface
 	}
 
 	if id == "" {
-		return errors.Wrapf(ErrNoSuchEntity, "empty id")
+		return newNoSuchEntityError("empty id")
 	}
 	if l := len([]byte(id)); l >= 510 {
-		return errors.Wrapf(ErrNoSuchEntity, "id is too long to be valid: %v", l)
+		return newNoSuchEntityError("id is too long to be valid %v", l)
 	}
 
 	params := map[string]interface{}{
@@ -111,13 +112,13 @@ func (collection *Collection) Get(ctx context.Context, id string, dest interface
 				if err := json.Unmarshal([]byte("null"), dest); err != nil {
 					return errors.Trace(err)
 				}
-				return errors.Wrapf(ErrNoSuchEntity, "enforced id: %s", id)
+				return newNoSuchEntityError("enforced id %q", id)
 			}
 		} else if len(collection.enforcers) > 0 {
 			return errors.Errorf("cannot enforce non-model entities")
 		}
 	case http.StatusNotFound:
-		return errors.Wrapf(ErrNoSuchEntity, "id: %s", id)
+		return newNoSuchEntityError("id %q", id)
 	default:
 		return NewUnexpectedStatusError(r, resp)
 	}
@@ -156,7 +157,6 @@ func (collection *Collection) TryGet(ctx context.Context, id string, model inter
 		if errors.Is(err, ErrNoSuchEntity) {
 			return nil
 		}
-
 		return errors.Trace(err)
 	}
 	return nil
@@ -204,7 +204,7 @@ func (collection *Collection) GetMulti(ctx context.Context, ids []string, dest i
 		slice := reflect.MakeSlice(rt.Elem(), 0, len(ids))
 		for i, result := range results.Results {
 			if result == nil {
-				merr[i] = errors.Wrapf(ErrNoSuchEntity, "id: %q", ids[i])
+				merr[i] = newNoSuchEntityError("id %q", ids[i])
 				slice = reflect.Append(slice, reflect.Zero(rt.Elem().Elem()))
 				continue
 			}
@@ -215,7 +215,7 @@ func (collection *Collection) GetMulti(ctx context.Context, ids []string, dest i
 			}
 			if model != nil {
 				if !collection.checkEnforcers(model) {
-					merr[i] = errors.Wrapf(ErrNoSuchEntity, "enforced id: %s", ids[i])
+					merr[i] = newNoSuchEntityError("enforced id %q", ids[i])
 					slice = reflect.Append(slice, reflect.Zero(rt.Elem().Elem()))
 					continue
 				}
@@ -232,7 +232,7 @@ func (collection *Collection) GetMulti(ctx context.Context, ids []string, dest i
 		return nil
 	case http.StatusNotFound:
 		return MultiError{
-			errors.Wrapf(ErrNoSuchEntity, "id: %q", ids[0]),
+			newNoSuchEntityError("id %q", ids[0]),
 		}
 	default:
 		return NewUnexpectedStatusError(r, resp)
@@ -241,7 +241,7 @@ func (collection *Collection) GetMulti(ctx context.Context, ids []string, dest i
 
 func (collection *Collection) Delete(ctx context.Context, model Model) error {
 	if !collection.checkEnforcers(model) {
-		return errors.Wrapf(ErrNoSuchEntity, "enforced model")
+		return newNoSuchEntityError("enforced model")
 	}
 
 	sess := SessionFromContext(ctx)
@@ -260,7 +260,7 @@ func (collection *Collection) Exists(ctx context.Context, id string) (bool, erro
 		return false, errors.Errorf("cannot enforce entities while calling Exists")
 	}
 	if id == "" {
-		return false, errors.Wrapf(ErrNoSuchEntity, "empty id")
+		return false, newNoSuchEntityError("empty id")
 	}
 
 	params := map[string]interface{}{

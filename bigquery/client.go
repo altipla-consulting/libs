@@ -4,8 +4,7 @@ import (
 	"context"
 
 	"cloud.google.com/go/bigquery"
-
-	"libs.altipla.consulting/errors"
+	"github.com/altipla-consulting/errors"
 )
 
 // Dataset represents a BigQuery dataset name.

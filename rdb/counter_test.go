@@ -97,5 +97,5 @@ func TestCounterEntityNotFound(t *testing.T) {
 
 	ctx, sess := db.NewSession(ctx)
 
-	require.EqualError(t, sess.Counter("foo-counters/1", "foo").Increment(ctx, 2), ErrNoSuchEntity.Error())
+	require.EqualError(t, sess.Counter("foo-counters/1", "foo").Increment(ctx, 2), `rdb: no such entity: document "foo-counters/1" does not exists when updating counter "foo"`)
 }

@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 
-	"libs.altipla.consulting/errors"
+	"github.com/altipla-consulting/errors"
 )
 
 // GobInt32 can be used as a pointer inside a struct. When serialized with encoding/gob
