@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"strings"
 	"sync"
 	"time"
 
@@ -326,6 +327,14 @@ func (conn *connection) createIndexes(ctx context.Context, indexes []*api.Index)
 		return nil
 	}
 
+	for i := range indexes {
+		for j := range indexes[i].Maps {
+			indexes[i].Maps[j] = strings.TrimSpace(indexes[i].Maps[j])
+		}
+		if indexes[i].Reduce != nil {
+			*indexes[i].Reduce = strings.TrimSpace(*indexes[i].Reduce)
+		}
+	}
 	req := &api.IndexesRequest{
 		Indexes: indexes,
 	}
