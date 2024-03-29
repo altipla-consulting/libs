@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/altipla-consulting/env"
 	"github.com/altipla-consulting/errors"
 
-	"libs.altipla.consulting/env"
 	"libs.altipla.consulting/hosting"
 	"libs.altipla.consulting/routing"
 )

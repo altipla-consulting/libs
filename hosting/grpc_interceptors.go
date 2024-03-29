@@ -14,8 +14,7 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
-
-	"libs.altipla.consulting/env"
+	"github.com/altipla-consulting/env"
 )
 
 func grpcTrimStrings() grpc.UnaryServerInterceptor {

@@ -16,8 +16,8 @@ import (
 
 	"github.com/altipla-consulting/errors"
 	log "github.com/sirupsen/logrus"
+	"github.com/altipla-consulting/env"
 
-	"libs.altipla.consulting/env"
 	"libs.altipla.consulting/rdb/api"
 	"libs.altipla.consulting/secrets"
 )

@@ -5,9 +5,8 @@ import (
 	"os"
 
 	"cloud.google.com/go/firestore"
+	"github.com/altipla-consulting/env"
 	"github.com/altipla-consulting/errors"
-
-	"libs.altipla.consulting/env"
 )
 
 type Database struct {

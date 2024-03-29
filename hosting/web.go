@@ -12,8 +12,8 @@ import (
 	"github.com/altipla-consulting/errors"
 	"github.com/sethvargo/go-signalcontext"
 	log "github.com/sirupsen/logrus"
+	"github.com/altipla-consulting/env"
 
-	"libs.altipla.consulting/env"
 	"libs.altipla.consulting/routing"
 )
 

@@ -27,6 +27,8 @@ cloud.google.com/go/storage v1.29.0 h1:6weCgzRvMg7lzuUurI4697AqIRPU1SvzHhynwpW31
 cloud.google.com/go/storage v1.29.0/go.mod h1:4puEjyTKnku6gfKoTfNOU/W+a9JyuVNxjpS5GBrB8h4=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/JohnCGriffin/overflow v0.0.0-20211019200055-46fa312c352c h1:RGWPOewvKIROun94nF7v2cua9qP+thov/7M50KEoeSU=
+github.com/altipla-consulting/env v0.2.2 h1:EbBAe5tMYNaOVhiVzRxNL39u7hKaerSBhF+lwltE6ok=
+github.com/altipla-consulting/env v0.2.2/go.mod h1:0wGCiA8OUISdQbBVS5bBeJAteFThsVuQAgDIZUYDFiA=
 github.com/altipla-consulting/errors v1.2.1 h1:oTG8XsGL2kW1GRHxGByvmMGLzY/+xAWw9y0NNdEOFsM=
 github.com/altipla-consulting/errors v1.2.1/go.mod h1:wqLbQEvpmFHArZcU8AvRKZuzeF3LL2gw+dhk3+ztikQ=
 github.com/altipla-consulting/errors v1.2.2 h1:Bg3mt/h99WrR091AcE1tazibN4Zals9p4V/G6G5PUqk=

@@ -1,7 +1,8 @@
 package platform
 
 import (
-	"libs.altipla.consulting/env"
+	"github.com/altipla-consulting/env"
+
 	"libs.altipla.consulting/hosting"
 	"libs.altipla.consulting/hosting/bare"
 	"libs.altipla.consulting/hosting/cloudrun"

@@ -11,8 +11,7 @@ import (
 	"sync"
 
 	"github.com/altipla-consulting/errors"
-
-	"libs.altipla.consulting/env"
+	"github.com/altipla-consulting/env"
 )
 
 type Group struct {

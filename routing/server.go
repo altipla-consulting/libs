@@ -15,8 +15,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
 	log "github.com/sirupsen/logrus"
-
-	"libs.altipla.consulting/env"
+	"github.com/altipla-consulting/env"
 )
 
 // Handler should be implemented by the handler functions that we want to register.

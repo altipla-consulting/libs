@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/altipla-consulting/errors"
+	"github.com/altipla-consulting/env"
 
-	"libs.altipla.consulting/env"
 	"libs.altipla.consulting/hosting"
 	"libs.altipla.consulting/routing"
 )

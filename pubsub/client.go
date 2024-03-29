@@ -12,8 +12,7 @@ import (
 	"github.com/altipla-consulting/errors"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/proto"
-
-	"libs.altipla.consulting/env"
+	"github.com/altipla-consulting/env"
 )
 
 type Client struct {

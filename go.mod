@@ -48,6 +48,7 @@ require (
 	cloud.google.com/go/iam v0.12.0 // indirect
 	cloud.google.com/go/kms v1.8.0 // indirect
 	cloud.google.com/go/longrunning v0.3.0 // indirect
+	github.com/altipla-consulting/env v0.2.2 // indirect
 	github.com/altipla-consulting/errors v1.2.2 // indirect
 	github.com/altipla-consulting/sentry v0.4.0 // indirect
 	github.com/andybalholm/brotli v1.0.4 // indirect

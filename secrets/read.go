@@ -12,8 +12,7 @@ import (
 	"github.com/altipla-consulting/errors"
 	log "github.com/sirupsen/logrus"
 	pb "google.golang.org/genproto/googleapis/cloud/secretmanager/v1"
-
-	"libs.altipla.consulting/env"
+	"github.com/altipla-consulting/env"
 )
 
 var (
