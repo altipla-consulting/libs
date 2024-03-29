@@ -2,7 +2,7 @@ package routing
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -14,7 +14,7 @@ func fakeRequest(t *testing.T, server *Server, req *http.Request) (*http.Respons
 	w := httptest.NewRecorder()
 	server.ServeHTTP(w, req)
 	resp := w.Result()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	require.NoError(t, err)
 
 	return resp, string(body)

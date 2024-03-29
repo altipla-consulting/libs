@@ -10,12 +10,12 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/altipla-consulting/env"
 	"github.com/altipla-consulting/errors"
 	"github.com/altipla-consulting/sentry"
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
 	log "github.com/sirupsen/logrus"
-	"github.com/altipla-consulting/env"
 )
 
 // Handler should be implemented by the handler functions that we want to register.
@@ -100,14 +100,14 @@ func NewServer(opts ...ServerOption) *Server {
 		r: mux.NewRouter().StrictSlash(true),
 	}
 	s.r.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		s.decorate(nil, "", s.handler404)(w, r)
+		s.decorate(nil, s.handler404)(w, r)
 	})
 
 	return s
 }
 
 func (s *Server) call404(w http.ResponseWriter, r *http.Request) {
-	s.decorate(nil, "", s.handler404)(w, r)
+	s.decorate(nil, s.handler404)(w, r)
 }
 
 func generic404Handler(w http.ResponseWriter, r *http.Request) error {
@@ -129,7 +129,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	s.Router.r.ServeHTTP(w, r)
 }
 
-func (s *Server) decorate(middlewares []Middleware, path string, handler Handler) http.HandlerFunc {
+func (s *Server) decorate(middlewares []Middleware, handler Handler) http.HandlerFunc {
 	for _, middleware := range middlewares {
 		handler = middleware(handler)
 	}
@@ -242,7 +242,7 @@ type Middleware func(handler Handler) Handler
 
 // Get registers a new GET route.
 func (router *Router) Get(path string, handler Handler) {
-	fn := router.s.decorate(router.middlewares, path, handler)
+	fn := router.s.decorate(router.middlewares, handler)
 	if prefix := hasWildcard(path); prefix != "" {
 		router.r.PathPrefix(prefix).HandlerFunc(fn).Methods(http.MethodGet)
 		router.r.PathPrefix(prefix).HandlerFunc(fn).Methods(http.MethodHead)
@@ -254,7 +254,7 @@ func (router *Router) Get(path string, handler Handler) {
 
 // Post registers a new POST route.
 func (router *Router) Post(path string, handler Handler) {
-	fn := router.s.decorate(router.middlewares, path, handler)
+	fn := router.s.decorate(router.middlewares, handler)
 	if prefix := hasWildcard(path); prefix != "" {
 		router.r.PathPrefix(prefix).HandlerFunc(fn).Methods(http.MethodPost)
 		return
@@ -264,7 +264,7 @@ func (router *Router) Post(path string, handler Handler) {
 
 // Put registers a new PUT route.
 func (router *Router) Put(path string, handler Handler) {
-	fn := router.s.decorate(router.middlewares, path, handler)
+	fn := router.s.decorate(router.middlewares, handler)
 	if prefix := hasWildcard(path); prefix != "" {
 		router.r.PathPrefix(prefix).HandlerFunc(fn).Methods(http.MethodPut)
 		return
@@ -274,7 +274,7 @@ func (router *Router) Put(path string, handler Handler) {
 
 // Delete registers a new DELETE route.
 func (router *Router) Delete(path string, handler Handler) {
-	fn := router.s.decorate(router.middlewares, path, handler)
+	fn := router.s.decorate(router.middlewares, handler)
 	if prefix := hasWildcard(path); prefix != "" {
 		router.r.PathPrefix(prefix).HandlerFunc(fn).Methods(http.MethodDelete)
 		return
@@ -284,7 +284,7 @@ func (router *Router) Delete(path string, handler Handler) {
 
 // Options registers a new OPTIONS route.
 func (router *Router) Options(path string, handler Handler) {
-	fn := router.s.decorate(router.middlewares, path, handler)
+	fn := router.s.decorate(router.middlewares, handler)
 	if prefix := hasWildcard(path); prefix != "" {
 		router.r.PathPrefix(prefix).HandlerFunc(fn).Methods(http.MethodOptions)
 		return
@@ -294,7 +294,7 @@ func (router *Router) Options(path string, handler Handler) {
 
 // Head registers a new HEAD route.
 func (router *Router) Head(path string, handler Handler) {
-	fn := router.s.decorate(router.middlewares, path, handler)
+	fn := router.s.decorate(router.middlewares, handler)
 	if prefix := hasWildcard(path); prefix != "" {
 		router.r.PathPrefix(prefix).HandlerFunc(fn).Methods(http.MethodHead)
 		return
@@ -303,7 +303,7 @@ func (router *Router) Head(path string, handler Handler) {
 }
 
 func (router *Router) PathPrefixHandler(pathPrefix string, handler Handler) {
-	fn := router.s.decorate(router.middlewares, pathPrefix, handler)
+	fn := router.s.decorate(router.middlewares, handler)
 	router.r.PathPrefix(pathPrefix).HandlerFunc(fn)
 }
 
