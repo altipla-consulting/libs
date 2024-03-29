@@ -11,18 +11,18 @@ require (
 	cloud.google.com/go/pubsub v1.28.0
 	cloud.google.com/go/secretmanager v1.10.0
 	cloud.google.com/go/storage v1.29.0
+	github.com/altipla-consulting/env v0.2.2
+	github.com/altipla-consulting/errors v1.2.2
+	github.com/altipla-consulting/sentry v0.4.0
 	github.com/ernestoalejo/aeimagesflags v0.0.0-20150830225655-eed2909a7c2b
 	github.com/fsnotify/fsnotify v1.6.0
-	github.com/getsentry/sentry-go v0.19.0
 	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/go-sql-driver/mysql v1.7.0
 	github.com/golang/protobuf v1.5.2
-	github.com/google/btree v1.1.2
 	github.com/gorilla/mux v1.8.0
 	github.com/gorilla/schema v1.2.0
 	github.com/gorilla/securecookie v1.1.1
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.15.1
-	github.com/logrusorgru/aurora v2.0.3+incompatible
 	github.com/mailgun/mailgun-go/v3 v3.6.4
 	github.com/rs/cors v1.8.3
 	github.com/sethvargo/go-signalcontext v0.2.1
@@ -48,13 +48,11 @@ require (
 	cloud.google.com/go/iam v0.12.0 // indirect
 	cloud.google.com/go/kms v1.8.0 // indirect
 	cloud.google.com/go/longrunning v0.3.0 // indirect
-	github.com/altipla-consulting/env v0.2.2 // indirect
-	github.com/altipla-consulting/errors v1.2.2 // indirect
-	github.com/altipla-consulting/sentry v0.4.0 // indirect
 	github.com/andybalholm/brotli v1.0.4 // indirect
 	github.com/apache/arrow/go/v10 v10.0.1 // indirect
 	github.com/apache/thrift v0.16.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/getsentry/sentry-go v0.19.0 // indirect
 	github.com/go-chi/chi v4.1.2+incompatible // indirect
 	github.com/goccy/go-json v0.9.11 // indirect
 	github.com/golang/glog v1.0.0 // indirect
