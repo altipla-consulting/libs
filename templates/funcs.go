@@ -8,6 +8,7 @@ import (
 	"math/rand"
 	"os"
 	"reflect"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -20,7 +21,6 @@ import (
 	"google.golang.org/protobuf/proto"
 	pbtimestamp "google.golang.org/protobuf/types/known/timestamppb"
 
-	"libs.altipla.consulting/collections"
 	"libs.altipla.consulting/content"
 	"libs.altipla.consulting/datetime"
 	"libs.altipla.consulting/env"
@@ -32,13 +32,15 @@ import (
 
 var (
 	stdfuncs = template.FuncMap{
-		"genrange":  fnGenRange,
-		"shuffle":   fnShuffle,
-		"limit":     fnLimit,
-		"slice":     fnSlice,
-		"randitem":  fnRandItem,
-		"last":      fnLast,
-		"hasstring": collections.HasString,
+		"genrange": fnGenRange,
+		"shuffle":  fnShuffle,
+		"limit":    fnLimit,
+		"slice":    fnSlice,
+		"randitem": fnRandItem,
+		"last":     fnLast,
+		"hasstring": func(s []string, v string) bool {
+			return slices.Contains(s, v)
+		},
 
 		"safehtml": fnSafeHTML,
 		"safejs":   fnSafeJS,

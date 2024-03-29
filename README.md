@@ -5,7 +5,7 @@
 
 List of Go utils and shared code for [Altipla Consulting](https://www.altiplaconsulting.com/) projects.
 
-> **WARNING:** We do incompatible releases from minor to minor because it is an internal lib. Patch are always compatible and fix broken things.
+> **WARNING:** We do incompatible releases from minor to minor because it is an internal lib. Patches are always compatible and fix broken things.
 
 
 ### Install

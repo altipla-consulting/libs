@@ -3,12 +3,11 @@ package redis
 import (
 	"context"
 	"reflect"
+	"slices"
 	"strconv"
 	"time"
 
 	"github.com/altipla-consulting/errors"
-
-	"libs.altipla.consulting/collections"
 )
 
 type Hash struct {
@@ -34,7 +33,7 @@ func (hash *Hash) Get(ctx context.Context, key string, instance Model, masks ...
 	var names []string
 	var filteredProps []*property
 	for _, prop := range modelProps {
-		if len(included) > 0 && !collections.HasString(included, prop.Name) {
+		if len(included) > 0 && !slices.Contains(included, prop.Name) {
 			continue
 		}
 
@@ -90,7 +89,7 @@ func (hash *Hash) Put(ctx context.Context, key string, instance Model, masks ...
 
 	fields := map[string]interface{}{}
 	for _, prop := range modelProps {
-		if len(included) > 0 && !collections.HasString(included, prop.Name) {
+		if len(included) > 0 && !slices.Contains(included, prop.Name) {
 			continue
 		}
 

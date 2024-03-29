@@ -3,10 +3,9 @@ package rdb
 import (
 	"fmt"
 	"reflect"
+	"slices"
 	"strings"
 	"time"
-
-	"libs.altipla.consulting/collections"
 )
 
 type Params struct {
@@ -134,7 +133,7 @@ func Filter(field string, value interface{}) QueryFilter {
 
 	case 2:
 		validOperators := []string{"==", "=", "!=", "<", "<=", ">", ">="}
-		if !collections.HasString(validOperators, parts[1]) {
+		if !slices.Contains(validOperators, parts[1]) {
 			panic("unknown query operator: " + field + ": " + parts[1])
 		}
 		f.field = parts[0]

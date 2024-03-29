@@ -4,12 +4,11 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"slices"
 	"time"
 
 	"github.com/altipla-consulting/errors"
 	"github.com/fsnotify/fsnotify"
-
-	"libs.altipla.consulting/collections"
 )
 
 func Recursive(ctx context.Context, changes chan string, folders ...string) error {
@@ -81,7 +80,8 @@ func Files(ctx context.Context, changes chan string, paths ...string) error {
 			pending = append(pending, ev.Name)
 
 		case <-timerCh:
-			for _, change := range collections.UniqueStrings(pending) {
+			slices.Sort(pending)
+			for _, change := range slices.Compact(pending) {
 				changes <- change
 			}
 			pending = nil
