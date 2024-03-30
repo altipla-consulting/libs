@@ -10,8 +10,8 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/altipla-consulting/errors"
 	"github.com/altipla-consulting/env"
+	"github.com/altipla-consulting/errors"
 )
 
 type Group struct {

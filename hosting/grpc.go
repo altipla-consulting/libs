@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"cloud.google.com/go/profiler"
+	"github.com/altipla-consulting/env"
 	"github.com/altipla-consulting/errors"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/rs/cors"
@@ -17,7 +18,6 @@ import (
 	"github.com/soheilhy/cmux"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/encoding/protojson"
-	"github.com/altipla-consulting/env"
 
 	"libs.altipla.consulting/routing"
 )
@@ -33,7 +33,6 @@ type GRPCServer struct {
 func GRPC(platform Platform, opts ...Option) *GRPCServer {
 	cnf := &config{
 		http: []routing.ServerOption{
-			routing.WithLogrus(),
 			routing.WithSentry(os.Getenv("SENTRY_DSN")),
 		},
 		grpc: []grpc.ServerOption{},

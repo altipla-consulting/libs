@@ -3,9 +3,11 @@ package routing
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"os"
 	"strings"
 	"text/template"
 	"time"
@@ -15,7 +17,6 @@ import (
 	"github.com/altipla-consulting/sentry"
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
-	log "github.com/sirupsen/logrus"
 )
 
 // Handler should be implemented by the handler functions that we want to register.
@@ -38,13 +39,6 @@ func WithBetaAuth(username, password string) ServerOption {
 	return func(server *Server) {
 		server.username = username
 		server.password = password
-	}
-}
-
-// WithLogrus enables logging of the errors of the handlers.
-func WithLogrus() ServerOption {
-	return func(server *Server) {
-		server.logging = true
 	}
 }
 
@@ -146,7 +140,7 @@ func (s *Server) decorate(middlewares []Middleware, handler Handler) http.Handle
 
 		if s.username != "" && s.password != "" {
 			if _, err := r.Cookie("routing.beta"); err != nil && err != http.ErrNoCookie {
-				log.WithField("error", err.Error()).Error("Cannot read beta auth cookie")
+				slog.Error("Cannot read beta auth cookie", slog.String("error", err.Error()))
 				s.emitError(w, r, http.StatusInternalServerError)
 				return
 			} else if err == http.ErrNoCookie {
@@ -174,11 +168,10 @@ func (s *Server) decorate(middlewares []Middleware, handler Handler) http.Handle
 			if errors.As(err, &herr) {
 				switch herr.StatusCode {
 				case http.StatusNotFound, http.StatusUnauthorized, http.StatusBadRequest:
-					fields := errors.LogFields(err)
-					fields["status"] = http.StatusText(herr.StatusCode)
-					fields["reason"] = herr.Message
-					log.WithFields(fields).Error("Handler failed")
-
+					slog.Error("Handler failed",
+						slog.String("status", http.StatusText(herr.StatusCode)),
+						slog.String("reason", herr.Message),
+						slog.String("error", err.Error()))
 					s.emitError(w, r, herr.StatusCode)
 					return
 				}
@@ -193,7 +186,7 @@ func (s *Server) decorate(middlewares []Middleware, handler Handler) http.Handle
 
 			// Mandamos logging del error a la consola y/o Sentry.
 			if s.logging {
-				log.WithFields(errors.LogFields(err)).Error("Handler failed")
+				slog.Error("Handler failed", slog.String("error", err.Error()))
 			}
 			s.sentryClient.ReportRequest(r, err)
 
@@ -224,11 +217,11 @@ func (s *Server) emitError(w http.ResponseWriter, r *http.Request, status int) {
 	tmpl, err := template.New("error").Parse(errorTemplate)
 	if err != nil {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		log.WithField("error", err.Error()).Error("Cannot parse template")
+		slog.Error("Cannot parse error template", slog.String("error", err.Error()))
 	}
 	if err := tmpl.Execute(w, status); err != nil {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		log.WithField("error", err.Error()).Error("Cannot execute template")
+		slog.Error("Cannot execute error template", slog.String("error", err.Error()))
 	}
 }
 
@@ -336,7 +329,10 @@ func (router *Router) ProxyLocalAssets(destAddress string) {
 
 	u, err := url.Parse(destAddress)
 	if err != nil {
-		log.Fatal(err)
+		slog.Error("Cannot parse proxy address",
+			slog.String("address", destAddress),
+			slog.String("error", err.Error()))
+		os.Exit(1)
 	}
 	proxy := httputil.NewSingleHostReverseProxy(u)
 	router.r.PathPrefix("/static/").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

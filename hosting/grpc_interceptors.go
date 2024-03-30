@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/altipla-consulting/env"
 	"github.com/altipla-consulting/errors"
 	"github.com/altipla-consulting/sentry"
 	log "github.com/sirupsen/logrus"
@@ -14,7 +15,6 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
-	"github.com/altipla-consulting/env"
 )
 
 func grpcTrimStrings() grpc.UnaryServerInterceptor {

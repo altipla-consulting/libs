@@ -21,7 +21,7 @@ type barePlatform struct {
 }
 
 func (platform *barePlatform) Init() error {
-	r := routing.NewServer(routing.WithLogrus())
+	r := routing.NewServer()
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) error {
 		fmt.Fprintf(w, "%s is ok\n", env.ServiceName())
 		return nil

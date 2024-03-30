@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/altipla-consulting/errors"
 	"github.com/altipla-consulting/env"
+	"github.com/altipla-consulting/errors"
 
 	"libs.altipla.consulting/hosting"
 	"libs.altipla.consulting/routing"
@@ -22,7 +22,7 @@ type kubernetesPlatform struct {
 }
 
 func (platform *kubernetesPlatform) Init() error {
-	r := routing.NewServer(routing.WithLogrus())
+	r := routing.NewServer()
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) error {
 		fmt.Fprintf(w, "%s is ok\n", env.ServiceName())
 		return nil

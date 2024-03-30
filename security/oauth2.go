@@ -4,11 +4,11 @@ import (
 	"context"
 	"os"
 
+	"github.com/altipla-consulting/env"
 	"github.com/altipla-consulting/errors"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/idtoken"
-	"github.com/altipla-consulting/env"
 )
 
 func NewTokenSource(ctx context.Context, audience string) (oauth2.TokenSource, error) {

@@ -7,9 +7,9 @@ import (
 	"net/http"
 
 	"cloud.google.com/go/compute/metadata"
+	"github.com/altipla-consulting/env"
 	"github.com/altipla-consulting/errors"
 	"google.golang.org/api/idtoken"
-	"github.com/altipla-consulting/env"
 
 	"libs.altipla.consulting/hosting"
 	"libs.altipla.consulting/routing"

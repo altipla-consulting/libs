@@ -21,7 +21,7 @@ func fakeRequest(t *testing.T, server *Server, req *http.Request) (*http.Respons
 }
 
 func TestSimpleRoute(t *testing.T) {
-	server := NewServer(WithLogrus())
+	server := NewServer()
 	server.Get("/test", func(w http.ResponseWriter, r *http.Request) error {
 		fmt.Fprint(w, "ok")
 		return nil
@@ -35,7 +35,7 @@ func TestSimpleRoute(t *testing.T) {
 }
 
 func Test404(t *testing.T) {
-	server := NewServer(WithLogrus())
+	server := NewServer()
 
 	req := httptest.NewRequest(http.MethodGet, "/test", nil)
 	resp, _ := fakeRequest(t, server, req)
@@ -43,7 +43,7 @@ func Test404(t *testing.T) {
 }
 
 func TestDomains(t *testing.T) {
-	server := NewServer(WithLogrus())
+	server := NewServer()
 	foo := server.Domain("www.foo.com")
 	foo.Get("/test", func(w http.ResponseWriter, r *http.Request) error {
 		fmt.Fprint(w, "foo")
@@ -71,7 +71,7 @@ func TestDomains(t *testing.T) {
 }
 
 func TestDomainsWithPathPrefix(t *testing.T) {
-	server := NewServer(WithLogrus())
+	server := NewServer()
 	domain := server.Domain("www.foo.com").PathPrefix("/admin")
 	domain.Get("/test", func(w http.ResponseWriter, r *http.Request) error {
 		fmt.Fprint(w, "ok")
@@ -93,7 +93,7 @@ func TestDomainsWithPathPrefix(t *testing.T) {
 }
 
 func TestPathPrefixChain(t *testing.T) {
-	server := NewServer(WithLogrus())
+	server := NewServer()
 	domain := server.PathPrefix("/admin").PathPrefix("/sub")
 	domain.Get("/test", func(w http.ResponseWriter, r *http.Request) error {
 		fmt.Fprint(w, "ok")
@@ -115,7 +115,7 @@ func TestPathPrefixChain(t *testing.T) {
 }
 
 func TestPathPrefixTree(t *testing.T) {
-	server := NewServer(WithLogrus())
+	server := NewServer()
 	admin := server.PathPrefix("/admin")
 	admin.Get("/direct", func(w http.ResponseWriter, r *http.Request) error {
 		fmt.Fprint(w, "direct")
@@ -151,7 +151,7 @@ func TestPathPrefixTree(t *testing.T) {
 }
 
 func TestPathPrefixWithHome(t *testing.T) {
-	server := NewServer(WithLogrus())
+	server := NewServer()
 	admin := server.PathPrefix("/admin")
 	admin.Get("", func(w http.ResponseWriter, r *http.Request) error {
 		fmt.Fprint(w, "home")
@@ -183,7 +183,7 @@ func TestPathPrefixWithHome(t *testing.T) {
 }
 
 func TestDomainSameRouteAsRoot(t *testing.T) {
-	server := NewServer(WithLogrus())
+	server := NewServer()
 	domain := server.Domain("www.foo.com")
 	domain.Get("/test", func(w http.ResponseWriter, r *http.Request) error {
 		fmt.Fprint(w, "domain")
