@@ -34,6 +34,8 @@ github.com/altipla-consulting/errors v1.4.0 h1:ofrY4Ntug8hWOC5tWtD0hGcyg/NthGGyt
 github.com/altipla-consulting/errors v1.4.0/go.mod h1:x2/+JzMSga6sEUe8FNKIwWRshteAnNJo2WY81m3US6o=
 github.com/altipla-consulting/sentry v0.4.4 h1:LpO84VQtItlGsUXi6n1QJP4r+qCFEWtWn+jBgyFFZIs=
 github.com/altipla-consulting/sentry v0.4.4/go.mod h1:mvzk8GSCc+huI1cPC+JB0taFQnKope9CLpidU8mXYho=
+github.com/altipla-consulting/sentry v0.4.5 h1:5VY2H7kpTz4KyrfheJGyMIXuJc82EvO3j4hOWSziDK4=
+github.com/altipla-consulting/sentry v0.4.5/go.mod h1:JKfzihHOFBSTmoXEbhE+HtmuaLwnMv4c+SrLOJjaRRE=
 github.com/andybalholm/brotli v1.0.4 h1:V7DdXeJtZscaqfNuAdSRuRFzuiKlHSC/Zh3zl9qY3JY=
 github.com/andybalholm/brotli v1.0.4/go.mod h1:fO7iG3H7G2nSZ7m0zPUDn85XEX2GTukHGRSepvi9Eig=
 github.com/apache/arrow/go/v10 v10.0.1 h1:n9dERvixoC/1JjDmBcs9FPaEryoANa2sCgVFo6ez9cI=

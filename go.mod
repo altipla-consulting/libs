@@ -15,7 +15,7 @@ require (
 	cloud.google.com/go/storage v1.29.0
 	github.com/altipla-consulting/env v0.2.2
 	github.com/altipla-consulting/errors v1.4.0
-	github.com/altipla-consulting/sentry v0.4.4
+	github.com/altipla-consulting/sentry v0.4.5
 	github.com/ernestoalejo/aeimagesflags v0.0.0-20150830225655-eed2909a7c2b
 	github.com/fsnotify/fsnotify v1.6.0
 	github.com/go-redis/redis v6.15.9+incompatible
