@@ -3,6 +3,7 @@ package secrets
 import (
 	"context"
 	"encoding/json"
+	"log/slog"
 	"sync"
 	"time"
 
@@ -110,7 +111,7 @@ func (val *Value) maybeUpdate() []byte {
 
 	secret, err := readSecret(ctx, val.name)
 	if err != nil {
-		log.WithFields(errors.LogFields(err)).Warning("Cannot update secret. Will retry later.")
+		slog.Warn("Cannot update secret. Will retry later.", slog.String("error", err.Error()))
 		return nil
 	}
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"io/ioutil"
+	"log/slog"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -16,7 +17,6 @@ import (
 
 	"github.com/altipla-consulting/env"
 	"github.com/altipla-consulting/errors"
-	log "github.com/sirupsen/logrus"
 
 	"libs.altipla.consulting/rdb/api"
 	"libs.altipla.consulting/secrets"
@@ -159,12 +159,12 @@ func (db *Database) updateCredentials(dbname string) secrets.ChangeHook {
 	return func(secret *secrets.Value) {
 		var credentials Credentials
 		if err := secret.JSON(&credentials); err != nil {
-			log.WithFields(errors.LogFields(err)).Error("Cannot read the new RavenDB credentials")
+			slog.Error("Cannot read the new RavenDB credentials", slog.String("error", err.Error()))
 			return
 		}
 
 		if err := db.connect(dbname, credentials); err != nil {
-			log.WithFields(errors.LogFields(err)).Error("Cannot update RavenDB connection")
+			slog.Error("Cannot update RavenDB connection", slog.String("error", err.Error()))
 		}
 	}
 }

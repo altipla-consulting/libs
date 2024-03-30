@@ -3,6 +3,7 @@ package jwt
 import (
 	"context"
 	"encoding/json"
+	"log/slog"
 	"net/http"
 	"sync"
 	"time"
@@ -29,7 +30,8 @@ func (crypto *rs256) backgroundGetKeys() {
 	for {
 		keys, err := crypto.updateKeys(ctx)
 		if err != nil {
-			log.WithFields(errors.LogFields(err)).Error("Cannot request initial set of signing keys, retrying in 5 seconds...")
+			slog.Error("Cannot request initial set of signing keys, retrying in 5 seconds...",
+				slog.String("error", err.Error()))
 			time.Sleep(5 * time.Second)
 			continue
 		}
@@ -48,7 +50,8 @@ func (crypto *rs256) backgroundGetKeys() {
 			case <-ticker.C:
 				keys, err := crypto.updateKeys(ctx)
 				if err != nil {
-					log.WithFields(errors.LogFields(err)).Errorf("Cannot update set of signing keys, reusing old ones for one more hour...")
+					slog.Error("Cannot update set of signing keys, reusing old ones for one more hour...",
+						slog.String("error", err.Error()))
 					continue
 				}
 

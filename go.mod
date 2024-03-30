@@ -1,6 +1,8 @@
 module libs.altipla.consulting
 
-go 1.18
+go 1.21
+
+toolchain go1.21.4
 
 require (
 	cloud.google.com/go v0.110.0
@@ -12,8 +14,8 @@ require (
 	cloud.google.com/go/secretmanager v1.10.0
 	cloud.google.com/go/storage v1.29.0
 	github.com/altipla-consulting/env v0.2.2
-	github.com/altipla-consulting/errors v1.2.2
-	github.com/altipla-consulting/sentry v0.4.0
+	github.com/altipla-consulting/errors v1.4.0
+	github.com/altipla-consulting/sentry v0.4.4
 	github.com/ernestoalejo/aeimagesflags v0.0.0-20150830225655-eed2909a7c2b
 	github.com/fsnotify/fsnotify v1.6.0
 	github.com/go-redis/redis v6.15.9+incompatible
@@ -30,7 +32,7 @@ require (
 	github.com/soheilhy/cmux v0.1.5
 	github.com/speps/go-hashids v2.0.0+incompatible
 	github.com/spf13/pflag v1.0.5
-	github.com/stretchr/testify v1.8.2
+	github.com/stretchr/testify v1.8.4
 	golang.org/x/oauth2 v0.5.0
 	golang.org/x/text v0.7.0
 	golang.org/x/tools v0.6.0

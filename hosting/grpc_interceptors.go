@@ -2,6 +2,7 @@ package hosting
 
 import (
 	"context"
+	"log/slog"
 	"os"
 	"strings"
 	"time"
@@ -124,7 +125,7 @@ func logError(ctx context.Context, client *sentry.Client, method string, err err
 			return
 		}
 	} else {
-		log.WithFields(errors.LogFields(err)).Error("Unknown error in GRPC call")
+		slog.Error("Unknown error in GRPC call", slog.String("error", err.Error()))
 	}
 
 	// Do not notify UTF-8 decoding errors.

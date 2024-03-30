@@ -40,11 +40,11 @@ func Load(r *http.Request, dst interface{}) error {
 	}
 
 	if err := decoder.Decode(dst, r.Form); err != nil {
-		multi, ok := errors.Cause(err).(schema.MultiError)
-		if ok {
-			for _, single := range multi {
-				empty, ok := errors.Cause(single).(schema.EmptyFieldError)
-				if ok {
+		var merr schema.MultiError
+		if errors.As(err, &merr) {
+			for _, single := range merr {
+				var empty schema.EmptyFieldError
+				if errors.As(single, &empty) {
 					return routing.BadRequestf("required parameter: %v", empty.Key)
 				}
 			}
